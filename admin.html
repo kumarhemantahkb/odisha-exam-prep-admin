@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Test - Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1e293b; }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; background: #2563eb; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📝 Create New Test Header</h2>
+    <form id="addTestForm">
+        <label>Test Title:</label>
+        <input type="text" id="title" placeholder="e.g. OSSC CGL Mock Test 1" required>
+
+        <label>Document ID (Test ID):</label>
+        <input type="text" id="documentId" placeholder="e.g. ossc_cgl_01" required>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+                <label>Main Category:</label>
+                <select id="categoryId" onchange="filterExams()">
+                    <option value="OSSSC">OSSSC</option>
+                    <option value="OSSC">OSSC</option>
+                    <option value="OPSC">OPSC</option>
+                    <option value="OTHER">OTHER</option>
+                    <option value="SUBJECT">SUBJECT Wise</option>
+                </select>
+            </div>
+            <div style="flex:1;">
+                <label>Test Type:</label>
+                <select id="type">
+                    <option value="mock">Mock Test</option>
+                    <option value="previous">Previous Year</option>
+                    <option value="Free">Free</option>
+                    <option value="Paid">Paid</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="examDiv">
+            <label>Select Exam (Sub-Category):</label>
+            <select id="subCategoryId"><option value="">-- Loading Exams --</option></select>
+        </div>
+
+        <div id="subjectDiv" class="hidden">
+            <label>Select Subject:</label>
+            <select id="subjectId"><option value="">-- Loading Subjects --</option></select>
+            
+            <label>Topic Name (Optional):</label>
+            <input type="text" id="topicName" placeholder="e.g. Time & Work / Percentage">
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>Duration (Min):</label><input type="number" id="duration" value="60"></div>
+            <div style="flex:1;"><label>Total Marks:</label><input type="number" id="marks" value="100"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>Total Questions:</label><input type="number" id="totalQuestions" value="100"></div>
+            <div style="flex:1;"><label>Negative Marks:</label><input type="number" step="0.01" id="negativeMarks" value="0.25"></div>
+        </div>
+
+        <button type="submit" id="submitBtn">🚀 Create Test Header</button>
+    </form>
+</div>
+
+<script type="module">
+    import { db } from './firebase.js';
+    import { doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let allExams = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        // Fetch Sub-Categories (Exams)
+        const examSnap = await getDocs(collection(db, "subcategories"));
+        allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        filterExams();
+
+        // Fetch Subjects
+        const subSnap = await getDocs(collection(db, "subjects"));
+        const subSelect = document.getElementById("subjectId");
+        subSnap.forEach(d => { subSelect.add(new Option(d.data().name || d.id, d.id)); });
+    });
+
+    window.filterExams = function() {
+        const cat = document.getElementById("categoryId").value;
+        const examSelect = document.getElementById("subCategoryId");
+        const examDiv = document.getElementById("examDiv");
+        const subjectDiv = document.getElementById("subjectDiv");
+
+        if(cat === "SUBJECT") {
+            examDiv.classList.add("hidden");
+            subjectDiv.classList.remove("hidden");
+        } else {
+            examDiv.classList.remove("hidden");
+            subjectDiv.classList.add("hidden");
+            examSelect.innerHTML = '<option value="">-- Select Exam --</option>';
+            // 🔥 ଆପଣଙ୍କ ଲଜିକ୍: ଯାହାର categoryId ମ୍ୟାଚ୍ କରିବ ସେୟା ହିଁ ଦେଖାଯିବ
+            allExams.filter(e => e.categoryId === cat).forEach(e => {
+                examSelect.add(new Option(e.name || e.id, e.id));
+            });
+        }
+    }
+
+    document.getElementById("addTestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true; btn.innerText = "Creating...";
+
+        const docId = document.getElementById("documentId").value.trim();
+        const cat = document.getElementById("categoryId").value;
+        const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
+
+        // ସଠିକ୍ ପାଥ୍: exams କିମ୍ବା subjects ଫୋଲ୍ଡର୍ ଭିତରେ tests କଲେକ୍ସନ୍
+        let testRef = (cat === "SUBJECT") 
+            ? doc(db, "subjects", subCatId, "tests", docId)
+            : doc(db, "exams", subCatId, "tests", docId);
+
+        try {
+            await setDoc(testRef, {
+                id: docId,
+                title: document.getElementById("title").value,
+                duration: parseInt(document.getElementById("duration").value),
+                totalMarks: parseInt(document.getElementById("marks").value),
+                totalQuestions: parseInt(document.getElementById("totalQuestions").value),
+                negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
+                categoryId: cat,
+                subCategoryId: subCatId,
+                type: document.getElementById("type").value,
+                topic: document.getElementById("topicName") ? document.getElementById("topicName").value : "",
+                isActive: true,
+                createdAt: new Date().toISOString()
+            });
+            alert("✅ Header Created Successfully!");
+            window.location.href = "upload.html";
+        } catch (err) { alert(err.message); }
+        finally { btn.disabled = false; btn.innerText = "🚀 Create Test Header"; }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Questions | Odisha Exam Prep</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { background: #0f172a; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'Inter', sans-serif; }
+        .upload-card { background: #1e293b; padding: 35px; border-radius: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 14px; background: #334155; border: 1px solid #475569; border-radius: 8px; color: white; outline: none; transition: 0.3s; font-size: 1rem; }
+        input:focus, select:focus { border-color: #3b82f6; background: #0f172a; }
+        
+        .file-box { border: 2px dashed #475569; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; display: block; background: #1e293b; margin-top: 10px;}
+        .file-box:hover { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
+        
+        .btn-upload { width: 100%; padding: 15px; background: #3b82f6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: none; margin-top: 20px; font-size: 1.1rem; }
+        .btn-upload:hover { background: #2563eb; }
+
+        .error-container { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-size: 0.85rem; max-height: 250px; overflow-y: auto; border-left: 5px solid #ef4444; }
+        .success-msg { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-weight: bold; text-align: center; border-left: 5px solid #10b981; font-size: 1rem;}
+        
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #3b82f6; font-weight: bold; }
+        .back-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="upload-card">
+        <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
+        <h2 style="text-align: center; margin-bottom: 30px; color: #3b82f6;"><i class="fa-solid fa-cloud-arrow-up"></i> Verified Bulk Upload</h2>
+
+        <div class="form-group">
+            <label>1. Existing Test ID (e.g., ossc_cgl_test_1)</label>
+            <input type="text" id="testId" placeholder="Enter the ID you created in the Header Page" required>
+        </div>
+        
+        <div class="form-group">
+            <label>2. Category Type (Root Collection)</label>
+            <select id="categoryType">
+                <option value="">-- Select Type --</option>
+                <option value="exams">Exams (e.g. exams collection)</option>
+                <option value="subjects">Subjects (e.g. Root Subjects)</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="mainCategoryGroup" style="display: none;">
+            <label>2.5. Main Category (e.g., OSSC, TEACHER)</label>
+            <select id="mainCategorySelect">
+                <option value="">-- Select Main Category --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>3. Target Folder (Subcategory)</label>
+            <select id="targetDropdown">
+                <option value="">-- Select Root Collection First --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>4. Select Test Type</label>
+            <select id="testTypeSelect">
+                <option value="Mock Test">Mock Test</option>
+                <option value="Previous Year">Previous Year Paper</option>
+                <option value="Topic Wise">Topic Wise / Subject Wise</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="subjectGroup" style="display: none;">
+            <label>4.1. Select Subject (For Topic Wise Badge)</label>
+            <select id="subjectSelect">
+                <option value="All">All / Mixed</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>5. Select Excel File</label>
+            <label class="file-box">
+                <i class="fa-regular fa-file-excel" style="font-size: 2.5rem; margin-bottom: 15px; color:#10b981;"></i>
+                <br><span id="fileName">Click to browse .xlsx file</span>
+                <input type="file" id="excelInput" accept=".xlsx, .xls" style="display:none;">
+            </label>
+        </div>
+
+        <div id="errorBox" class="error-container"></div>
+        <div id="successBox" class="success-msg"></div>
+
+        <button id="uploadBtn" class="btn-upload">🚀 Inject Questions into Existing Test</button>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase.js'; 
+        import { collection, getDocs, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        let finalQuestions = [];
+
+        const categoryType = document.getElementById('categoryType');
+        const mainCategoryGroup = document.getElementById('mainCategoryGroup');
+        const mainCategorySelect = document.getElementById('mainCategorySelect');
+        const targetDropdown = document.getElementById('targetDropdown');
+        const testTypeSelect = document.getElementById('testTypeSelect');
+        const subjectGroup = document.getElementById('subjectGroup');
+        const subjectSelect = document.getElementById('subjectSelect');
+
+        let allFetchedSubcategories = []; 
+
+        // --- 🎯 REAL DYNAMIC FETCH LOGIC FOR SUBCATEGORIES ---
+        async function fetchRealCategoriesAndExams() {
+            mainCategorySelect.innerHTML = '<option value="">-- Loading Categories... --</option>';
+            targetDropdown.innerHTML = '<option value="">-- Please Select Main Category First --</option>';
+            allFetchedSubcategories = [];
+
+            try {
+                // ୧. ସିଧା 'categories' କଲେକ୍ସନ୍ ରୁ Main Category (OSSC, OPSC) ଟାଣିବା 
+                const catSnapshot = await getDocs(collection(db, "categories"));
+                mainCategorySelect.innerHTML = '<option value="">-- Select Main Category --</option>';
+                
+                catSnapshot.forEach(doc => {
+                    const opt = document.createElement('option');
+                    opt.value = doc.id; 
+                    const catData = doc.data();
+                    opt.innerText = catData.name || catData.title || doc.id;
+                    mainCategorySelect.appendChild(opt);
+                });
+
+                // ୨. 🎯 'subcategories' କଲେକ୍ସନ୍ ରୁ ସବୁ Subcategory ଟାଣିବା
+                const subcatSnapshot = await getDocs(collection(db, "subcategories"));
+                subcatSnapshot.forEach(doc => {
+                    allFetchedSubcategories.push({ id: doc.id, data: doc.data() });
+                });
+
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                mainCategorySelect.innerHTML = '<option value="">Error fetching data</option>';
+            }
+        }
+
+        // --- ଯେତେବେଳେ Root Collection ବଦଳିବ ---
+        categoryType.addEventListener('change', async () => {
+            const type = categoryType.value;
+            
+            if (type === 'exams') {
+                mainCategoryGroup.style.display = 'block';
+                fetchRealCategoriesAndExams();
+            } else if (type === 'subjects') {
+                mainCategoryGroup.style.display = 'none';
+                targetDropdown.innerHTML = '<option value="">-- Loading Subjects... --</option>';
+                try {
+                    const subSnap = await getDocs(collection(db, "subjects"));
+                    targetDropdown.innerHTML = '<option value="">-- Select Subject Folder --</option>';
+                    subSnap.forEach(doc => {
+                        const opt = document.createElement('option');
+                        opt.value = doc.id;
+                        const d = doc.data();
+                        opt.innerText = `${d.name || d.title || doc.id} [ID: ${doc.id}]`;
+                        targetDropdown.appendChild(opt);
+                    });
+                } catch(e) {
+                    targetDropdown.innerHTML = '<option value="">Error</option>';
+                }
+            } else {
+                mainCategoryGroup.style.display = 'none';
+                targetDropdown.innerHTML = '<option value="">-- Select Root Collection First --</option>';
+            }
+        });
+
+        // --- 🎯 ଯେତେବେଳେ Main Category ବଦଳିବ, ସେବେ SUBCATEGORY ଲୋଡ୍ ହେବ ---
+        mainCategorySelect.addEventListener('change', () => {
+            const selectedMain = mainCategorySelect.value;
+            targetDropdown.innerHTML = '<option value="">-- Select Target Folder --</option>';
+            
+            if (selectedMain) {
+                const filteredSubcategories = allFetchedSubcategories.filter(sub => {
+                    // ଯଦି ଡାଟାବେସ୍ ରେ 'categoryId' ଦିଆଯାଇଛି ତାହା ମ୍ୟାଚ୍ କରିବା
+                    if (sub.data.categoryId && sub.data.categoryId.toUpperCase() === selectedMain.toUpperCase()) {
+                        return true;
+                    }
+                    // ବ୍ୟାକ୍-ଅପ୍: ନହେଲେ ID ରୁ ମ୍ୟାଚ୍ କରିବା (ossc_cgl ରେ ossc ଅଛି)
+                    return sub.id.toUpperCase().startsWith(selectedMain.toUpperCase());
+                });
+                
+                filteredSubcategories.forEach(sub => {
+                    const opt = document.createElement('option');
+                    // ଯଦି examId ଫିଲ୍ଡ ଅଛି ନହେଲେ doc.id ନେବା
+                    opt.value = sub.data.examId || sub.id; 
+                    const folderName = sub.data.name || sub.data.title || sub.id;
+                    opt.innerText = `${folderName} [ID: ${opt.value}]`; 
+                    targetDropdown.appendChild(opt);
+                });
+
+                if(filteredSubcategories.length === 0) {
+                    targetDropdown.innerHTML = '<option value="">-- No Subcategories Found for this Category --</option>';
+                }
+                triggerUploadSubjectLoad();
+            }
+        });
+
+        // --- Test Type Change ---
+        testTypeSelect.addEventListener('change', () => {
+            if (testTypeSelect.value === 'Topic Wise') {
+                subjectGroup.style.display = 'block';
+                triggerUploadSubjectLoad(); 
+            } else {
+                subjectGroup.style.display = 'none';
+            }
+        });
+
+        async function triggerUploadSubjectLoad() {
+            const examId = targetDropdown.value;
+            const rootColl = categoryType.value;
+            const typeVal = testTypeSelect.value;
+
+            if (typeVal !== "Topic Wise") return;
+
+            if (rootColl === 'subjects') {
+                subjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+                return;
+            }
+
+            if (!examId) {
+                subjectSelect.innerHTML = '<option value="All">-- Please Select Target Folder First --</option>';
+                return;
+            }
+
+            subjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
+            
+            try {
+                const subWiseCol = collection(db, "exams", examId, "subject_wise");
+                const snapshot = await getDocs(subWiseCol);
+                
+                subjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+                
+                if(snapshot.empty) {
+                    subjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const subData = doc.data();
+                    const sName = subData.name || doc.id;
+                    subjectSelect.add(new Option(sName, doc.id)); 
+                });
+            } catch (err) {
+                console.error("Error:", err);
+                subjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>';
+            }
+        }
+
+        targetDropdown.addEventListener('change', triggerUploadSubjectLoad);
+
+        // --- EXCEL CELL VALUE EXTRACTOR ---
+        function getVal(row, possibleNames) {
+            for (let key in row) {
+                let cleanKey = key.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+                for (let name of possibleNames) {
+                    let cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (cleanKey === cleanName) { return String(row[key]).trim(); }
+                }
+            }
+            return "";
+        }
+
+        document.getElementById('excelInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            document.getElementById('fileName').innerText = file.name;
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                validateAndPrepare(workbook);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // --- EXCEL VALIDATOR ---
+        function validateAndPrepare(workbook) {
+            const errorBox = document.getElementById('errorBox');
+            const successBox = document.getElementById('successBox');
+            const uploadBtn = document.getElementById('uploadBtn');
+            errorBox.style.display = "none"; successBox.style.display = "none"; uploadBtn.style.display = "none";
+            finalQuestions = [];
+            let errors = [];
+            let totalRows = 0;
+
+            workbook.SheetNames.forEach(sheetName => {
+                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw: false, defval: ""});
+                
+                if (sheetData.length > 0) {
+                    totalRows += sheetData.length;
+                }
+
+                sheetData.forEach((row, index) => {
+                    const rowNum = index + 2; 
+                    
+                    const passageText = getVal(row, ['passage', 'paragraph', 'direction', 'comprehension']);
+                    const img = getVal(row, ['imageurl', 'image', 'questionimage', 'img', 'photo', 'url', 'link', 'picture']);
+                    
+                    const q = getVal(row, ['question', 'questions', 'q', 'prashna']);
+                    const a = getVal(row, ['optiona', 'a', 'option1', '1']);
+                    const b = getVal(row, ['optionb', 'b', 'option2', '2']);
+                    const c = getVal(row, ['optionc', 'c', 'option3', '3']);
+                    const d = getVal(row, ['optiond', 'd', 'option4', '4']);
+                    const rawAns = getVal(row, ['correctanswer', 'answer', 'ans', 'correct']);
+                    const exp = getVal(row, ['explanation', 'desc', 'solution']);
+
+                    if (!q && !a && !b && !c && !d && !rawAns && !exp && !passageText && !img) return; 
+
+                    let rowErrors = [];
+                    if(!q) rowErrors.push("Question missing");
+                    if(!a || !b || !c || !d) rowErrors.push("Options missing");
+                    if(!rawAns) rowErrors.push("Correct Answer missing");
+                    
+                    let finalFormattedAns = "";
+                    if(rawAns && a && b && c && d) {
+                        let cleanAns = rawAns.trim().toUpperCase();
+                        if (["A", "B", "C", "D"].includes(cleanAns)) { finalFormattedAns = cleanAns; } 
+                        else if (cleanAns === "1") { finalFormattedAns = "A"; }
+                        else if (cleanAns === "2") { finalFormattedAns = "B"; }
+                        else if (cleanAns === "3") { finalFormattedAns = "C"; }
+                        else if (cleanAns === "4") { finalFormattedAns = "D"; }
+                        else if (rawAns === a) { finalFormattedAns = "A"; }
+                        else if (rawAns === b) { finalFormattedAns = "B"; }
+                        else if (rawAns === c) { finalFormattedAns = "C"; }
+                        else if (rawAns === d) { finalFormattedAns = "D"; }
+                        else { rowErrors.push(`Answer doesn't match A/B/C/D`); }
+                    }
+
+                    if(rowErrors.length > 0) {
+                        errors.push(`<b>[${sheetName}] Row ${rowNum}:</b> <span style="color:#ef4444;">${rowErrors.join(" | ")}</span>`);
+                    } else {
+                        finalQuestions.push({
+                            serialNo: finalQuestions.length + 1,
+                            subjectName: sheetName.trim(), 
+                            passage: passageText ? passageText : "", 
+                            question: q ? q : "", 
+                            optionA: a ? a : "", 
+                            optionB: b ? b : "", 
+                            optionC: c ? c : "", 
+                            optionD: d ? d : "",
+                            correctAnswer: finalFormattedAns, 
+                            explanation: exp ? exp : "", 
+                            questionImage: img ? img : "" 
+                        });
+                    }
+                });
+            });
+
+            if (totalRows === 0) {
+                errorBox.innerHTML = "<h4>❌ Excel file is empty! (No data found in any sheet)</h4>";
+                errorBox.style.display = "block"; return;
+            }
+
+            if(errors.length > 0) {
+                errorBox.style.display = "block";
+                errorBox.innerHTML = `<h4>❌ Format Errors (${errors.length}):</h4>${errors.slice(0, 15).join("<br>")}`;
+            } else {
+                successBox.style.display = "block";
+                successBox.innerHTML = `✅ Validated! ${finalQuestions.length} Questions parsed from Excel.`;
+                uploadBtn.style.display = "block";
+            }
+        }
+
+        // --- UPLOAD LOGIC ---
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            const testId = document.getElementById('testId').value.trim();
+            const targetId = document.getElementById('targetDropdown').value;
+            const rootCollection = document.getElementById('categoryType').value; 
+            const testTypeVal = document.getElementById('testTypeSelect').value;
+            const subjectVal = document.getElementById('subjectSelect').value; 
+
+            if(!testId || !targetId || !rootCollection) return alert("Please fill Test ID, Category Type, and Target Folder!");
+
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            btn.innerText = "VERIFYING TEST HEADER & BOUNDARY... ⏳";
+
+            let testRef;
+            if (rootCollection === 'subjects') {
+                testRef = doc(db, "subjects", targetId, "tests", testId);
+            } else {
+                if (testTypeVal === "Mock Test") {
+                    testRef = doc(db, "exams", targetId, "mock_tests", testId);
+                } else if (testTypeVal === "Previous Year") {
+                    testRef = doc(db, "exams", targetId, "previous_years", testId);
+                } else if (testTypeVal === "Topic Wise") {
+                    
+                    if (subjectVal === "All" || subjectVal.includes("Loading") || subjectVal.includes("No Subjects")) {
+                        alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଅନିର୍ବାଜ୍ୟ!");
+                        btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
+                        return;
+                    }
+                    
+                    testRef = doc(db, "exams", targetId, "subject_wise", subjectVal, "tests", testId);
+                } else {
+                    testRef = doc(db, "exams", targetId, "tests", testId);
+                }
+            }
+
+            try {
+                const testSnap = await getDoc(testRef);
+
+                if (!testSnap.exists()) {
+                    alert(`❌ Header Error:\nସିଲେକ୍ଟ ହୋଇଥିବା ପାଥ୍ ରେ "${testId}" ID ର କୌଣସି ହେଡର୍ ମିଳିଲା ନାହିଁ।\n\nଦୟାକରି ସଠିକ୍ Folder ଏବଂ Test Type ସିଲେକ୍ଟ କରନ୍ତୁ କିମ୍ବା Create Header ପେଜ୍‌ରେ ଏହି ଟେଷ୍ଟ୍ ଟିକୁ ପ୍ରସ୍ତୁତ କରନ୍ତୁ!`);
+                    btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
+                    return;
+                }
+
+                const headerData = testSnap.data();
+                const allowedQuestionCount = parseInt(headerData.totalQuestions || headerData.totalQuestion);
+
+                let uploadList = [...finalQuestions];
+
+                if (allowedQuestionCount && uploadList.length > allowedQuestionCount) {
+                    alert(`⚠️ BOUNDARY NOTICE:\n\nତୁମର ଟେଷ୍ଟ୍ ହେଡର୍ ରେ କେବଳ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନର ଅନୁମତି ଅଛି। କିନ୍ତୁ Excel ରେ ${uploadList.length} ଟି ପ୍ରଶ୍ନ ଅଛି।\n\nକୋଡ୍ ଅଟୋମେଟିକ୍ ପ୍ରଥମ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନ ହିଁ ଅପଲୋଡ୍ କରିବ ଏବଂ ବାକି ଅଧିକା ପ୍ରଶ୍ନକୁ ବାଦ୍ ଦେବ।`);
+                    uploadList = uploadList.slice(0, allowedQuestionCount);
+                }
+
+                btn.innerText = `UPLOADING ${uploadList.length} QUESTIONS... ⏳`;
+                const batch = writeBatch(db);
+                
+                uploadList.forEach(q => {
+                    const qRef = doc(collection(testRef, "questions"));
+                    batch.set(qRef, q);
+                });
+
+                await batch.commit();
+                alert(`🎉 SUCCESS! ${uploadList.length} questions successfully injected into test path!`);
+                
+                document.getElementById('testId').value = "";
+                document.getElementById('excelInput').value = "";
+                document.getElementById('fileName').innerText = "Click to browse .xlsx file";
+                document.getElementById('successBox').style.display = "none";
+                btn.style.display = "none";
+                btn.disabled = false;
+                btn.innerText = "🚀 Inject Questions into Existing Test";
+                
+            } catch (err) {
+                console.error(err);
+                alert("Upload Failed: " + err.message);
+                btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
+            }
+        });
+    </script>
+</body>
+</html>

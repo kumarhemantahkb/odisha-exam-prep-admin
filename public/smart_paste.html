@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Paste Upload - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; color: #1e293b; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #f59e0b; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 14px; }
+        
+        .section-title { font-size: 1.1rem; color: #b45309; border-bottom: 2px solid #fde68a; padding-bottom: 8px; margin-top: 25px; font-weight: bold; background: #fffbeb; padding: 10px; border-radius: 5px; }
+        
+        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; font-size: 14px; }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { border-color: #f59e0b; outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+        
+        button { width: 100%; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-preview { background: #f59e0b; }
+        .btn-preview:hover { background: #d97706; }
+        .btn-upload { background: #10b981; }
+        .btn-upload:hover { background: #059669; }
+        
+        .hidden { display: none !important; }
+        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; color: #f59e0b; font-weight: bold; }
+        .back-btn:hover { text-decoration: underline; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th { background-color: #f8fafc; color: #1e293b; position: sticky; top: 0; }
+        .status-box { text-align: center; font-weight: bold; margin-top: 15px; padding: 10px; border-radius: 8px; }
+        .status-wait { background: #fef3c7; color: #b45309; }
+        .status-success { background: #d1fae5; color: #047857; }
+        .status-error { background: #fee2e2; color: #b91c1c; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    </style>
+</head>
+<body id="mainBody" style="display: none;">
+
+<div class="container">
+    <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
+    <h2>⚡ Smart Table Paste Upload</h2>
+    <div class="subtitle">Copy Table from Excel/CSV -> Paste Here -> Upload</div>
+    
+    <form id="smartUploadForm">
+        
+        <!-- STEP 1: HEADER DETAILS (EXACTLY LIKE AI GENERATOR) -->
+        <div class="section-title">📝 1. Test Header Details</div>
+        
+        <div class="grid-2">
+            <div>
+                <label>Test Title:</label>
+                <input type="text" id="title" placeholder="e.g. OSSC CGL Smart Test 1" required>
+            </div>
+            <div>
+                <label>Document ID (Test ID):</label>
+                <input type="text" id="documentId" placeholder="e.g. ossc_smart_01" required>
+            </div>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div>
+                <label>Main Category:</label>
+                <select id="categoryId" onchange="window.filterExams()" required>
+                    <option value="" disabled selected>-- Select Main Category --</option>
+                </select>
+            </div>
+            <div>
+                <label>Test Type (App Tab):</label>
+                <select id="type" onchange="window.handleTestTypeChange()">
+                    <option value="Mock Test">Mock Test</option>
+                    <option value="Previous Year">Previous Year Paper</option>
+                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                    <option value="Free">Free (Default Mock)</option>
+                    <option value="Paid">Paid (Default Mock)</option>
+                </select>
+            </div>
+            <div>
+                <label style="color: #d97706;">Access Status:</label>
+                <select id="isPremium">
+                    <option value="false">🆓 Free Test</option>
+                    <option value="true">👑 Premium Test</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="examDiv" class="hidden">
+            <label>Select Exam (Sub-Category):</label>
+            <select id="subCategoryId"><option value="">-- Select Exam --</option></select>
+        </div>
+
+        <div id="badgeSubjectDiv" class="hidden" style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a; margin-top:15px;">
+            <label style="color: #b45309; margin-top:0;">Select Subject (For App Badge / Topic Wise):</label>
+            <select id="badgeSubject"><option value="All">All / Mixed</option></select>
+        </div>
+
+        <div id="pyqFields" class="hidden" style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top:15px;">
+            <div class="grid-2">
+                <div><label style="color: #166534; margin-top:0;">Exam Date:</label><input type="date" id="examDate"></div>
+                <div><label style="color: #166534; margin-top:0;">Shift:</label><input type="text" id="shift" placeholder="e.g. Shift 1"></div>
+            </div>
+        </div>
+
+        <div id="subjectDiv" class="hidden">
+            <label>Select Root Subject:</label>
+            <select id="subjectId"><option value="">-- Loading Subjects --</option></select>
+            <label>Topic Name (Optional):</label>
+            <input type="text" id="topicName" placeholder="e.g. Time & Work">
+        </div>
+
+        <div class="grid-2">
+            <div><label>Duration (Min):</label><input type="number" id="duration" value="60"></div>
+            <div><label>Total Marks:</label><input type="number" id="marks" value="100"></div>
+            <div><label>Expected Total Questions:</label><input type="number" id="totalQuestions" value="10" required></div>
+            <div><label>Negative Marks:</label><input type="number" step="0.01" id="negativeMarks" value="0.25"></div>
+        </div>
+
+        <!-- STEP 2: PASTE TABLE -->
+        <div class="section-title">📋 2. Paste Copied Table / CSV</div>
+        <div style="margin-top: 15px;">
+            <label>Order: Q | A | B | C | D | Ans | Exp | Passage | ImageURL</label>
+            <textarea id="tableInput" rows="10" placeholder="Paste table data here..." required></textarea>
+        </div>
+
+        <button type="button" id="previewBtn" class="btn-preview">👁️ Read & Preview Questions</button>
+        <div id="statusText" class="hidden status-box"></div>
+
+        <!-- STEP 3: PREVIEW & UPLOAD -->
+        <div id="previewSection" class="hidden">
+            <div class="section-title">☁️ 3. Preview & Upload to Firebase</div>
+            <div style="overflow-x: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <table id="questionTable">
+                    <thead>
+                        <tr>
+                            <th>Q#</th>
+                            <th>Question (Eng)</th>
+                            <th>Ans</th>
+                            <th>Explanation (Odia)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            
+            <button type="submit" id="submitBtn" class="btn-upload">🚀 Create Header & Inject Questions to DB</button>
+        </div>
+    </form>
+</div>
+
+<!-- Scripts -->
+<script type="module">
+    import { db, auth } from './firebase.js'; 
+    import { doc, setDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) { document.getElementById("mainBody").style.display = "block"; } 
+        else { window.location.replace("index.html"); }
+    });
+
+    let parsedQuestionsData = [];
+    let allExams = [];
+
+    // ==========================================
+    // 1. DROPDOWN LOGIC (EXACTLY LIKE AI GENERATOR)
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const catSelect = document.getElementById("categoryId");
+            const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
+            const catSnap = await getDocs(qCat);
+
+            let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
+            catSnap.forEach(doc => { catOptions += `<option value="${doc.id}">${doc.data().name}</option>`; });
+            catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
+            catSelect.innerHTML = catOptions;
+
+            const examSnap = await getDocs(collection(db, "subcategories"));
+            allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            const subSnap = await getDocs(collection(db, "subjects"));
+            const rootSubjectSelect = document.getElementById("subjectId");
+            subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
+        } catch(error) { console.error("Error loading initial data:", error); }
+    });
+
+    window.handleTestTypeChange = function() {
+        const typeVal = document.getElementById("type").value;
+        const pyqDiv = document.getElementById("pyqFields");
+        const badgeDiv = document.getElementById("badgeSubjectDiv");
+        
+        if (typeVal === "Previous Year" || typeVal === "previous") { pyqDiv.classList.remove("hidden"); } 
+        else {
+            pyqDiv.classList.add("hidden");
+            document.getElementById("examDate").value = "";
+            document.getElementById("shift").value = "";
+        }
+
+        if (typeVal === "Topic Wise") {
+            badgeDiv.classList.remove("hidden");
+            triggerSubjectLoad();
+        } else {
+            badgeDiv.classList.add("hidden");
+            document.getElementById("badgeSubject").value = "All"; 
+        }
+    };
+
+    window.filterExams = function() {
+        const cat = document.getElementById("categoryId").value;
+        const examSelect = document.getElementById("subCategoryId");
+        const examDiv = document.getElementById("examDiv");
+        const subjectDiv = document.getElementById("subjectDiv");
+
+        if (!cat) return; 
+
+        if(cat === "SUBJECT") {
+            examDiv.classList.add("hidden");
+            subjectDiv.classList.remove("hidden");
+            document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
+        } else {
+            examDiv.classList.remove("hidden");
+            subjectDiv.classList.add("hidden");
+            examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+            
+            allExams.filter(e => e.categoryId === cat).forEach(e => {
+                examSelect.add(new Option(e.name || e.title || e.id, e.id));
+            });
+            
+            if (document.getElementById("type").value === "Topic Wise") {
+                document.getElementById("badgeSubjectDiv").classList.remove("hidden");
+                triggerSubjectLoad();
+            }
+        }
+    }
+
+    async function triggerSubjectLoad() {
+        const examId = document.getElementById("subCategoryId").value;
+        const badgeSubjectSelect = document.getElementById("badgeSubject");
+        const typeVal = document.getElementById("type").value;
+
+        if (!examId || typeVal !== "Topic Wise") return;
+
+        badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
+        try {
+            const subWiseCol = collection(db, "exams", examId, "subject_wise");
+            const snapshot = await getDocs(subWiseCol);
+            badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+            
+            if(snapshot.empty) {
+                badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
+                return;
+            }
+            snapshot.forEach(doc => {
+                const subData = doc.data();
+                let sName = subData.name || subData.title;
+                if (!sName) { sName = doc.id.replace(/_/g, ' ').toUpperCase(); }
+                badgeSubjectSelect.add(new Option(sName, doc.id)); 
+            });
+        } catch (err) { badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>'; }
+    }
+
+    document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
+
+    function showStatus(msg, type) {
+        const statusText = document.getElementById("statusText");
+        statusText.innerHTML = msg;
+        statusText.className = `status-box status-${type}`;
+        statusText.classList.remove("hidden");
+    }
+
+    // ==========================================
+    // 2. PARSE TSV/CSV DATA
+    // ==========================================
+    document.getElementById("previewBtn").addEventListener("click", () => {
+        const rawData = document.getElementById('tableInput').value.trim();
+        const expectedCount = parseInt(document.getElementById('totalQuestions').value) || 0;
+        
+        if (!rawData) { alert("ଦୟାକରି ଟେବୁଲ୍ ବା ଡାଟା କପି କରି ପେଷ୍ଟ କରନ୍ତୁ!"); return; }
+
+        try {
+            parsedQuestionsData = [];
+            let rows = [];
+            let currentCell = '';
+            let currentRow = [];
+            let inQuotes = false;
+            
+            for (let i = 0; i < rawData.length; i++) {
+                let char = rawData[i];
+                let nextChar = rawData[i+1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        currentCell += '"'; 
+                        i++; 
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if ((char === ',' || char === '\t') && !inQuotes) {
+                    currentRow.push(currentCell.trim());
+                    currentCell = '';
+                } else if (char === '\n' && !inQuotes) {
+                    currentRow.push(currentCell.trim());
+                    if (currentRow.some(c => c !== "")) rows.push(currentRow);
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            currentRow.push(currentCell.trim());
+            if (currentRow.some(c => c !== "")) rows.push(currentRow);
+
+            rows.forEach((cols) => {
+                if (cols.length >= 6) { 
+                    // HEADER FILTERING LOGIC ADDED HERE 
+                    let checkQ = cols[0] ? cols[0].trim().toLowerCase() : "";
+                    let checkAns = cols[5] ? cols[5].trim().toLowerCase() : "";
+                    
+                    if (checkQ === "questions" || checkQ === "question" || checkQ === "q" || checkAns === "correctanswer" || checkAns === "ans" || checkAns === "answer") {
+                        return; // Skip header row
+                    }
+
+                    parsedQuestionsData.push({
+                        questions: cols[0] || "",
+                        optionA: cols[1] || "",
+                        optionB: cols[2] || "",
+                        optionC: cols[3] || "",
+                        optionD: cols[4] || "",
+                        correctAnswer: cols[5] || "",
+                        explanation: cols[6] || "",
+                        passage: cols[9] || "",  // Index 9 in your specific CSV logic
+                        imageUrl: cols[10] || "" // Index 10
+                    });
+                }
+            });
+
+            if(parsedQuestionsData.length === 0) {
+                alert("❌ କୌଣସି ପ୍ରଶ୍ନ ମିଳିଲା ନାହିଁ! ଡାଟା ଠିକ୍ ଭାବେ କପି କରିଛନ୍ତି ତ?");
+                return;
+            }
+
+            // Slice the array if it exceeds the expected count
+            if(expectedCount > 0 && parsedQuestionsData.length > expectedCount) {
+                parsedQuestionsData = parsedQuestionsData.slice(0, expectedCount);
+            }
+
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ""; 
+            
+            parsedQuestionsData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${row.questions}</td>
+                    <td><strong>${row.correctAnswer}</strong></td>
+                    <td style="max-width: 300px;">${row.explanation}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            document.getElementById("previewSection").classList.remove("hidden");
+            
+            // Auto-update the 'Total Questions' input box to match reality
+            document.getElementById('totalQuestions').value = parsedQuestionsData.length;
+            
+            showStatus(`✅ ସଫଳତାର ସହ ${parsedQuestionsData.length} ଟି ପ୍ରଶ୍ନ ଲୋଡ୍ ହେଲା! ତଳକୁ ଯାଇ Upload କରନ୍ତୁ।`, "success");
+
+        } catch (error) { 
+            showStatus("❌ ଭୁଲ୍ ହେଲା: " + error.message, "error"); 
+        } 
+    });
+
+    // ==========================================
+    // 3. UPLOAD HEADER AND BATCH QUESTIONS (EXACTLY LIKE AI GENERATOR)
+    // ==========================================
+    document.getElementById("smartUploadForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        if(parsedQuestionsData.length === 0) { alert("⚠️ ପ୍ରଥମେ ପ୍ରଶ୍ନ Preview କରନ୍ତୁ!"); return; }
+
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true; btn.innerText = "UPLOADING... ⏳";
+
+        const docId = document.getElementById("documentId").value.trim();
+        const cat = document.getElementById("categoryId").value;
+        const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
+
+        const typeVal = document.getElementById("type").value;
+        const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
+        let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
+        
+        const badgeDropdown = document.getElementById("badgeSubject");
+        const finalSubjectText = (finalTestType === "Topic Wise") ? badgeDropdown.options[badgeDropdown.selectedIndex].text : "All";
+        const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
+
+        // Determine DB Path
+        let testRef;
+        if (cat === "SUBJECT") { testRef = doc(db, "subjects", subCatId, "tests", docId); } 
+        else {
+            if (finalTestType === "Mock Test") { testRef = doc(db, "exams", subCatId, "mock_tests", docId); } 
+            else if (finalTestType === "Previous Year") { testRef = doc(db, "exams", subCatId, "previous_years", docId); } 
+            else if (finalTestType === "Topic Wise") {
+                if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading")) {
+                    alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଜରୁରୀ!");
+                    btn.disabled = false; btn.innerText = "🚀 Create Header & Inject Questions to DB"; return;
+                }
+                testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
+            } else { testRef = doc(db, "exams", subCatId, "tests", docId); }
+        }
+
+        try {
+            // 1. SET HEADER
+            await setDoc(testRef, {
+                id: docId,
+                title: document.getElementById("title").value,
+                duration: parseInt(document.getElementById("duration").value),
+                totalMarks: parseInt(document.getElementById("marks").value),
+                totalQuestions: parsedQuestionsData.length,
+                negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
+                categoryId: cat,
+                subCategoryId: subCatId,
+                type: typeVal, 
+                testType: finalTestType, 
+                subjectName: finalSubjectText, 
+                premium: document.getElementById("isPremium").value === "true",
+                isPreviousYear: isPrevYear, 
+                examDate: isPrevYear ? document.getElementById("examDate").value : "",          
+                shift: isPrevYear ? document.getElementById("shift").value : "",            
+                topic: document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "",
+                isActive: true,
+                createdAt: new Date().toISOString()
+            });
+
+            // 2. BATCH UPLOAD QUESTIONS
+            const batch = writeBatch(db);
+            
+            parsedQuestionsData.forEach((aiData, index) => {
+                
+                const formattedQuestion = {
+                    serialNo: index + 1,
+                    subjectName: finalSubjectText ? finalSubjectText : "General",
+                    passage: aiData.passage ? aiData.passage : "",
+                    question: aiData.questions ? aiData.questions : "",   
+                    optionA: aiData.optionA ? aiData.optionA : "",
+                    optionB: aiData.optionB ? aiData.optionB : "",
+                    optionC: aiData.optionC ? aiData.optionC : "",
+                    optionD: aiData.optionD ? aiData.optionD : "",
+                    correctAnswer: aiData.correctAnswer ? aiData.correctAnswer : "",
+                    explanation: aiData.explanation ? aiData.explanation : "",
+                    questionImage: aiData.imageUrl ? aiData.imageUrl : "" 
+                };
+
+                const qRef = doc(collection(testRef, "questions")); 
+                batch.set(qRef, formattedQuestion);
+            });
+
+            await batch.commit();
+
+            alert(`🎉 ମ୍ୟାଜିକ୍ ସଫଳ ହେଲା!\nHeader ଏବଂ ${parsedQuestionsData.length} ଟି ପ୍ରଶ୍ନ ସିଧାସଳଖ ଡାଟାବେସ୍ ରେ ଅପଲୋଡ୍ ହୋଇଗଲା!\n\nନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ ଦୟାକରି Test Title ଏବଂ Test ID ବଦଳାଇ ଦିଅନ୍ତୁ।`);
+            
+            // 🔥 CLEAR TABLE AND RESET DATA 🔥
+            parsedQuestionsData = []; 
+            document.getElementById("tableBody").innerHTML = ""; 
+            document.getElementById("previewSection").classList.add("hidden"); 
+            document.getElementById("tableInput").value = ""; 
+            
+            showStatus("✅ ଅପଲୋଡ୍ ସଫଳ ହେଲା! ଏବେ ଆପଣ ନୂଆ ଡାଟା ପେଷ୍ଟ କରିପାରିବେ। ନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ Test Title ଓ ID ବଦଳାଇବାକୁ ଭୁଲିବେ ନାହିଁ।", "success");
+
+            btn.disabled = false; 
+            btn.innerText = "🚀 Create Header & Inject Questions to DB";
+
+        } catch (err) { 
+            alert("Upload Error: " + err.message); 
+            btn.disabled = false; 
+            btn.innerText = "🚀 Create Header & Inject Questions to DB";
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Categories - Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; padding: 20px; }
+        .container { max-width: 1200px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1e293b; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; background-color: #fff;}
+        
+        .btn-subject { width: 100%; background-color: #2563eb; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
+        .btn-subcat { width: 100%; background-color: #16a34a; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
+        .btn-subcol { width: 100%; background-color: #8b5cf6; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
+        
+        .btn-magic { width: 100%; background-color: #f59e0b; color: white; padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+        .btn-magic:hover { background-color: #d97706; }
+
+        .status { margin-top: 15px; text-align: center; font-weight: bold; }
+        .section { padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #f8fafc; box-sizing: border-box; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; color: #2563eb; font-weight: bold; }
+        .back-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body id="mainBody" style="display: none;">
+
+<div class="container">
+    <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
+    <h2 style="border: none;">⚙️ Manage Categories & Subjects</h2>
+
+    <button id="bulkAddBtn" class="btn-magic">🚀 One-Click: Add All Default Subjects & Exams</button>
+    <div id="bulkStatus" class="status" style="margin-bottom: 20px;"></div>
+
+    <div class="dashboard-grid">
+        
+        <div class="left-column" style="display: flex; flex-direction: column; gap: 40px;">
+            
+            <div class="section">
+                <h3 style="color: #2563eb; margin-top: 0;">📚 1. Add New Subject (Single)</h3>
+                <form id="addSubjectForm">
+                    <label>Subject ID:</label>
+                    <input type="text" id="subId" placeholder="e.g. history" required>
+                    <label>Subject Name:</label>
+                    <input type="text" id="subName" placeholder="e.g. Indian History" required>
+                    <button type="submit" id="submitSubjectBtn" class="btn-subject">➕ Add Subject</button>
+                </form>
+                <div id="subjectStatus" class="status"></div>
+            </div>
+
+            <div class="section">
+                <h3 style="color: #16a34a; margin-top: 0;">🎓 2. Add Exam Sub-Category (Single)</h3>
+                <form id="addSubCategoryForm">
+                    <label>Select Main Category:</label>
+                    <select id="mainCategoryId" required>
+                        <option value="" disabled selected>-- Loading Categories... --</option>
+                    </select>
+
+                    <label>Sub-Category ID (Exam ID):</label>
+                    <input type="text" id="examId" placeholder="e.g. osssc_clerk" required>
+                    <label>Sub-Category Name:</label>
+                    <input type="text" id="examName" placeholder="e.g. OSSSC Clerk" required>
+                    <button type="submit" id="submitExamBtn" class="btn-subcat">➕ Add Exam Sub-Category</button>
+                </form>
+                <div id="examStatus" class="status"></div>
+            </div>
+
+        </div>
+
+        <div class="right-column">
+            
+            <div class="section" style="border: 1.5px solid #8b5cf6; height: 100%;">
+                <h3 style="color: #8b5cf6; margin-top: 0;">🔗 3. Add Subject to Exam (Subject-Wise)</h3>
+                <form id="addSubCollectionForm">
+                    
+                    <label>Select Target Exam:</label>
+                    <select id="targetExamId" required>
+                        <option value="" disabled selected>-- Loading Exams... --</option>
+                    </select>
+
+                    <label>Subject ID (e.g. odia, math):</label>
+                    <input type="text" id="colSubId" placeholder="e.g. odia, reasoning" required>
+
+                    <label>Subject Name (e.g. Odia Language):</label>
+                    <input type="text" id="colSubName" placeholder="e.g. Odia Language, Logical Reasoning" required>
+
+                    <button type="submit" id="submitSubColBtn" class="btn-subcol">🔗 Link Subject to Exam</button>
+                </form>
+                <div id="subColStatus" class="status"></div>
+            </div>
+
+        </div>
+
+    </div>
+    </div>
+
+<script type="module">
+    import { db, auth } from './firebase.js';
+    import { doc, setDoc, getDocs, collection, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("mainBody").style.display = "block";
+            loadCategories(); 
+            loadExamsForDropdown(); 
+        } else {
+            window.location.replace("index.html");
+        }
+    });
+
+    // --- ୨. Category Dropdown ---
+    async function loadCategories() {
+        const dropdown = document.getElementById("mainCategoryId");
+        try {
+            const q = query(collection(db, "categories"), orderBy("order", "asc"));
+            const querySnapshot = await getDocs(q);
+            
+            let options = '<option value="" disabled selected>-- Select Main Category --</option>';
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                options += `<option value="${doc.id}">${data.name || doc.id}</option>`;
+            });
+            dropdown.innerHTML = options;
+        } catch (error) {
+            console.error("Error loading categories:", error);
+        }
+    }
+
+    // --- ୩. Load Exams For Dropdown ---
+    async function loadExamsForDropdown() {
+        const dropdown = document.getElementById("targetExamId");
+        try {
+            const querySnapshot = await getDocs(collection(db, "subcategories")); 
+            
+            let options = '<option value="" disabled selected>-- Select Target Exam --</option>';
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const displayName = data.name || data.title || doc.id;
+                options += `<option value="${doc.id}">${displayName}</option>`;
+            });
+            dropdown.innerHTML = options;
+        } catch (error) {
+            console.error("Error loading subcategories for dropdown:", error);
+            dropdown.innerHTML = '<option value="" disabled>❌ Error loading live exams</option>';
+        }
+    }
+
+    // --- ୪. Bulk Add Logic ---
+    document.getElementById("bulkAddBtn").addEventListener("click", async () => {
+        const btn = document.getElementById("bulkAddBtn");
+        const status = document.getElementById("bulkStatus");
+        btn.innerText = "⏳ Adding everything... Please wait!";
+        btn.disabled = true;
+
+        const subjects = [
+            { id: "math", name: "Mathematics" },
+            { id: "odia", name: "Odia Language" },
+            { id: "gk", name: "General Knowledge" },
+            { id: "current_affairs", name: "Current Affairs" },
+            { id: "english", name: "English" },
+            { id: "reasoning", name: "Reasoning" },
+            { id: "computer", name: "Computer" }
+        ];
+
+        const exams = [
+            { id: "osssc_ri_amin", name: "OSSSC RI & AMIN", categoryId: "OSSSC" },
+            { id: "osssc_forester", name: "OSSSC Forester", categoryId: "OSSSC" },
+            { id: "ossc_cgl", name: "OSSC CGL", categoryId: "OPSC" },
+            { id: "opsc_aso", name: "OPSC ASO", categoryId: "OPSC" },
+            { id: "jt_odisha", name: "JT Odisha", categoryId: "TEACHER" }, 
+            { id: "otet_paper1", name: "OTET Paper 1", categoryId: "TEACHER" },
+            { id: "pollution_board_odisha", name: "Pollution Control Board Odisha", categoryId: "OTHER" }
+        ];
+
+        try {
+            for (let sub of subjects) {
+                await setDoc(doc(db, "subjects", sub.id), { id: sub.id, name: sub.name, createdAt: new Date().toISOString() });
+            }
+            for (let exam of exams) {
+                await setDoc(doc(db, "subcategories", exam.id), { id: exam.id, name: exam.name, categoryId: exam.categoryId, createdAt: new Date().toISOString() });
+                await setDoc(doc(db, "exams", exam.id), { id: exam.id, name: exam.name, categoryId: exam.categoryId, createdAt: new Date().toISOString() }, { merge: true });
+            }
+
+            status.style.color = "green"; 
+            status.innerText = "✅ MAGIC SUCCESS! ସବୁ ବିଷୟ ଏବଂ ପରୀକ୍ଷା ସେଭ୍ ହୋଇଗଲା!";
+            btn.style.display = "none";
+            loadExamsForDropdown(); 
+        } catch (error) {
+            status.style.color = "red"; 
+            status.innerText = "❌ Error: " + error.message;
+            btn.innerText = "🚀 One-Click: Add All Default Subjects & Exams";
+            btn.disabled = false;
+        }
+    });
+
+    // --- ୫. Single Subject Add ---
+    document.getElementById("addSubjectForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const subId = document.getElementById("subId").value.trim().toLowerCase().replace(/\s+/g, '_');
+        const subName = document.getElementById("subName").value.trim();
+        try {
+            await setDoc(doc(db, "subjects", subId), { id: subId, name: subName, createdAt: new Date().toISOString() });
+            document.getElementById("subjectStatus").innerHTML = `<span style="color:green">✅ ${subName} added!</span>`;
+            document.getElementById("addSubjectForm").reset();
+        } catch (error) {
+            document.getElementById("subjectStatus").innerHTML = `<span style="color:red">❌ Error Adding Subject</span>`;
+        }
+    });
+
+    // --- ୬. Single Exam Add ---
+    document.getElementById("addSubCategoryForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const mainCatId = document.getElementById("mainCategoryId").value;
+        const examId = document.getElementById("examId").value.trim().toLowerCase().replace(/\s+/g, '_');
+        const examName = document.getElementById("examName").value.trim();
+        try {
+            await setDoc(doc(db, "subcategories", examId), { id: examId, name: examName, categoryId: mainCatId, createdAt: new Date().toISOString() });
+            await setDoc(doc(db, "exams", examId), { id: examId, name: examName, categoryId: mainCatId, createdAt: new Date().toISOString() }, { merge: true });
+            
+            document.getElementById("examStatus").innerHTML = `<span style="color:green">✅ ${examName} added under ${mainCatId}!</span>`;
+            document.getElementById("addSubCategoryForm").reset();
+            loadExamsForDropdown(); 
+        } catch (error) {
+            document.getElementById("examStatus").innerHTML = `<span style="color:red">❌ Error: ${error.message}</span>`;
+        }
+    });
+
+    // --- 🎯 ୭. 🔥 SMART SUBMIT LOGIC WITH AUTO-CLEAN PATH 🔥 ---
+    document.getElementById("addSubCollectionForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const examId = document.getElementById("targetExamId").value; // e.g. "ossc_ctsre"
+        let rawSubId = document.getElementById("colSubId").value.trim().toLowerCase().replace(/\s+/g, '_');
+        const subName = document.getElementById("colSubName").value.trim();
+        
+        // 🎯 🔥 AUTO-CLEAN LOGIC: ଯଦି ୟୁଜର୍ ଭୁଲ୍‌ରେ "ossc_ctsre_computer" ଲେଖିଦିଏ, ତେବେ ସେ "ossc_ctsre_" କୁ କାଟି କେବଳ "computer" ରଖିବ
+        if (rawSubId.startsWith(examId + "_")) {
+            rawSubId = rawSubId.replace(examId + "_", "");
+        }
+        
+        try {
+            // Parent Doc କୁ Active ରଖିବା
+            await setDoc(doc(db, "exams", examId), { hasSubjects: true }, { merge: true });
+
+            // 🎯 ସବ୍-କଲେକ୍ସନ୍ ପାଥ୍: exams -> [examId] -> subject_wise -> [Cleaned Subject ID (e.g. computer)]
+            await setDoc(doc(db, "exams", examId, "subject_wise", rawSubId), {
+                id: rawSubId,
+                name: subName,
+                color: "#8B5CF6", 
+                createdAt: new Date().toISOString()
+            });
+            
+            document.getElementById("subColStatus").innerHTML = `<span style="color:green">🎉 Success! "${subName}" created perfectly inside "exams -> ${examId} -> subject_wise -> ${rawSubId}"!</span>`;
+            document.getElementById("addSubCollectionForm").reset();
+        } catch (error) {
+            console.error("Error creating subject_wise doc inside exams:", error);
+            document.getElementById("subColStatus").innerHTML = `<span style="color:red">❌ Error: ${error.message}</span>`;
+        }
+    });
+</script>
+
+</body>
+</html>

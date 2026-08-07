@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="or">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - Odisha Exam Prep</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        #errorMsg { color: #ef4444; margin-top: 10px; font-size: 14px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Admin Login 🔒</h2>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">Login to Panel</button>
+        <p id="errorMsg"></p>
+    </div>
+
+    <script type="module">
+        import { auth } from "./firebase.js";
+        import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // ଯଦି ଆଗରୁ ଲଗଇନ୍ ଅଛି, ସିଧା ଡ୍ୟାସବୋର୍ଡ (admin.html) କୁ ନେଇଯିବ
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.replace("dashboard.html");
+            }
+        });
+
+        const loginBtn = document.getElementById("loginBtn");
+        if (loginBtn) {
+            loginBtn.addEventListener("click", () => {
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("password").value.trim();
+                const errorMsg = document.getElementById("errorMsg");
+
+                if (!email || !password) {
+                    alert("Please enter both email and password!");
+                    return;
+                }
+
+                loginBtn.innerText = "Checking... ⏳";
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        // ଲଗଇନ୍ ସଫଳ ହେଲେ ସିଧା admin.html କୁ ଯିବ
+                        window.location.replace("dashboard.html"); 
+                    })
+                    .catch((error) => {
+                        // 🔥 ଏଠାରେ ଆମେ ଅସଲ ଏରର୍ କୁ ସ୍କ୍ରିନ୍ ଉପରେ ଦେଖାଇବା ପାଇଁ ବଦଳାଇଲୁ 
+                        errorMsg.style.display = "block";
+                        errorMsg.innerText = "Error: " + error.message; 
+                        loginBtn.innerText = "Login to Panel";
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

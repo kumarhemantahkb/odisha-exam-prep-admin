@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test - Admin Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1e293b; }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; }
+        input, select { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; background: #2563eb; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        .hidden { display: none !important; }
+        
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #2563eb; font-weight: bold; }
+        .back-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body id="mainBody" style="display: none;">
+
+<div class="container">
+    <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
+    <h2>📝 Create New Test Header</h2>
+    <form id="addTestForm">
+        <label>Test Title:</label>
+        <input type="text" id="title" placeholder="e.g. OSSC CGL Mock Test 1" required>
+
+        <label>Document ID (Test ID):</label>
+        <input type="text" id="documentId" placeholder="e.g. ossc_cgl_01" required>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+                <label>Main Category:</label>
+                <select id="categoryId" onchange="window.filterExams()" required>
+                    <option value="" disabled selected>-- Select Main Category --</option>
+                </select>
+            </div>
+            
+            <div style="flex:1;">
+                <label>Test Type (App Tab):</label>
+                <select id="type" onchange="window.handleTestTypeChange()">
+                    <option value="Mock Test">Mock Test</option>
+                    <option value="Previous Year">Previous Year Paper</option>
+                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                    <option value="Free">Free (Default Mock)</option>
+                    <option value="Paid">Paid (Default Mock)</option>
+                </select>
+            </div>
+
+            <div style="flex:1;">
+                <label style="color: #d97706;">Access Status:</label>
+                <select id="accessStatus">
+                    <option value="free">🆓 Free Test</option>
+                    <option value="premium">👑 Premium Test (Ads)</option>
+                    <!-- 🔥 ତୁମ କହିବା ମୁତାବକ ନୂଆ Paid ଅପ୍ସନ୍ ଏଠାରେ ଯୋଡାଗଲା -->
+                    <option value="paid">🔒 Paid Test (Subscription)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="examDiv" class="hidden" style="margin-top: 5px;">
+            <label>Select Exam (Sub-Category):</label>
+            <select id="subCategoryId"><option value="">-- Select Exam --</option></select>
+        </div>
+
+        <div id="badgeSubjectDiv" class="hidden" style="margin-top:15px; background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe;">
+            <label style="color: #1e40af; margin-top:0;">Select Subject (For App Badge):</label>
+            <select id="badgeSubject">
+                <option value="All">All / Mixed</option>
+            </select>
+        </div>
+
+        <div id="pyqFields" class="hidden" style="margin-top:15px; background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;">
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label style="color: #166534; margin-top:0;">Exam Date:</label>
+                    <input type="date" id="examDate" style="margin-top: 8px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="color: #166534; margin-top:0;">Shift:</label>
+                    <input type="text" id="shift" placeholder="e.g. Shift 1 / Morning" style="margin-top: 8px;">
+                </div>
+            </div>
+        </div>
+
+        <div id="subjectDiv" class="hidden" style="margin-top: 5px;">
+            <label>Select Root Subject:</label>
+            <select id="subjectId"><option value="">-- Loading Subjects --</option></select>
+            
+            <label>Topic Name (Optional):</label>
+            <input type="text" id="topicName" placeholder="e.g. Time & Work / Percentage">
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>Duration (Min):</label><input type="number" id="duration" value="60"></div>
+            <div style="flex:1;"><label>Total Marks:</label><input type="number" id="marks" value="100"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>Total Questions:</label><input type="number" id="totalQuestions" value="100"></div>
+            <div style="flex:1;"><label>Negative Marks:</label><input type="number" step="0.01" id="negativeMarks" value="0.25"></div>
+        </div>
+
+        <button type="submit" id="submitBtn">🚀 Create Test Header</button>
+    </form>
+</div>
+
+<script type="module">
+    import { db, auth } from './firebase.js'; 
+    import { doc, setDoc, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.getElementById("mainBody").style.display = "block";
+        } else {
+            window.location.replace("index.html");
+        }
+    });
+
+    let allExams = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const catSelect = document.getElementById("categoryId");
+            const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
+            const catSnap = await getDocs(qCat);
+
+            let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
+            catSnap.forEach(doc => {
+                catOptions += `<option value="${doc.id}">${doc.data().name}</option>`;
+            });
+            catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
+            catSelect.innerHTML = catOptions;
+
+            const examSnap = await getDocs(collection(db, "subcategories"));
+            allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            const subSnap = await getDocs(collection(db, "subjects"));
+            const rootSubjectSelect = document.getElementById("subjectId");
+            subSnap.forEach(d => {
+                rootSubjectSelect.add(new Option(d.data().name || d.id, d.id));
+            });
+
+        } catch(error) {
+            console.error("Error loading initial data:", error);
+        }
+    });
+
+    window.handleTestTypeChange = function() {
+        const typeVal = document.getElementById("type").value;
+        const pyqDiv = document.getElementById("pyqFields");
+        const badgeDiv = document.getElementById("badgeSubjectDiv");
+        
+        if (typeVal === "Previous Year" || typeVal === "previous") {
+            pyqDiv.classList.remove("hidden");
+        } else {
+            pyqDiv.classList.add("hidden");
+            document.getElementById("examDate").value = "";
+            document.getElementById("shift").value = "";
+        }
+
+        if (typeVal === "Topic Wise") {
+            badgeDiv.classList.remove("hidden");
+            triggerSubjectLoad();
+        } else {
+            badgeDiv.classList.add("hidden");
+            document.getElementById("badgeSubject").value = "All"; 
+        }
+    };
+
+    window.filterExams = function() {
+        const cat = document.getElementById("categoryId").value;
+        const examSelect = document.getElementById("subCategoryId");
+        const examDiv = document.getElementById("examDiv");
+        const subjectDiv = document.getElementById("subjectDiv");
+
+        if (!cat) return; 
+
+        if(cat === "SUBJECT") {
+            examDiv.classList.add("hidden");
+            subjectDiv.classList.remove("hidden");
+            document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
+        } else {
+            examDiv.classList.remove("hidden");
+            subjectDiv.classList.add("hidden");
+            examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+            
+            allExams.filter(e => e.categoryId === cat).forEach(e => {
+                examSelect.add(new Option(e.name || e.title || e.id, e.id));
+            });
+            
+            if (document.getElementById("type").value === "Topic Wise") {
+                document.getElementById("badgeSubjectDiv").classList.remove("hidden");
+                triggerSubjectLoad();
+            }
+        }
+    }
+
+    async function triggerSubjectLoad() {
+        const examId = document.getElementById("subCategoryId").value;
+        const badgeSubjectSelect = document.getElementById("badgeSubject");
+        const typeVal = document.getElementById("type").value;
+
+        if (!examId || typeVal !== "Topic Wise") return;
+
+        badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
+        
+        try {
+            const subWiseCol = collection(db, "exams", examId, "subject_wise");
+            const snapshot = await getDocs(subWiseCol);
+            
+            badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+            
+            if(snapshot.empty) {
+                badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found (Manage ରେ ଆଡ୍ କରନ୍ତୁ)</option>';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const subData = doc.data();
+                let sName = subData.name || subData.title;
+                if (!sName) {
+                    sName = doc.id.replace(/_/g, ' ').toUpperCase(); 
+                }
+                
+                // 🎯 🔥 FULLY DYNAMIC FIX: ଏଠାରେ ଆମେ ସିଧା ଡାଟାବେସ୍‌ର ଅସଲ ID (doc.id) କୁ ଭ୍ୟାଲୁ ଭାବେ ରଖୁଛୁ 🔥
+                badgeSubjectSelect.add(new Option(sName, doc.id)); 
+            });
+        } catch (err) {
+            console.error("Error loading sub-collection subjects:", err);
+            badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>';
+        }
+    }
+
+    document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
+
+    document.getElementById("addTestForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = true; btn.innerText = "Creating...";
+
+        const docId = document.getElementById("documentId").value.trim();
+        const cat = document.getElementById("categoryId").value;
+        
+        if(!cat) {
+            alert("Please select a Main Category!");
+            btn.disabled = false; btn.innerText = "🚀 Create Test Header";
+            return;
+        }
+
+        const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
+
+        if(!subCatId) {
+            alert("Please select an Exam or Subject!");
+            btn.disabled = false; btn.innerText = "🚀 Create Test Header";
+            return;
+        }
+
+        const typeVal = document.getElementById("type").value;
+        const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
+        const dateVal = isPrevYear ? document.getElementById("examDate").value : "";
+        const shiftVal = isPrevYear ? document.getElementById("shift").value : "";
+        
+        // 🎯 🔥 ନୂଆ Access Status ଲଜିକ୍ (Free, Premium, ବା Paid)
+        const accessStatusVal = document.getElementById("accessStatus").value;
+        let isPremiumTest = false;
+        let isPaidOnlyTest = false;
+
+        if (accessStatusVal === "premium") {
+            isPremiumTest = true;
+            isPaidOnlyTest = false;
+        } else if (accessStatusVal === "paid") {
+            isPremiumTest = true; // ଲକ୍ ଆଇକନ୍ / ଷ୍ଟାର୍ ଦେଖାଇବା ପାଇଁ 
+            isPaidOnlyTest = true; // ଆପ୍ ଏହାକୁ ଚିହ୍ନିବ କି ଏହା କେବଳ ସବସ୍କ୍ରିପ୍ସନ୍ ପାଇଁ ଅଟେ
+        } else {
+            isPremiumTest = false;
+            isPaidOnlyTest = false;
+        }
+
+        let finalTestType = typeVal;
+        if(typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") {
+            finalTestType = "Mock Test";
+        }
+        
+        // 🎯 Name (e.g., "Mathematics") for saving in the document body
+        const badgeDropdown = document.getElementById("badgeSubject");
+        const finalSubjectText = (finalTestType === "Topic Wise") ? badgeDropdown.options[badgeDropdown.selectedIndex].text : "All";
+        
+        // 🎯 Exact DB ID (e.g., "ct_math") for the path
+        const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
+        
+        const topicInputVal = document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "";
+
+        let testRef;
+        if (cat === "SUBJECT") {
+            testRef = doc(db, "subjects", subCatId, "tests", docId);
+        } else {
+            if (finalTestType === "Mock Test") {
+                testRef = doc(db, "exams", subCatId, "mock_tests", docId);
+            } else if (finalTestType === "Previous Year") {
+                testRef = doc(db, "exams", subCatId, "previous_years", docId);
+            } else if (finalTestType === "Topic Wise") {
+                
+                // 🎯 🔥 ୧୦୦% FULLY DYNAMIC SAVING (No Hardcoded ct_ Logic) 🔥 🎯
+                if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading") || exactDatabaseId.includes("No Subjects")) {
+                    alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ଗୋଟିଏ ନିର୍ଦ୍ଦିଷ୍ଟ Subject ବାଛିବା ଜରୁରୀ!");
+                    btn.disabled = false; btn.innerText = "🚀 Create Test Header";
+                    return;
+                }
+                // ସିଧା ଅସଲ ଫୋଲ୍ଡର ID ବ୍ୟବହାର ହେବ
+                testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
+                
+            } else {
+                testRef = doc(db, "exams", subCatId, "tests", docId);
+            }
+        }
+
+        try {
+            await setDoc(testRef, {
+                id: docId,
+                title: document.getElementById("title").value,
+                duration: parseInt(document.getElementById("duration").value),
+                totalMarks: parseInt(document.getElementById("marks").value),
+                totalQuestions: parseInt(document.getElementById("totalQuestions").value),
+                negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
+                categoryId: cat,
+                subCategoryId: subCatId,
+                
+                type: typeVal, 
+                testType: finalTestType, 
+                subjectName: finalSubjectText, // 🎯 ସୁନ୍ଦର ନାମ ସେଭ୍ ହେବ
+                
+                // 🎯 ଏବେ Free, Premium ଏବଂ Paid ଠିକ୍ ଭାବେ ସେଭ୍ ହେବ
+                premium: isPremiumTest,
+                paidOnly: isPaidOnlyTest,
+                
+                isPreviousYear: isPrevYear, 
+                examDate: dateVal,          
+                shift: shiftVal,            
+                topic: topicInputVal,
+                isActive: true,
+                createdAt: new Date().toISOString()
+            });
+            alert("✅ Header Created Successfully inside: " + testRef.path);
+            window.location.href = "upload.html"; 
+        } catch (err) { alert(err.message); }
+        finally { btn.disabled = false; btn.innerText = "🚀 Create Test Header"; }
+    });
+</script>
+</body>
+</html>
