@@ -3,142 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Odisha Exam Prep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <title>Dashboard - Odisha Exam Prep Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
-            margin: 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; min-height: 100vh;
-            padding: 20px;
+        .sidebar-item:hover, .sidebar-item.active {
+            background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 100%);
+            color: white;
+            border-radius: 0.5rem;
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
         
-        .header-section { text-align: center; margin-bottom: 30px; }
-        .logo-icon { font-size: 50px; margin-bottom: 5px; }
-        h1 { color: #1e293b; margin-bottom: 5px; font-size: 28px; font-weight: 700; }
-        p.subtitle { color: #64748b; font-size: 15px; margin: 0; }
-
-        /* Grid Layout for Cards */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        /* Card Style */
-        .dashboard-card {
-            background: #ffffff; padding: 30px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex; flex-direction: column;
-        }
-        .dashboard-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); 
-        }
-
-        .card-header {
-            font-size: 18px; font-weight: 700; margin-bottom: 20px;
-            padding-bottom: 15px; border-bottom: 2px solid #e2e8f0;
-        }
-        .manual-header { color: #2563eb; }
-        .ai-header { color: #db2777; }
-
-        .btn-container { display: flex; flex-direction: column; gap: 15px; flex-grow: 1;}
-        
-        .btn { 
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 15px 18px; font-size: 15px; font-weight: 600; cursor: pointer; 
-            text-decoration: none; border-radius: 10px; transition: all 0.3s ease;
-            color: white; border: none;
-        }
-        
-        /* Manual Buttons */
-        .btn-manage { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .btn-manage:hover { background: #d97706; transform: scale(1.02); }
-
-        .btn-test { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .btn-test:hover { background: #1d4ed8; transform: scale(1.02); }
-        
-        .btn-upload { background: linear-gradient(135deg, #10b981, #059669); }
-        .btn-upload:hover { background: #047857; transform: scale(1.02); }
-
-        /* AI & Smart Buttons */
-        .btn-ai-gen { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-        .btn-ai-gen:hover { background: #6d28d9; transform: scale(1.02); }
-        
-        .btn-ai-ext { background: linear-gradient(135deg, #db2777, #be185d); }
-        .btn-ai-ext:hover { background: #be185d; transform: scale(1.02); }
-
-        .btn-ai-paste { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
-        .btn-ai-paste:hover { background: #0284c7; transform: scale(1.02); }
-
-        /* New Assembler Button */
-        .btn-assembler { background: linear-gradient(135deg, #6366f1, #4338ca); }
-        .btn-assembler:hover { background: #4338ca; transform: scale(1.02); }
-
-        /* Footer Controls */
-        .controls-section {
-            margin-top: 30px; text-align: center; width: 100%; max-width: 400px;
-        }
-        .footer-text { color: #94a3b8; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 15px; }
-        .status-dot { width: 8px; height: 8px; background-color: #22c55e; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #22c55e; }
-        
-        .btn-logout { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor:pointer;}
-        .btn-logout:hover { background: #fef2f2; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
+        /* Action Button Hover Effects */
+        .action-btn { transition: all 0.3s ease; }
+        .action-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
     </style>
 </head>
+<body class="bg-slate-50 font-sans m-0 p-0 flex h-screen overflow-hidden" id="mainBody" style="display: none;">
 
-<body id="mainBody" style="display: none;">
-
-    <div class="header-section">
-        <div class="logo-icon">🚀</div>
-        <h1>Odisha Exam Prep</h1>
-        <p class="subtitle">Admin Control Panel</p>
-    </div>
-
-    <div class="dashboard-grid">
-        <!-- MANUAL CARD -->
-        <div class="dashboard-card">
-            <div class="card-header manual-header">⚙️ Manual Operations</div>
-            <div class="btn-container">
-                <a href="manage_subjects.html" class="btn btn-manage">1. Manage Categories & Subjects</a>
-                <a href="admin.html" class="btn btn-test">2. Create New Test Header</a>
-                <a href="upload.html" class="btn btn-upload">3. Upload Questions (Excel)</a>
+    <!-- LEFT SIDEBAR -->
+    <aside class="w-64 bg-[#0F172A] text-gray-300 flex flex-col h-full shadow-2xl transition-all duration-300 z-20 shrink-0">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-700/50">
+            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white leading-tight">Odisha Exam</h2>
+                <p class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Prep Panel</p>
             </div>
         </div>
+        
+        <div class="p-4">
+            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mb-6 transition-colors text-sm shadow-lg shadow-indigo-500/30">
+                ADMIN PANEL
+            </button>
+        </div>
 
-        <!-- AI CARD -->
-        <div class="dashboard-card">
-            <div class="card-header ai-header">🤖 AI Automation & Smart Tools</div>
-            <div class="btn-container">
-                <a href="ai_generator.html" class="btn btn-ai-gen">✨ 4. AI Generate & Auto-Upload</a>
-                <a href="ai_extractor.html" class="btn btn-ai-ext">📸 5. AI Extract from PDF/Image</a>
-                <a href="smart_paste.html" class="btn btn-ai-paste">⚡ 6. Smart Paste & Upload (Excel/CSV)</a>
-                <!-- 🔥 ନୂଆ Test Assembler ବଟନ୍ ଏଠାରେ ଯୋଡା ଯାଇଛି -->
-                <a href="test_assembler.html" class="btn btn-assembler">♻️ 7. Firebase Test Assembler</a>
+        <nav class="flex-1 px-4 overflow-y-auto space-y-1 custom-scrollbar">
+            <a href="dashboard.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-white transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="users.html" class="sidebar-item flex items-center justify-between gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
+                <div class="flex items-center gap-3"><i class="fas fa-users w-5"></i> User Management</div>
+            </a>
+            <!-- 🌟 NEW: Messaging Link Added to Sidebar 🌟 -->
+            <a href="messaging.html" class="sidebar-item flex items-center justify-between gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
+                <div class="flex items-center gap-3"><i class="fas fa-bell w-5"></i> Send Notice</div>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full">
+        
+        <!-- TOP HEADER -->
+        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg text-sm"><i class="fas fa-border-all"></i></span>
+                    Dashboard
+                </h1>
             </div>
-        </div>
-    </div>
+            
+            <div class="flex items-center gap-6">
+                <button id="logoutBtn" class="text-red-500 hover:text-white border border-red-500 hover:bg-red-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+                <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
+                    <div class="text-right hidden md:block">
+                        <p class="text-sm font-bold text-gray-800 leading-tight">Admin</p>
+                        <p class="text-xs text-gray-500 font-medium">Super Admin</p>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff" alt="Admin" class="w-10 h-10 rounded-full border-2 border-indigo-100">
+                </div>
+            </div>
+        </header>
 
-    <div class="controls-section">
-        <div class="footer-text">
-            <span class="status-dot"></span> Logged in as Super Admin
-        </div>
-        <button id="logoutBtn" class="btn-logout">🚪 Logout</button>
-    </div>
+        <!-- DASHBOARD CONTENT -->
+        <div class="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+            
+            <div class="mb-8">
+                <h2 class="text-3xl font-black text-gray-800">Welcome back, Admin! 🚀</h2>
+                <p class="text-gray-500 font-medium mt-1">Control and manage all tools for Odisha Exam Prep from here.</p>
+            </div>
 
+            <!-- ACTION GRIDS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
+                
+                <!-- MANUAL OPERATIONS CARD -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+                    <h3 class="text-xl font-bold text-blue-700 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
+                        <i class="fas fa-cog"></i> Manual Operations
+                    </h3>
+                    
+                    <div class="flex flex-col gap-4 flex-1">
+                        <a href="manage_subjects.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            <i class="fas fa-folder-tree"></i> 1. Manage Categories & Subjects
+                        </a>
+                        <a href="admin.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            <i class="fas fa-file-signature"></i> 2. Create New Test Header
+                        </a>
+                        <a href="upload.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            <i class="fas fa-file-excel"></i> 3. Upload Questions (Excel)
+                        </a>
+                    </div>
+                </div>
+
+                <!-- AI & SMART TOOLS CARD -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+                    <h3 class="text-xl font-bold text-pink-600 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
+                        <i class="fas fa-robot"></i> AI Automation & Smart Tools
+                    </h3>
+                    
+                    <div class="flex flex-col gap-4 flex-1">
+                        <a href="ai_generator.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            ✨ 4. AI Generate & Auto-Upload
+                        </a>
+                        <a href="ai_extractor.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-pink-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            📸 5. AI Extract from PDF/Image
+                        </a>
+                        <a href="smart_paste.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-sky-400 to-sky-600 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            ⚡ 6. Smart Paste & Upload
+                        </a>
+                        <a href="test_assembler.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-500 to-indigo-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
+                            ♻️ 7. Firebase Test Assembler
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 🌟 NEW: COMMUNICATION CARD (Full Width Bottom) 🌟 -->
+                <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col mt-2">
+                    <h3 class="text-xl font-bold text-rose-600 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
+                        <i class="fas fa-bullhorn"></i> User Communication & Alerts
+                    </h3>
+                    
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <a href="messaging.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold py-5 px-6 rounded-xl text-lg w-full md:w-1/2">
+                            <i class="fas fa-bell text-2xl"></i> Send Push Notice & Announcements
+                        </a>
+                        <a href="users.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold py-5 px-6 rounded-xl text-lg w-full md:w-1/2">
+                            <i class="fas fa-users-cog text-2xl"></i> View Registered Users List
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Firebase Logic -->
     <script type="module">
-        import { auth } from "./firebase.js";
+        import { auth } from './firebase.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         onAuthStateChanged(auth, (user) => {
@@ -150,15 +167,14 @@
         });
 
         document.getElementById("logoutBtn").addEventListener("click", () => {
-            document.getElementById("logoutBtn").innerText = "Logging out... ⏳";
+            document.getElementById("logoutBtn").innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
             signOut(auth).then(() => {
                 window.location.replace("index.html"); 
             }).catch((error) => {
                 alert("Logout Error: " + error.message);
-                document.getElementById("logoutBtn").innerText = "🚪 Logout";
+                document.getElementById("logoutBtn").innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
             });
         });
     </script>
-
 </body>
 </html>

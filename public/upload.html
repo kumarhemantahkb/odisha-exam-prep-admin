@@ -18,11 +18,16 @@
         .file-box { border: 2px dashed #475569; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; display: block; background: #1e293b; margin-top: 10px;}
         .file-box:hover { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
         
+        .image-box { border: 2px dashed #ec4899; }
+        .image-box:hover { border-color: #f472b6; background: rgba(236, 72, 153, 0.05); }
+
         .btn-upload { width: 100%; padding: 15px; background: #3b82f6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: none; margin-top: 20px; font-size: 1.1rem; }
         .btn-upload:hover { background: #2563eb; }
 
         .error-container { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-size: 0.85rem; max-height: 250px; overflow-y: auto; border-left: 5px solid #ef4444; }
         .success-msg { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-weight: bold; text-align: center; border-left: 5px solid #10b981; font-size: 1rem;}
+        
+        .status-box { background: #e0f2fe; color: #0369a1; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-weight: bold; text-align: center; border-left: 5px solid #0ea5e9; font-size: 0.95rem; }
         
         .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #3b82f6; font-weight: bold; }
         .back-btn:hover { text-decoration: underline; }
@@ -32,7 +37,7 @@
 
     <div class="upload-card">
         <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
-        <h2 style="text-align: center; margin-bottom: 30px; color: #3b82f6;"><i class="fa-solid fa-cloud-arrow-up"></i> Verified Bulk Upload</h2>
+        <h2 style="text-align: center; margin-bottom: 30px; color: #3b82f6;"><i class="fa-solid fa-bolt"></i> Smart Bulk Upload (with Images)</h2>
 
         <div class="form-group">
             <label>1. Existing Test ID (e.g., ossc_cgl_test_1)</label>
@@ -79,7 +84,7 @@
         </div>
 
         <div class="form-group">
-            <label>5. Select Excel File</label>
+            <label>5. Select Excel File (.xlsx)</label>
             <label class="file-box">
                 <i class="fa-regular fa-file-excel" style="font-size: 2.5rem; margin-bottom: 15px; color:#10b981;"></i>
                 <br><span id="fileName">Click to browse .xlsx file</span>
@@ -87,17 +92,30 @@
             </label>
         </div>
 
+        <div class="form-group">
+            <label>6. Select Master Image Folder (Optional)</label>
+            <label class="file-box image-box">
+                <i class="fa-regular fa-folder-open" style="font-size: 2.5rem; margin-bottom: 15px; color:#ec4899;"></i>
+                <br><span id="imageFileName">Click to select your Image Folder</span>
+                <input type="file" id="imageInput" webkitdirectory directory multiple style="display:none;">
+            </label>
+            <p id="imageCountText" style="color: #ec4899; font-size: 0.85rem; margin-top: 5px; font-weight: 600; text-align: center; display: none;">0 files loaded into memory.</p>
+        </div>
+
         <div id="errorBox" class="error-container"></div>
         <div id="successBox" class="success-msg"></div>
+        <div id="statusBox" class="status-box"></div> 
 
-        <button id="uploadBtn" class="btn-upload">🚀 Inject Questions into Existing Test</button>
+        <button id="uploadBtn" class="btn-upload">🚀 Inject Questions & Upload Images</button>
     </div>
 
     <script type="module">
-        import { db } from './firebase.js'; 
+        import { db, storage } from './firebase.js'; 
         import { collection, getDocs, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         let finalQuestions = [];
+        let imageMap = {}; 
 
         const categoryType = document.getElementById('categoryType');
         const mainCategoryGroup = document.getElementById('mainCategoryGroup');
@@ -109,14 +127,12 @@
 
         let allFetchedSubcategories = []; 
 
-        // --- 🎯 REAL DYNAMIC FETCH LOGIC FOR SUBCATEGORIES ---
         async function fetchRealCategoriesAndExams() {
             mainCategorySelect.innerHTML = '<option value="">-- Loading Categories... --</option>';
             targetDropdown.innerHTML = '<option value="">-- Please Select Main Category First --</option>';
             allFetchedSubcategories = [];
 
             try {
-                // ୧. ସିଧା 'categories' କଲେକ୍ସନ୍ ରୁ Main Category (OSSC, OPSC) ଟାଣିବା 
                 const catSnapshot = await getDocs(collection(db, "categories"));
                 mainCategorySelect.innerHTML = '<option value="">-- Select Main Category --</option>';
                 
@@ -128,7 +144,6 @@
                     mainCategorySelect.appendChild(opt);
                 });
 
-                // ୨. 🎯 'subcategories' କଲେକ୍ସନ୍ ରୁ ସବୁ Subcategory ଟାଣିବା
                 const subcatSnapshot = await getDocs(collection(db, "subcategories"));
                 subcatSnapshot.forEach(doc => {
                     allFetchedSubcategories.push({ id: doc.id, data: doc.data() });
@@ -140,10 +155,8 @@
             }
         }
 
-        // --- ଯେତେବେଳେ Root Collection ବଦଳିବ ---
         categoryType.addEventListener('change', async () => {
             const type = categoryType.value;
-            
             if (type === 'exams') {
                 mainCategoryGroup.style.display = 'block';
                 fetchRealCategoriesAndExams();
@@ -169,38 +182,29 @@
             }
         });
 
-        // --- 🎯 ଯେତେବେଳେ Main Category ବଦଳିବ, ସେବେ SUBCATEGORY ଲୋଡ୍ ହେବ ---
         mainCategorySelect.addEventListener('change', () => {
             const selectedMain = mainCategorySelect.value;
             targetDropdown.innerHTML = '<option value="">-- Select Target Folder --</option>';
             
             if (selectedMain) {
                 const filteredSubcategories = allFetchedSubcategories.filter(sub => {
-                    // ଯଦି ଡାଟାବେସ୍ ରେ 'categoryId' ଦିଆଯାଇଛି ତାହା ମ୍ୟାଚ୍ କରିବା
-                    if (sub.data.categoryId && sub.data.categoryId.toUpperCase() === selectedMain.toUpperCase()) {
-                        return true;
-                    }
-                    // ବ୍ୟାକ୍-ଅପ୍: ନହେଲେ ID ରୁ ମ୍ୟାଚ୍ କରିବା (ossc_cgl ରେ ossc ଅଛି)
+                    if (sub.data.categoryId && sub.data.categoryId.toUpperCase() === selectedMain.toUpperCase()) return true;
                     return sub.id.toUpperCase().startsWith(selectedMain.toUpperCase());
                 });
                 
                 filteredSubcategories.forEach(sub => {
                     const opt = document.createElement('option');
-                    // ଯଦି examId ଫିଲ୍ଡ ଅଛି ନହେଲେ doc.id ନେବା
                     opt.value = sub.data.examId || sub.id; 
                     const folderName = sub.data.name || sub.data.title || sub.id;
                     opt.innerText = `${folderName} [ID: ${opt.value}]`; 
                     targetDropdown.appendChild(opt);
                 });
 
-                if(filteredSubcategories.length === 0) {
-                    targetDropdown.innerHTML = '<option value="">-- No Subcategories Found for this Category --</option>';
-                }
+                if(filteredSubcategories.length === 0) targetDropdown.innerHTML = '<option value="">-- No Subcategories Found for this Category --</option>';
                 triggerUploadSubjectLoad();
             }
         });
 
-        // --- Test Type Change ---
         testTypeSelect.addEventListener('change', () => {
             if (testTypeSelect.value === 'Topic Wise') {
                 subjectGroup.style.display = 'block';
@@ -228,32 +232,23 @@
             }
 
             subjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
-            
             try {
                 const subWiseCol = collection(db, "exams", examId, "subject_wise");
                 const snapshot = await getDocs(subWiseCol);
                 
                 subjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
-                
-                if(snapshot.empty) {
-                    subjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
-                    return;
-                }
+                if(snapshot.empty) { subjectSelect.innerHTML = '<option value="All">No Subjects Found</option>'; return; }
 
                 snapshot.forEach(doc => {
                     const subData = doc.data();
-                    const sName = subData.name || doc.id;
-                    subjectSelect.add(new Option(sName, doc.id)); 
+                    subjectSelect.add(new Option(subData.name || doc.id, doc.id)); 
                 });
             } catch (err) {
-                console.error("Error:", err);
                 subjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>';
             }
         }
-
         targetDropdown.addEventListener('change', triggerUploadSubjectLoad);
 
-        // --- EXCEL CELL VALUE EXTRACTOR ---
         function getVal(row, possibleNames) {
             for (let key in row) {
                 let cleanKey = key.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -264,6 +259,22 @@
             }
             return "";
         }
+
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            imageMap = {};
+            for(let i = 0; i < files.length; i++){
+                // ଛୋଟ ଅକ୍ଷର କରି ସେଭ୍ କରୁଛୁ 
+                imageMap[files[i].name.toLowerCase().trim()] = files[i];
+            }
+            let folderNameStr = "Folder selected";
+            if(files.length > 0 && files[0].webkitRelativePath) {
+                folderNameStr = files[0].webkitRelativePath.split('/')[0] + " Folder";
+            }
+            document.getElementById('imageFileName').innerText = folderNameStr;
+            document.getElementById('imageCountText').style.display = 'block';
+            document.getElementById('imageCountText').innerText = `✅ ${files.length} files loaded from folder.`;
+        });
 
         document.getElementById('excelInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -279,7 +290,6 @@
             reader.readAsArrayBuffer(file);
         });
 
-        // --- EXCEL VALIDATOR ---
         function validateAndPrepare(workbook) {
             const errorBox = document.getElementById('errorBox');
             const successBox = document.getElementById('successBox');
@@ -291,16 +301,12 @@
 
             workbook.SheetNames.forEach(sheetName => {
                 const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw: false, defval: ""});
-                
-                if (sheetData.length > 0) {
-                    totalRows += sheetData.length;
-                }
+                if (sheetData.length > 0) totalRows += sheetData.length;
 
                 sheetData.forEach((row, index) => {
                     const rowNum = index + 2; 
-                    
                     const passageText = getVal(row, ['passage', 'paragraph', 'direction', 'comprehension']);
-                    const img = getVal(row, ['imageurl', 'image', 'questionimage', 'img', 'photo', 'url', 'link', 'picture']);
+                    const imgName = getVal(row, ['imagename', 'image', 'questionimage', 'photo', 'picture']);
                     
                     const q = getVal(row, ['question', 'questions', 'q', 'prashna']);
                     const a = getVal(row, ['optiona', 'a', 'option1', '1']);
@@ -310,7 +316,7 @@
                     const rawAns = getVal(row, ['correctanswer', 'answer', 'ans', 'correct']);
                     const exp = getVal(row, ['explanation', 'desc', 'solution']);
 
-                    if (!q && !a && !b && !c && !d && !rawAns && !exp && !passageText && !img) return; 
+                    if (!q && !a && !b && !c && !d && !rawAns && !exp && !passageText && !imgName) return; 
 
                     let rowErrors = [];
                     if(!q) rowErrors.push("Question missing");
@@ -321,14 +327,10 @@
                     if(rawAns && a && b && c && d) {
                         let cleanAns = rawAns.trim().toUpperCase();
                         if (["A", "B", "C", "D"].includes(cleanAns)) { finalFormattedAns = cleanAns; } 
-                        else if (cleanAns === "1") { finalFormattedAns = "A"; }
-                        else if (cleanAns === "2") { finalFormattedAns = "B"; }
-                        else if (cleanAns === "3") { finalFormattedAns = "C"; }
-                        else if (cleanAns === "4") { finalFormattedAns = "D"; }
-                        else if (rawAns === a) { finalFormattedAns = "A"; }
-                        else if (rawAns === b) { finalFormattedAns = "B"; }
-                        else if (rawAns === c) { finalFormattedAns = "C"; }
-                        else if (rawAns === d) { finalFormattedAns = "D"; }
+                        else if (cleanAns === "1" || rawAns === a) { finalFormattedAns = "A"; }
+                        else if (cleanAns === "2" || rawAns === b) { finalFormattedAns = "B"; }
+                        else if (cleanAns === "3" || rawAns === c) { finalFormattedAns = "C"; }
+                        else if (cleanAns === "4" || rawAns === d) { finalFormattedAns = "D"; }
                         else { rowErrors.push(`Answer doesn't match A/B/C/D`); }
                     }
 
@@ -340,20 +342,17 @@
                             subjectName: sheetName.trim(), 
                             passage: passageText ? passageText : "", 
                             question: q ? q : "", 
-                            optionA: a ? a : "", 
-                            optionB: b ? b : "", 
-                            optionC: c ? c : "", 
-                            optionD: d ? d : "",
+                            optionA: a ? a : "", optionB: b ? b : "", optionC: c ? c : "", optionD: d ? d : "",
                             correctAnswer: finalFormattedAns, 
                             explanation: exp ? exp : "", 
-                            questionImage: img ? img : "" 
+                            questionImage: imgName ? imgName : "" 
                         });
                     }
                 });
             });
 
             if (totalRows === 0) {
-                errorBox.innerHTML = "<h4>❌ Excel file is empty! (No data found in any sheet)</h4>";
+                errorBox.innerHTML = "<h4>❌ Excel file is empty!</h4>";
                 errorBox.style.display = "block"; return;
             }
 
@@ -367,7 +366,41 @@
             }
         }
 
-        // --- UPLOAD LOGIC ---
+        async function compressImageForCostSaving(file) {
+            const MAX_KB = 40;
+            if (file.size / 1024 <= MAX_KB) return file; 
+
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        const MAX_DIM = 600;
+                        
+                        if(w > h && w > MAX_DIM) { h *= MAX_DIM / w; w = MAX_DIM; }
+                        else if(h > MAX_DIM) { w *= MAX_DIM / h; h = MAX_DIM; }
+                        
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        let quality = 0.8;
+                        const attemptCompress = () => {
+                            canvas.toBlob((blob) => {
+                                if (blob.size / 1024 <= MAX_KB || quality <= 0.1) resolve(blob);
+                                else { quality -= 0.1; attemptCompress(); }
+                            }, 'image/webp', quality);
+                        };
+                        attemptCompress();
+                    };
+                };
+            });
+        }
+
         document.getElementById('uploadBtn').addEventListener('click', async () => {
             const testId = document.getElementById('testId').value.trim();
             const targetId = document.getElementById('targetDropdown').value;
@@ -378,51 +411,99 @@
             if(!testId || !targetId || !rootCollection) return alert("Please fill Test ID, Category Type, and Target Folder!");
 
             const btn = document.getElementById('uploadBtn');
+            const statusBox = document.getElementById('statusBox');
+            
             btn.disabled = true;
-            btn.innerText = "VERIFYING TEST HEADER & BOUNDARY... ⏳";
+            statusBox.style.display = "block";
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFYING TEST HEADER & BOUNDARY...';
 
             let testRef;
             if (rootCollection === 'subjects') {
                 testRef = doc(db, "subjects", targetId, "tests", testId);
             } else {
-                if (testTypeVal === "Mock Test") {
-                    testRef = doc(db, "exams", targetId, "mock_tests", testId);
-                } else if (testTypeVal === "Previous Year") {
-                    testRef = doc(db, "exams", targetId, "previous_years", testId);
-                } else if (testTypeVal === "Topic Wise") {
-                    
-                    if (subjectVal === "All" || subjectVal.includes("Loading") || subjectVal.includes("No Subjects")) {
+                if (testTypeVal === "Mock Test") testRef = doc(db, "exams", targetId, "mock_tests", testId);
+                else if (testTypeVal === "Previous Year") testRef = doc(db, "exams", targetId, "previous_years", testId);
+                else if (testTypeVal === "Topic Wise") {
+                    if (subjectVal === "All" || subjectVal.includes("Loading") || subjectVal.includes("No")) {
                         alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଅନିର୍ବାଜ୍ୟ!");
-                        btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
-                        return;
+                        btn.disabled = false; statusBox.style.display = "none"; return;
                     }
-                    
                     testRef = doc(db, "exams", targetId, "subject_wise", subjectVal, "tests", testId);
-                } else {
-                    testRef = doc(db, "exams", targetId, "tests", testId);
-                }
+                } else testRef = doc(db, "exams", targetId, "tests", testId);
             }
 
             try {
                 const testSnap = await getDoc(testRef);
 
                 if (!testSnap.exists()) {
-                    alert(`❌ Header Error:\nସିଲେକ୍ଟ ହୋଇଥିବା ପାଥ୍ ରେ "${testId}" ID ର କୌଣସି ହେଡର୍ ମିଳିଲା ନାହିଁ।\n\nଦୟାକରି ସଠିକ୍ Folder ଏବଂ Test Type ସିଲେକ୍ଟ କରନ୍ତୁ କିମ୍ବା Create Header ପେଜ୍‌ରେ ଏହି ଟେଷ୍ଟ୍ ଟିକୁ ପ୍ରସ୍ତୁତ କରନ୍ତୁ!`);
-                    btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
-                    return;
+                    alert(`❌ Header Error:\nସିଲେକ୍ଟ ହୋଇଥିବା ପାଥ୍ ରେ "${testId}" ID ର କୌଣସି ହେଡର୍ ମିଳିଲା ନାହିଁ।`);
+                    btn.disabled = false; statusBox.style.display = "none"; return;
                 }
 
                 const headerData = testSnap.data();
                 const allowedQuestionCount = parseInt(headerData.totalQuestions || headerData.totalQuestion);
-
                 let uploadList = [...finalQuestions];
 
                 if (allowedQuestionCount && uploadList.length > allowedQuestionCount) {
-                    alert(`⚠️ BOUNDARY NOTICE:\n\nତୁମର ଟେଷ୍ଟ୍ ହେଡର୍ ରେ କେବଳ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନର ଅନୁମତି ଅଛି। କିନ୍ତୁ Excel ରେ ${uploadList.length} ଟି ପ୍ରଶ୍ନ ଅଛି।\n\nକୋଡ୍ ଅଟୋମେଟିକ୍ ପ୍ରଥମ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନ ହିଁ ଅପଲୋଡ୍ କରିବ ଏବଂ ବାକି ଅଧିକା ପ୍ରଶ୍ନକୁ ବାଦ୍ ଦେବ।`);
+                    alert(`⚠️ BOUNDARY NOTICE: କୋଡ୍ ଅଟୋମେଟିକ୍ ପ୍ରଥମ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନ ହିଁ ଅପଲୋଡ୍ କରିବ।`);
                     uploadList = uploadList.slice(0, allowedQuestionCount);
                 }
 
-                btn.innerText = `UPLOADING ${uploadList.length} QUESTIONS... ⏳`;
+                // ====================================================
+                // 🌟 STEP 1: FIND UNIQUE IMAGES & UPLOAD ONLY ONCE 🌟
+                // ====================================================
+                statusBox.style.color = "#0369a1";
+                statusBox.style.backgroundColor = "#e0f2fe";
+                statusBox.style.borderLeftColor = "#0ea5e9";
+                statusBox.innerHTML = '<i class="fas fa-search"></i> Scanning Excel for Unique Images...';
+
+                // କେବଳ ଅଲଗା ଅଲଗା ଫଟୋ ନାମ ଗୁଡିକୁ ବାହାର କରିବା
+                let uniqueImageNames = [...new Set(uploadList.map(q => q.questionImage).filter(img => img && img.trim() !== ""))];
+                let uploadedImageUrls = {}; // ଲିଙ୍କ୍ ସେଭ୍ କରିବା ପାଇଁ
+
+                for(let i = 0; i < uniqueImageNames.length; i++) {
+                    let originalImgName = uniqueImageNames[i];
+                    let safeImgName = originalImgName.trim().toLowerCase();
+
+                    if (imageMap[safeImgName]) {
+                        statusBox.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Uploading Unique Image ${i + 1} of ${uniqueImageNames.length}: <b>${originalImgName}</b>...`;
+                        
+                        const rawFile = imageMap[safeImgName];
+                        const optimizedBlob = await compressImageForCostSaving(rawFile);
+                        
+                        const fileName = `questions/${Date.now()}_${safeImgName}.webp`;
+                        const imgRef = ref(storage, fileName);
+                        
+                        await uploadBytes(imgRef, optimizedBlob);
+                        const downloadURL = await getDownloadURL(imgRef);
+                        
+                        uploadedImageUrls[safeImgName] = downloadURL; // ସେଭ୍ କଲୁ
+                    } else {
+                        console.warn(`Warning: Image ${originalImgName} not found in folder.`);
+                    }
+                }
+
+                // ====================================================
+                // 🌟 STEP 2: ASSIGN URLS TO ALL 25 QUESTIONS 🌟
+                // ====================================================
+                statusBox.innerHTML = '<i class="fas fa-link"></i> Linking images to questions...';
+                
+                uploadList.forEach(q => {
+                    if (q.questionImage && q.questionImage.trim() !== "") {
+                        let safeImgName = q.questionImage.trim().toLowerCase();
+                        q.questionImage = uploadedImageUrls[safeImgName] || ""; 
+                    }
+                });
+
+
+                // ====================================================
+                // 🌟 STEP 3: INJECT INTO DATABASE 🌟
+                // ====================================================
+                statusBox.style.color = "#065f46";
+                statusBox.style.backgroundColor = "#d1fae5";
+                statusBox.style.borderLeftColor = "#10b981";
+                statusBox.innerHTML = `<i class="fas fa-database"></i> Saving ${uploadList.length} questions to Database...`;
+                
                 const batch = writeBatch(db);
                 
                 uploadList.forEach(q => {
@@ -431,20 +512,26 @@
                 });
 
                 await batch.commit();
-                alert(`🎉 SUCCESS! ${uploadList.length} questions successfully injected into test path!`);
                 
+                statusBox.style.display = "none";
+                alert(`🎉 SUCCESS! ${uploadList.length} questions (with images) successfully injected into test path!`);
+                
+                // ରିସେଟ୍ କରୁଛୁ 
                 document.getElementById('testId').value = "";
                 document.getElementById('excelInput').value = "";
+                document.getElementById('imageInput').value = "";
                 document.getElementById('fileName').innerText = "Click to browse .xlsx file";
+                document.getElementById('imageFileName').innerText = "Click to select your Image Folder";
+                document.getElementById('imageCountText').style.display = "none";
                 document.getElementById('successBox').style.display = "none";
                 btn.style.display = "none";
                 btn.disabled = false;
-                btn.innerText = "🚀 Inject Questions into Existing Test";
                 
             } catch (err) {
                 console.error(err);
                 alert("Upload Failed: " + err.message);
-                btn.disabled = false; btn.innerText = "🚀 Inject Questions into Existing Test";
+                btn.disabled = false; 
+                statusBox.style.display = "none";
             }
         });
     </script>

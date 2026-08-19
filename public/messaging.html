@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging - Odisha Exam Prep Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar-item:hover, .sidebar-item.active {
+            background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 100%);
+            color: white; border-radius: 0.5rem;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans m-0 p-0 flex h-screen overflow-hidden" id="mainBody" style="display: none;">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="w-64 bg-[#0F172A] text-gray-300 flex flex-col h-full shadow-2xl transition-all duration-300 z-20 shrink-0">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-700/50">
+            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white leading-tight">Odisha Exam</h2>
+                <p class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Prep Panel</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mb-6 transition-colors text-sm shadow-lg shadow-indigo-500/30">
+                ADMIN PANEL
+            </button>
+        </div>
+        <nav class="flex-1 px-4 overflow-y-auto space-y-1 custom-scrollbar">
+            <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
+                <i class="fas fa-home w-5"></i> Dashboard
+            </a>
+            <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
+                <i class="fas fa-users w-5"></i> User Management
+            </a>
+            <a href="upload.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
+                <i class="fas fa-cloud-upload-alt w-5"></i> Smart Upload
+            </a>
+            <a href="messaging.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-white transition-all">
+                <i class="fas fa-bell w-5"></i> Send Notice
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full">
+        
+        <!-- HEADER -->
+        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg text-sm"><i class="fas fa-paper-plane"></i></span>
+                    Announcements & Notice
+                </h1>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTENT -->
+        <div class="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- COMPOSE MESSAGE FORM (LEFT - 2/3 width) -->
+                <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                    <h2 class="text-2xl font-black text-gray-800 mb-6 border-b pb-4">Compose New Notice 📢</h2>
+                    
+                    <div class="space-y-5">
+                        <!-- Target Audience -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-600 mb-2">Target Audience</label>
+                            <select id="targetAudience" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50">
+                                <option value="All">All Users</option>
+                                <option value="Paid">Only Paid (Pro) Users</option>
+                                <option value="Free">Only Free Users</option>
+                            </select>
+                        </div>
+
+                        <!-- Notice Title -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-600 mb-2">Notice Title</label>
+                            <input type="text" id="noticeTitle" placeholder="e.g., New OSSC CGL Mock Test Uploaded!" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <!-- Notice Body -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-600 mb-2">Message Description</label>
+                            <textarea id="noticeMessage" rows="4" placeholder="Write your full message or announcement here..." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                        </div>
+
+                        <!-- Optional Link -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-600 mb-2">Redirect Link (Optional)</label>
+                            <input type="url" id="noticeLink" placeholder="e.g., https://odishaexamprep.com/mock-test-1" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <!-- Image Upload (Smart WebP) -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-600 mb-2">Attach Image (Optional)</label>
+                            <div class="w-full border-2 border-dashed border-pink-300 rounded-xl p-6 text-center bg-pink-50 cursor-pointer hover:bg-pink-100 transition-colors relative">
+                                <input type="file" id="noticeImage" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <i class="fas fa-image text-3xl text-pink-400 mb-2"></i>
+                                <p id="imgText" class="text-pink-800 font-bold text-sm">Click to select an image</p>
+                            </div>
+                        </div>
+
+                        <div id="statusBox" class="hidden p-4 rounded-xl font-bold text-center"></div>
+
+                        <button id="sendBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all text-lg flex items-center justify-center gap-2">
+                            <i class="fas fa-paper-plane"></i> Publish Notice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- NOTICE HISTORY (RIGHT - 1/3 width) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-full">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-3"><i class="fas fa-history text-indigo-500"></i> Recent Notices</h3>
+                    
+                    <div id="noticeHistory" class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                        <div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i><br>Loading history...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { db, storage, auth } from './firebase.js';
+        import { collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) { document.getElementById("mainBody").style.display = "flex"; loadHistory(); } 
+            else { window.location.replace("index.html"); }
+        });
+
+        // 🌟 Image Selection UI Update
+        let selectedFile = null;
+        document.getElementById('noticeImage').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                document.getElementById('imgText').innerText = `✅ Selected: ${selectedFile.name}`;
+            }
+        });
+
+        // 🌟 Smart Image Compressor
+        async function compressImageForNotice(file) {
+            const MAX_KB = 60; // ଟିକେ ବଡ କ୍ୱାଲିଟି ରଖିବା
+            if (file.size / 1024 <= MAX_KB) return file; 
+
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        const MAX_DIM = 800;
+                        
+                        if(w > h && w > MAX_DIM) { h *= MAX_DIM / w; w = MAX_DIM; }
+                        else if(h > MAX_DIM) { w *= MAX_DIM / h; h = MAX_DIM; }
+                        
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        let quality = 0.8;
+                        const attemptCompress = () => {
+                            canvas.toBlob((blob) => {
+                                if (blob.size / 1024 <= MAX_KB || quality <= 0.1) resolve(blob);
+                                else { quality -= 0.1; attemptCompress(); }
+                            }, 'image/webp', quality);
+                        };
+                        attemptCompress();
+                    };
+                };
+            });
+        }
+
+        // 🌟 Send Notice Logic
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            const title = document.getElementById('noticeTitle').value.trim();
+            const message = document.getElementById('noticeMessage').value.trim();
+            const target = document.getElementById('targetAudience').value;
+            const link = document.getElementById('noticeLink').value.trim();
+
+            if(!title || !message) {
+                alert("Please write both Title and Message!");
+                return;
+            }
+
+            const btn = document.getElementById('sendBtn');
+            const statusBox = document.getElementById('statusBox');
+            
+            btn.disabled = true;
+            statusBox.style.display = "block";
+            statusBox.className = "p-4 rounded-xl font-bold text-center bg-blue-50 text-blue-700 border border-blue-200 animate-pulse";
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Announcement...';
+
+            try {
+                let finalImageUrl = "";
+
+                // Image Upload Process
+                if (selectedFile) {
+                    statusBox.innerHTML = '<i class="fas fa-image"></i> Compressing & Uploading Image...';
+                    const optimizedBlob = await compressImageForNotice(selectedFile);
+                    
+                    const fileName = `announcements/${Date.now()}_notice.webp`;
+                    const imgRef = ref(storage, fileName);
+                    
+                    await uploadBytes(imgRef, optimizedBlob);
+                    finalImageUrl = await getDownloadURL(imgRef);
+                }
+
+                statusBox.innerHTML = '<i class="fas fa-database"></i> Saving to Database...';
+
+                // Save to 'announcements' collection
+                await addDoc(collection(db, "announcements"), {
+                    title: title,
+                    message: message,
+                    targetAudience: target,
+                    redirectLink: link,
+                    imageUrl: finalImageUrl,
+                    timestamp: new Date().toISOString()
+                });
+
+                statusBox.className = "p-4 rounded-xl font-bold text-center bg-green-50 text-green-700 border border-green-200";
+                statusBox.innerHTML = '<i class="fas fa-check-circle"></i> Notice Published Successfully!';
+                
+                // Reset Form
+                document.getElementById('noticeTitle').value = "";
+                document.getElementById('noticeMessage').value = "";
+                document.getElementById('noticeLink').value = "";
+                document.getElementById('noticeImage').value = "";
+                selectedFile = null;
+                document.getElementById('imgText').innerText = "Click to select an image";
+                
+                setTimeout(() => { statusBox.style.display = "none"; btn.disabled = false; }, 3000);
+                
+                loadHistory(); // ରିଫ୍ରେସ୍ ହିଷ୍ଟ୍ରି
+
+            } catch (err) {
+                console.error(err);
+                statusBox.className = "p-4 rounded-xl font-bold text-center bg-red-50 text-red-700 border border-red-200";
+                statusBox.innerHTML = `<i class="fas fa-times-circle"></i> Error: ${err.message}`;
+                btn.disabled = false;
+            }
+        });
+
+        // 🌟 Load Recent History
+        async function loadHistory() {
+            const historyBox = document.getElementById('noticeHistory');
+            try {
+                const q = query(collection(db, "announcements"), orderBy("timestamp", "desc"), limit(10));
+                const snapshot = await getDocs(q);
+                
+                if(snapshot.empty) {
+                    historyBox.innerHTML = '<div class="text-center text-gray-500 mt-6 font-medium">No notices published yet.</div>';
+                    return;
+                }
+
+                historyBox.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const dateObj = new Date(data.timestamp);
+                    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
+
+                    let targetBadge = "bg-indigo-100 text-indigo-700";
+                    if(data.targetAudience === 'Paid') targetBadge = "bg-amber-100 text-amber-700";
+                    if(data.targetAudience === 'Free') targetBadge = "bg-gray-100 text-gray-700";
+
+                    const item = document.createElement('div');
+                    item.className = "p-4 border border-gray-100 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all";
+                    item.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold px-2 py-1 rounded border ${targetBadge}">${data.targetAudience}</span>
+                            <span class="text-xs text-gray-400 font-medium">${formattedDate}</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-sm mb-1">${data.title}</h4>
+                        <p class="text-xs text-gray-500 line-clamp-2">${data.message}</p>
+                    `;
+                    historyBox.appendChild(item);
+                });
+            } catch (err) {
+                console.error(err);
+                historyBox.innerHTML = '<div class="text-center text-red-500 mt-6 text-sm">Failed to load history.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
