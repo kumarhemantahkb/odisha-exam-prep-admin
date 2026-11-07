@@ -3,311 +3,585 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users - Odisha Exam Prep Admin</title>
+    <title>User Management - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
     <style>
-        .sidebar-item:hover, .sidebar-item.active {
-            background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 100%);
-            color: white;
-            border-radius: 0.5rem;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .filter-btn.active { background-color: #4F46E5; color: white; border-color: #4F46E5; }
+        .filter-btn { background-color: white; color: #4B5563; border-color: #E2E8F0; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans m-0 p-0 flex h-screen overflow-hidden" id="mainBody" style="display: none;">
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
 
     <!-- LEFT SIDEBAR -->
-    <aside class="w-64 bg-[#0F172A] text-gray-300 flex flex-col h-full shadow-2xl transition-all duration-300 z-20 shrink-0">
-        <div class="p-6 flex items-center gap-3 border-b border-gray-700/50">
-            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-white leading-tight">Odisha Exam</h2>
-                <p class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Prep Panel</p>
-            </div>
-        </div>
-        <div class="p-4">
-            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mb-6 transition-colors text-sm shadow-lg shadow-indigo-500/30">
-                ADMIN PANEL
-            </button>
-        </div>
-        <nav class="flex-1 px-4 overflow-y-auto space-y-1 custom-scrollbar">
-            <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <i class="fas fa-home w-5"></i> Dashboard
-            </a>
-            <a href="users.html" class="sidebar-item active flex items-center justify-between gap-3 px-4 py-3 mb-1 text-sm font-medium text-white transition-all">
-                <div class="flex items-center gap-3"><i class="fas fa-users w-5"></i> User Management</div>
-            </a>
-        </nav>
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden w-full">
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
         <!-- TOP HEADER -->
-        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 shrink-0">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg text-sm"><i class="fas fa-users"></i></span>
-                    Users
-                </h1>
-            </div>
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3 pl-4 border-l border-gray-200 cursor-pointer">
-                    <div class="text-right hidden md:block">
-                        <p class="text-sm font-bold text-gray-800 leading-tight">Admin</p>
-                        <p class="text-xs text-gray-500 font-medium">Super Admin</p>
-                    </div>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff" alt="Admin" class="w-10 h-10 rounded-full border-2 border-indigo-100">
-                </div>
-            </div>
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
         </header>
 
-        <!-- DASHBOARD CONTENT -->
-        <div class="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
             
-            <div class="mb-8 flex justify-between items-end">
+            <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
                 <div>
-                    <h2 class="text-3xl font-black text-gray-800">User Management 👥</h2>
-                    <p class="text-gray-500 font-medium mt-1">Track registrations, subscriptions, and expiry dates.</p>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Users</span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Student Directory & Subscriptions 👥</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">Track registrations, exam targets, and pro package renewals.</p>
                 </div>
-                <button id="refreshBtn" class="bg-white border border-gray-200 text-gray-600 hover:text-indigo-600 hover:border-indigo-300 font-bold py-2 px-4 rounded-lg shadow-sm transition-all flex items-center gap-2">
-                    <i class="fas fa-sync-alt"></i> Refresh Data
-                </button>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Realtime
+                    </span>
+                    <a href="messaging.html" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-2 px-4 rounded-xl shadow-xs shadow-indigo-500/20 transition-all text-xs h-10">
+                        <i class="fas fa-bullhorn"></i> Launch Promo Campaign
+                    </a>
+                    <button id="refreshBtn" class="inline-flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 font-bold py-2 px-4 rounded-xl shadow-xs transition-all text-xs h-10">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
             </div>
 
             <!-- STATS CARDS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl"><i class="fas fa-users"></i></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                <div class="panel-card p-5">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-bold text-gray-500 mb-1">Total Users</p>
-                            <h3 id="statTotal" class="text-2xl font-black text-gray-800">0</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Users</p>
+                            <h3 id="statTotal" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-users"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl"><i class="fas fa-user-plus"></i></div>
+                <div class="panel-card p-5">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-bold text-gray-500 mb-1">New Today</p>
-                            <h3 id="statNew" class="text-2xl font-black text-gray-800">0</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">New Today</p>
+                            <h3 id="statNew" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-user-plus"></i>
                         </div>
                     </div>
                 </div>
                 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl"><i class="fas fa-crown"></i></div>
+                <div class="panel-card p-5">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-bold text-gray-500 mb-1">Paid Users</p>
-                            <h3 id="statPaid" class="text-2xl font-black text-gray-800">0</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Premium / Pro</p>
+                            <h3 id="statPaid" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-crown"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center text-xl"><i class="fas fa-clock"></i></div>
+                <div class="panel-card p-5">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-bold text-gray-500 mb-1">Expiring Soon (7 Days)</p>
-                            <h3 id="statExpiring" class="text-2xl font-black text-gray-800">0</h3>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Expiring Soon (7d)</p>
+                            <h3 id="statExpiring" class="text-2xl font-black text-slate-900 mt-1">0</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                            <i class="fas fa-clock"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- FILTERS & SEARCH -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <div class="flex items-center gap-1.5 bg-slate-200/60 p-1 rounded-xl border border-slate-200 text-xs w-full md:w-auto">
+                    <button id="btnFilterAll" class="filter-btn active px-4 py-2 rounded-lg font-bold transition-all shadow-xs">All Users</button>
+                    <button id="btnFilterPaid" class="filter-btn px-4 py-2 rounded-lg font-bold transition-all border border-transparent">👑 Premium</button>
+                    <button id="btnFilterFree" class="filter-btn px-4 py-2 rounded-lg font-bold transition-all border border-transparent">🆓 Free</button>
+                </div>
+                
+                <div class="relative w-full md:w-80">
+                    <i class="fas fa-search absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="Search name, UID, phone..." class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-xs">
                 </div>
             </div>
 
             <!-- USER TABLE -->
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 class="text-lg font-bold text-gray-800">Registered Users List</h3>
-                    <input type="text" id="searchInput" placeholder="Search by name, email or phone..." class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-64">
-                </div>
+            <div class="panel-card overflow-hidden mb-10 border border-slate-200">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">User Details</th>
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">Target Exam</th>
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">Joined Date</th>
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">Status</th>
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">Expiry Date</th>
-                                <th class="px-6 py-4 font-bold border-b border-gray-100">Action</th>
+                            <tr class="bg-slate-100 text-slate-600 uppercase tracking-wider font-bold">
+                                <th class="px-6 py-3.5 border-b border-slate-200">User Details</th>
+                                <th class="px-6 py-3.5 border-b border-slate-200">Target Exam</th>
+                                <th class="px-6 py-3.5 border-b border-slate-200">Joined Date</th>
+                                <th class="px-6 py-3.5 border-b border-slate-200">Status</th>
+                                <th class="px-6 py-3.5 border-b border-slate-200">Expiry Date</th>
+                                <th class="px-6 py-3.5 border-b border-slate-200 text-center">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody" class="divide-y divide-gray-100 text-sm">
+                        <tbody id="userTableBody" class="divide-y divide-slate-100 bg-white">
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-400 font-medium">Loading users data... ⏳</td>
+                                <td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium">Loading users data... ⏳</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
 
+                <!-- PAGINATION CONTROLS -->
+                <div id="paginationControls" class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50/50 hidden text-xs">
+                    <span id="pageInfo" class="text-slate-500">Showing 0 entries</span>
+                    <div class="flex gap-1" id="pageButtons">
+                        <!-- Buttons injected via JS -->
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- EDIT EXPIRY DATE MODAL -->
+        <div id="editModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 backdrop-blur-sm p-4">
+            <div class="bg-white p-7 rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 transform transition-all">
+                <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                    <h3 class="text-base font-bold text-slate-900">Edit Expiry Date</h3>
+                    <button onclick="window.closeModal()" class="text-slate-400 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                
+                <input type="hidden" id="editUserId">
+                
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Select New Expiry Date</label>
+                    <input type="date" id="newExpiryDate" class="w-full border border-slate-200 px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-700">
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="window.closeModal()" class="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors text-xs">Cancel</button>
+                    <button id="saveExpiryBtn" class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors shadow-sm text-xs">Save</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Firebase Logic -->
     <script type="module">
-        // ୧. କେବଳ db ଆଉ auth କୁ firebase.js ରୁ ଆଣିଲୁ
-        import { db, auth } from './firebase.js';
-        
-        // ୨. ବାକି ଫଙ୍କସନ୍ ସିଧା CDN ରୁ
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { db } from './firebase.js';
+        import { collection, getDocs, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
 
-        // Check Admin Auth
-        onAuthStateChanged(auth, (user) => {
-            if (user) { document.getElementById("mainBody").style.display = "flex"; } 
-            else { window.location.replace("index.html"); }
+        // Layout and Auth
+        renderAdminLayout({
+            pageTitle: "User Management",
+            pageSubtitle: "Inspect student profiles, subscriptions, and exam targets",
+            pageIcon: "fas fa-users-gear",
+            activeNav: "users.html"
         });
+        initAuthGuard();
 
-        let allUsers = [];
+        let allMergedUsers = [];
+        let currentFilteredUsers = [];
+        let currentFilter = 'ALL'; 
+        
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
-        // Format Timestamp to Readable Date
         const formatDate = (timestamp) => {
             if (!timestamp) return "N/A";
             let dateObj;
-            if (typeof timestamp === 'number') dateObj = new Date(timestamp);
+            if (typeof timestamp.toDate === 'function') dateObj = timestamp.toDate();
+            else if (typeof timestamp === 'number') dateObj = new Date(timestamp);
+            else if (typeof timestamp === 'string' && /^\d+$/.test(timestamp)) dateObj = new Date(parseInt(timestamp));
             else if (timestamp.seconds) dateObj = new Date(timestamp.seconds * 1000);
             else dateObj = new Date(timestamp);
             
+            if (isNaN(dateObj.getTime())) return String(timestamp).split(" at ")[0]; 
             return dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         };
 
-        // Check if date is within next 7 days
-        const isExpiringSoon = (expiryDateStr) => {
-            if (!expiryDateStr) return false;
-            const expiry = new Date(expiryDateStr);
+        const isExpiringSoon = (timestamp) => {
+            if (!timestamp) return false;
+            let expiry;
+            if (typeof timestamp.toDate === 'function') expiry = timestamp.toDate();
+            else if (typeof timestamp === 'number') expiry = new Date(timestamp);
+            else if (typeof timestamp === 'string' && /^\d+$/.test(timestamp)) expiry = new Date(parseInt(timestamp));
+            else if (timestamp.seconds) expiry = new Date(timestamp.seconds * 1000);
+            else expiry = new Date(timestamp);
+
+            if (isNaN(expiry.getTime())) return false;
+
             const today = new Date();
             const diffTime = expiry - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays > 0 && diffDays <= 7;
         };
 
-        // Check if joined today
         const isJoinedToday = (timestamp) => {
             if (!timestamp) return false;
             let dateObj;
-            if (typeof timestamp === 'number') dateObj = new Date(timestamp);
-            else if (timestamp.seconds) dateObj = new Date(timestamp.seconds * 1000);
-            else dateObj = new Date(timestamp);
-            
-            const today = new Date();
-            return dateObj.getDate() === today.getDate() && dateObj.getMonth() === today.getMonth() && dateObj.getFullYear() === today.getFullYear();
-        };
-
-        const fetchUsers = async () => {
-            document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 font-medium">Fetching data from database... ⏳</td></tr>`;
             
             try {
-                // "user" collection ରୁ ଡାଟା ଟାଣିବ
-                const usersRef = collection(db, "user"); 
-                const snapshot = await getDocs(usersRef);
-                
-                allUsers = [];
-                let total = 0, newToday = 0, paidCount = 0, expiringCount = 0;
-
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    allUsers.push({ id: doc.id, ...data });
-
-                    total++;
-                    if (isJoinedToday(data.createdAt)) newToday++;
-                    if (data.isPaid === true) {
-                        paidCount++;
-                        if (isExpiringSoon(data.expiryDate)) expiringCount++;
+                if (typeof timestamp.toDate === 'function') {
+                    dateObj = timestamp.toDate();
+                } else if (timestamp.seconds) {
+                    dateObj = new Date(timestamp.seconds * 1000);
+                } else if (typeof timestamp === 'number') {
+                    dateObj = new Date(timestamp < 20000000000 ? timestamp * 1000 : timestamp);
+                } else if (typeof timestamp === 'string') {
+                    if (/^\d+$/.test(timestamp)) {
+                        let num = parseInt(timestamp);
+                        dateObj = new Date(num < 20000000000 ? num * 1000 : num);
+                    } else {
+                        dateObj = new Date(timestamp);
                     }
+                } else {
+                    dateObj = new Date(timestamp);
+                }
+                
+                if (isNaN(dateObj.getTime())) return false;
+
+                const today = new Date();
+                return dateObj.getDate() === today.getDate() && 
+                       dateObj.getMonth() === today.getMonth() && 
+                       dateObj.getFullYear() === today.getFullYear();
+            } catch(err) {
+                return false;
+            }
+        };
+
+        window.copyToClipboard = (text) => {
+            navigator.clipboard.writeText(text).then(() => {
+                window.showToast("UID copied to clipboard!", "info");
+            });
+        };
+
+        let unsubscribeUser = null;
+        let unsubscribeUsers = null;
+        let basicDataMap = {};
+        let premiumDataMap = {};
+
+        const renderMergedData = () => {
+            const allUids = new Set([...Object.keys(basicDataMap), ...Object.keys(premiumDataMap)]);
+
+            allMergedUsers = [];
+            let total = 0, newToday = 0, paidCount = 0, expiringCount = 0;
+
+            allUids.forEach(uid => {
+                const basicData = basicDataMap[uid] || {};
+                const premiumData = premiumDataMap[uid] || {};
+
+                const isUserPremium = premiumData.isPremium === true || premiumData.isPremium === "true" || basicData.isPremium === true;
+                const expiry = premiumData.premiumExpiry || basicData.premiumExpiry || null;
+
+                const userCreated = basicData.createdAt || premiumData.createdAt || 
+                                    basicData.lastLogin || premiumData.lastLogin || 
+                                    basicData.timestamp || premiumData.timestamp || 
+                                    basicData.joinedDate || premiumData.joinedDate || null;
+
+                const mergedUser = {
+                    id: uid,
+                    fullName: basicData.fullName || premiumData.fullName || basicData.name || premiumData.name || basicData.displayName || '',
+                    email: basicData.email || premiumData.email || '',
+                    phoneNumber: basicData.phoneNumber || basicData.phone || premiumData.phoneNumber || '',
+                    createdAt: userCreated,
+                    targetExam: basicData.targetExam || premiumData.targetExam || 'Not Set',
+                    isPremium: isUserPremium,
+                    premiumExpiry: expiry
+                };
+
+                allMergedUsers.push(mergedUser);
+
+                total++;
+                if (isJoinedToday(mergedUser.createdAt)) newToday++;
+                if (isUserPremium) {
+                    paidCount++;
+                    if (isExpiringSoon(mergedUser.premiumExpiry)) expiringCount++;
+                }
+            });
+
+            allMergedUsers.sort((a, b) => {
+                const getMs = (val) => {
+                    if (!val) return 0;
+                    if (typeof val.toDate === 'function') return val.toDate().getTime();
+                    if (val.seconds) return val.seconds * 1000;
+                    if (typeof val === 'number') return val < 20000000000 ? val * 1000 : val;
+                    const parsed = new Date(val).getTime();
+                    return isNaN(parsed) ? 0 : parsed;
+                };
+                return getMs(b.createdAt) - getMs(a.createdAt);
+            });
+
+            document.getElementById('statTotal').innerText = total.toLocaleString();
+            document.getElementById('statNew').innerText = newToday.toLocaleString();
+            document.getElementById('statPaid').innerText = paidCount.toLocaleString();
+            document.getElementById('statExpiring').innerText = expiringCount.toLocaleString();
+
+            applyFiltersAndRender();
+        };
+
+        const fetchUsers = () => {
+            document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium">Connecting to live real-time database... ⏳</td></tr>`;
+            document.getElementById('paginationControls').classList.add('hidden');
+
+            try {
+                if (unsubscribeUser) unsubscribeUser();
+                if (unsubscribeUsers) unsubscribeUsers();
+
+                const basicUsersRef = collection(db, "user"); 
+                const premiumUsersRef = collection(db, "users"); 
+
+                unsubscribeUser = onSnapshot(basicUsersRef, (snapshot) => {
+                    snapshot.forEach(doc => { basicDataMap[doc.id] = doc.data(); });
+                    renderMergedData();
+                }, (error) => {
+                    console.error("Live basic user snapshot error:", error);
                 });
 
-                // Update Stats
-                document.getElementById('statTotal').innerText = total;
-                document.getElementById('statNew').innerText = newToday;
-                document.getElementById('statPaid').innerText = paidCount;
-                document.getElementById('statExpiring').innerText = expiringCount;
-
-                renderTable(allUsers);
+                unsubscribeUsers = onSnapshot(premiumUsersRef, (snapshot) => {
+                    snapshot.forEach(doc => { premiumDataMap[doc.id] = doc.data(); });
+                    renderMergedData();
+                }, (error) => {
+                    console.error("Live premium users snapshot error:", error);
+                });
 
             } catch (error) {
-                console.error("Error fetching users:", error);
+                console.error("Error connecting to live users:", error);
                 document.getElementById('userTableBody').innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500 font-bold">Error loading data: ${error.message}</td></tr>`;
             }
         };
 
-        const renderTable = (users) => {
+        const applyFiltersAndRender = () => {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filteredUsers = allMergedUsers.filter(u => {
+                if (currentFilter === 'PAID' && !u.isPremium) return false;
+                if (currentFilter === 'FREE' && u.isPremium) return false;
+                return true;
+            });
+
+            if (searchTerm) {
+                filteredUsers = filteredUsers.filter(u => 
+                    (u.fullName && u.fullName.toLowerCase().includes(searchTerm)) || 
+                    (u.email && u.email.toLowerCase().includes(searchTerm)) ||
+                    (u.phoneNumber && u.phoneNumber.includes(searchTerm)) ||
+                    (u.id && u.id.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            currentFilteredUsers = filteredUsers;
+            currentPage = 1; 
+            renderTablePage();
+        };
+
+        const renderTablePage = () => {
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = "";
 
-            if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 font-medium">No users found.</td></tr>`;
+            if (currentFilteredUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 font-medium">No users found matching your criteria.</td></tr>`;
+                document.getElementById('paginationControls').classList.add('hidden');
                 return;
             }
 
-            // Sort by newest first
-            users.sort((a, b) => {
-                let timeA = a.createdAt?.seconds || a.createdAt || 0;
-                let timeB = b.createdAt?.seconds || b.createdAt || 0;
-                return timeB - timeA;
-            });
+            document.getElementById('paginationControls').classList.remove('hidden');
 
-            users.forEach(user => {
-                const isPaid = user.isPaid === true;
-                const statusBadge = isPaid 
-                    ? `<span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full border border-amber-200"><i class="fas fa-crown mr-1"></i> PRO</span>`
-                    : `<span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full border border-gray-200">FREE</span>`;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, currentFilteredUsers.length);
+            const paginatedUsers = currentFilteredUsers.slice(startIndex, endIndex);
+
+            paginatedUsers.forEach(user => {
+                const statusBadge = user.isPremium 
+                    ? `<span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-full border border-amber-200"><i class="fas fa-crown text-[10px] mr-1"></i> PREMIUM</span>`
+                    : `<span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full border border-slate-200">FREE</span>`;
                 
-                const expiryText = isPaid && user.expiryDate ? formatDate(user.expiryDate) : '<span class="text-gray-300">-</span>';
+                const expiryText = user.isPremium && user.premiumExpiry ? formatDate(user.premiumExpiry) : '<span class="text-slate-300">-</span>';
                 
-                let expiryClass = "text-gray-800";
-                if (isPaid && isExpiringSoon(user.expiryDate)) expiryClass = "text-red-600 font-bold";
+                let expiryClass = "text-slate-800";
+                if (user.isPremium && isExpiringSoon(user.premiumExpiry)) expiryClass = "text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100";
+
+                const safeFullName = user.fullName || 'Unknown User';
+                const initial = safeFullName !== 'Unknown User' ? safeFullName.charAt(0).toUpperCase() : 'U';
+                
+                let contactInfo = "";
+                if (user.email) contactInfo = user.email;
+                else if (user.phoneNumber) contactInfo = user.phoneNumber;
+                else {
+                    contactInfo = `
+                        <span onclick="window.copyToClipboard('${user.id}')" class="text-[11px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 font-mono flex items-center gap-1 w-max cursor-pointer hover:bg-indigo-100 transition-colors" title="Click to copy UID">
+                            ${user.id.substring(0,8)}... <i class="fas fa-copy text-[10px]"></i>
+                        </span>
+                    `;
+                }
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-indigo-50/30 transition-colors";
+                tr.className = "hover:bg-slate-50/80 transition-colors";
                 tr.innerHTML = `
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-3.5">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
-                                ${user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-50 border border-indigo-200 text-indigo-700 flex items-center justify-center font-black text-xs shrink-0">
+                                ${initial}
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800">${user.fullName || 'Unknown User'}</p>
-                                <p class="text-xs text-gray-500">${user.email || user.phoneNumber || 'No Contact Info'}</p>
+                                <p class="font-bold text-slate-900">${safeFullName}</p>
+                                <div class="text-[11px] text-slate-500 mt-0.5">${contactInfo}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-gray-600 font-medium">${user.targetExam || 'Not Set'}</td>
-                    <td class="px-6 py-4 text-gray-600">${formatDate(user.createdAt)}</td>
-                    <td class="px-6 py-4">${statusBadge}</td>
-                    <td class="px-6 py-4 ${expiryClass}">${expiryText}</td>
-                    <td class="px-6 py-4">
-                        <button class="text-indigo-600 hover:text-indigo-800 font-medium text-xs bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-100">
-                            Manage Plan
-                        </button>
+                    <td class="px-6 py-3.5 text-slate-600 font-medium">${user.targetExam}</td>
+                    <td class="px-6 py-3.5 text-slate-600">${formatDate(user.createdAt)}</td>
+                    <td class="px-6 py-3.5">${statusBadge}</td>
+                    <td class="px-6 py-3.5 ${expiryClass}">${expiryText}</td>
+                    <td class="px-6 py-3.5 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="window.openEditModal('${user.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-600 font-bold text-[11px] bg-indigo-50 px-2.5 py-1.5 rounded-lg transition-all border border-indigo-200 shadow-xs" title="Edit Expiry">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            ${user.phoneNumber ? `
+                            <a href="https://wa.me/91${user.phoneNumber.replace(/[^0-9]/g, '').slice(-10)}?text=${encodeURIComponent(`ନମସ୍କାର ${safeFullName}! ଆପଣଙ୍କ ${user.targetExam || 'ପରୀକ୍ଷା'} ପାଇଁ Mock Test Series ଉପରେ ଏବେ ହିଁ ପାଆନ୍ତୁ Flat 50% ଛାଡ଼। Join here: https://odishaexamprep.com`)}" target="_blank" class="text-emerald-700 hover:text-white hover:bg-emerald-600 font-bold text-[11px] bg-emerald-50 px-2.5 py-1.5 rounded-lg transition-all border border-emerald-200 shadow-xs flex items-center gap-1" title="Send WhatsApp Promo">
+                                <i class="fab fa-whatsapp text-emerald-600"></i>
+                            </a>` : ''}
+                            ${user.email ? `
+                            <a href="mailto:${user.email}?subject=${encodeURIComponent(`Special Mock Test Offer for ${user.targetExam || 'Your Exam'} Aspirants`)}&body=${encodeURIComponent(`ନମସ୍କାର ${safeFullName},\n\nଆପଣଙ୍କ ${user.targetExam || 'ପରୀକ୍ଷା'} ଖୁବ୍ ଶୀଘ୍ର ହେବାକୁ ଯାଉଛି। ପରୀକ୍ଷାରେ ଭଲ ସ୍କୋର କରିବା ପାଇଁ ଆମର Mock Test Series ବ୍ୟବହାର କରନ୍ତୁ ଏବଂ କୁପନ୍ 'ODISHA50' ବ୍ୟବହାର କରି ପାଆନ୍ତୁ 50% ରିହାତି!\n\nJoin: https://odishaexamprep.com`)}" class="text-blue-700 hover:text-white hover:bg-blue-600 font-bold text-[11px] bg-blue-50 px-2.5 py-1.5 rounded-lg transition-all border border-blue-200 shadow-xs flex items-center gap-1" title="Send Promo Email">
+                                <i class="fas fa-envelope text-blue-600"></i>
+                            </a>` : ''}
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+
+            document.getElementById('pageInfo').innerHTML = `Showing <span class="font-bold text-slate-800">${startIndex + 1}</span> to <span class="font-bold text-slate-800">${endIndex}</span> of <span class="font-bold text-slate-800">${currentFilteredUsers.length}</span> entries`;
+            
+            renderPaginationButtons();
         };
 
-        // Search Functionality
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allUsers.filter(u => 
-                (u.fullName && u.fullName.toLowerCase().includes(term)) || 
-                (u.email && u.email.toLowerCase().includes(term)) ||
-                (u.phoneNumber && u.phoneNumber.includes(term))
-            );
-            renderTable(filtered);
+        const renderPaginationButtons = () => {
+            const totalPages = Math.ceil(currentFilteredUsers.length / itemsPerPage);
+            const pageBtnContainer = document.getElementById('pageButtons');
+            pageBtnContainer.innerHTML = "";
+
+            // Prev Button
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left text-xs"></i>';
+            prevBtn.className = `px-2.5 py-1 border rounded-lg text-xs transition-colors ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' : 'bg-white text-slate-700 hover:bg-indigo-50 border-slate-300'}`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { currentPage--; renderTablePage(); };
+            pageBtnContainer.appendChild(prevBtn);
+
+            // Numbered Buttons
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.innerText = i;
+                btn.className = `px-2.5 py-1 border rounded-lg text-xs font-semibold transition-colors ${i === currentPage ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs' : 'bg-white text-slate-700 hover:bg-indigo-50 border-slate-300'}`;
+                btn.onclick = () => { currentPage = i; renderTablePage(); };
+                pageBtnContainer.appendChild(btn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right text-xs"></i>';
+            nextBtn.className = `px-2.5 py-1 border rounded-lg text-xs transition-colors ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' : 'bg-white text-slate-700 hover:bg-indigo-50 border-slate-300'}`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { currentPage++; renderTablePage(); };
+            pageBtnContainer.appendChild(nextBtn);
+        };
+
+        // Modal Logic
+        window.openEditModal = (uid) => {
+            document.getElementById('editUserId').value = uid;
+            document.getElementById('newExpiryDate').value = ""; 
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeModal = () => {
+            const modal = document.getElementById('editModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('saveExpiryBtn').addEventListener('click', async () => {
+            const uid = document.getElementById('editUserId').value;
+            const newDateValue = document.getElementById('newExpiryDate').value;
+            
+            if (!newDateValue) return window.showAlert("Date Required", "Please select a valid date!", "warning");
+
+            const btn = document.getElementById('saveExpiryBtn');
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                const d = new Date(newDateValue);
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                const formattedExpiryString = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} at 23:59:59 UTC+5:30`;
+
+                const userRef = doc(db, "users", uid);
+                await setDoc(userRef, {
+                    isPremium: true,
+                    premiumExpiry: formattedExpiryString
+                }, { merge: true });
+
+                window.showToast("Expiry Date updated!", "success");
+                window.closeModal();
+                fetchUsers(); 
+                
+            } catch (error) {
+                console.error(error);
+                window.showAlert("Update Error", error.message, "error");
+            } finally {
+                btn.innerText = "Save";
+                btn.disabled = false;
+            }
         });
 
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', applyFiltersAndRender);
         document.getElementById('refreshBtn').addEventListener('click', fetchUsers);
 
-        // Initial Load
+        const btnAll = document.getElementById('btnFilterAll');
+        const btnPaid = document.getElementById('btnFilterPaid');
+        const btnFree = document.getElementById('btnFilterFree');
+
+        const updateFilterButtons = (activeBtn) => {
+            [btnAll, btnPaid, btnFree].forEach(btn => {
+                btn.classList.remove('active', 'shadow-xs', 'bg-indigo-600', 'text-white');
+                btn.classList.add('bg-transparent', 'text-slate-600');
+            });
+            activeBtn.classList.remove('bg-transparent', 'text-slate-600');
+            activeBtn.classList.add('active', 'shadow-xs', 'bg-indigo-600', 'text-white');
+        };
+
+        btnAll.addEventListener('click', () => { currentFilter = 'ALL'; updateFilterButtons(btnAll); applyFiltersAndRender(); });
+        btnPaid.addEventListener('click', () => { currentFilter = 'PAID'; updateFilterButtons(btnPaid); applyFiltersAndRender(); });
+        btnFree.addEventListener('click', () => { currentFilter = 'FREE'; updateFilterButtons(btnFree); applyFiltersAndRender(); });
+
         fetchUsers();
     </script>
 </body>

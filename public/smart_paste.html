@@ -3,481 +3,919 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Paste Upload - Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; color: #1e293b; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #f59e0b; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 14px; }
-        
-        .section-title { font-size: 1.1rem; color: #b45309; border-bottom: 2px solid #fde68a; padding-bottom: 8px; margin-top: 25px; font-weight: bold; background: #fffbeb; padding: 10px; border-radius: 5px; }
-        
-        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; font-size: 14px; }
-        input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        input:focus, select:focus, textarea:focus { border-color: #f59e0b; outline: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
-        
-        button { width: 100%; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-preview { background: #f59e0b; }
-        .btn-preview:hover { background: #d97706; }
-        .btn-upload { background: #10b981; }
-        .btn-upload:hover { background: #059669; }
-        
-        .hidden { display: none !important; }
-        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; color: #f59e0b; font-weight: bold; }
-        .back-btn:hover { text-decoration: underline; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
-        th { background-color: #f8fafc; color: #1e293b; position: sticky; top: 0; }
-        .status-box { text-align: center; font-weight: bold; margin-top: 15px; padding: 10px; border-radius: 8px; }
-        .status-wait { background: #fef3c7; color: #b45309; }
-        .status-success { background: #d1fae5; color: #047857; }
-        .status-error { background: #fee2e2; color: #b91c1c; }
-        
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    </style>
+    <title>Smart Table Paste - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
 </head>
-<body id="mainBody" style="display: none;">
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
 
-<div class="container">
-    <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
-    <h2>⚡ Smart Table Paste Upload</h2>
-    <div class="subtitle">Copy Table from Excel/CSV -> Paste Here -> Upload</div>
-    
-    <form id="smartUploadForm">
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
-        <!-- STEP 1: HEADER DETAILS (EXACTLY LIKE AI GENERATOR) -->
-        <div class="section-title">📝 1. Test Header Details</div>
-        
-        <div class="grid-2">
-            <div>
-                <label>Test Title:</label>
-                <input type="text" id="title" placeholder="e.g. OSSC CGL Smart Test 1" required>
-            </div>
-            <div>
-                <label>Document ID (Test ID):</label>
-                <input type="text" id="documentId" placeholder="e.g. ossc_smart_01" required>
-            </div>
-        </div>
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
+        </header>
 
-        <div class="grid-2" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div>
-                <label>Main Category:</label>
-                <select id="categoryId" onchange="window.filterExams()" required>
-                    <option value="" disabled selected>-- Select Main Category --</option>
-                </select>
-            </div>
-            <div>
-                <label>Test Type (App Tab):</label>
-                <select id="type" onchange="window.handleTestTypeChange()">
-                    <option value="Mock Test">Mock Test</option>
-                    <option value="Previous Year">Previous Year Paper</option>
-                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
-                    <option value="Free">Free (Default Mock)</option>
-                    <option value="Paid">Paid (Default Mock)</option>
-                </select>
-            </div>
-            <div>
-                <label style="color: #d97706;">Access Status:</label>
-                <select id="isPremium">
-                    <option value="false">🆓 Free Test</option>
-                    <option value="true">👑 Premium Test</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="examDiv" class="hidden">
-            <label>Select Exam (Sub-Category):</label>
-            <select id="subCategoryId"><option value="">-- Select Exam --</option></select>
-        </div>
-
-        <div id="badgeSubjectDiv" class="hidden" style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fde68a; margin-top:15px;">
-            <label style="color: #b45309; margin-top:0;">Select Subject (For App Badge / Topic Wise):</label>
-            <select id="badgeSubject"><option value="All">All / Mixed</option></select>
-        </div>
-
-        <div id="pyqFields" class="hidden" style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top:15px;">
-            <div class="grid-2">
-                <div><label style="color: #166534; margin-top:0;">Exam Date:</label><input type="date" id="examDate"></div>
-                <div><label style="color: #166534; margin-top:0;">Shift:</label><input type="text" id="shift" placeholder="e.g. Shift 1"></div>
-            </div>
-        </div>
-
-        <div id="subjectDiv" class="hidden">
-            <label>Select Root Subject:</label>
-            <select id="subjectId"><option value="">-- Loading Subjects --</option></select>
-            <label>Topic Name (Optional):</label>
-            <input type="text" id="topicName" placeholder="e.g. Time & Work">
-        </div>
-
-        <div class="grid-2">
-            <div><label>Duration (Min):</label><input type="number" id="duration" value="60"></div>
-            <div><label>Total Marks:</label><input type="number" id="marks" value="100"></div>
-            <div><label>Expected Total Questions:</label><input type="number" id="totalQuestions" value="10" required></div>
-            <div><label>Negative Marks:</label><input type="number" step="0.01" id="negativeMarks" value="0.25"></div>
-        </div>
-
-        <!-- STEP 2: PASTE TABLE -->
-        <div class="section-title">📋 2. Paste Copied Table / CSV</div>
-        <div style="margin-top: 15px;">
-            <label>Order: Q | A | B | C | D | Ans | Exp | Passage | ImageURL</label>
-            <textarea id="tableInput" rows="10" placeholder="Paste table data here..." required></textarea>
-        </div>
-
-        <button type="button" id="previewBtn" class="btn-preview">👁️ Read & Preview Questions</button>
-        <div id="statusText" class="hidden status-box"></div>
-
-        <!-- STEP 3: PREVIEW & UPLOAD -->
-        <div id="previewSection" class="hidden">
-            <div class="section-title">☁️ 3. Preview & Upload to Firebase</div>
-            <div style="overflow-x: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <table id="questionTable">
-                    <thead>
-                        <tr>
-                            <th>Q#</th>
-                            <th>Question (Eng)</th>
-                            <th>Ans</th>
-                            <th>Explanation (Odia)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
             
-            <button type="submit" id="submitBtn" class="btn-upload">🚀 Create Header & Inject Questions to DB</button>
+            <!-- Page Header -->
+            <div class="max-w-5xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Smart Paste</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Smart Spreadsheet Table Paste ⚡</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Copy cells directly from Excel or Google Sheets and paste them here without saving files.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
+                        <i class="fas fa-paste text-amber-600"></i>
+                        <span>Clipboard Ingestion</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="max-w-5xl mx-auto panel-card p-6 md:p-8 bg-white border border-slate-200">
+                <form id="smartUploadForm" class="space-y-6">
+                    
+                    <!-- STEP 1: TEST METADATA -->
+                    <div>
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Test Header Information</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="form-label mb-0">Test Title <span class="text-red-500">*</span></label>
+                                    <button type="button" id="btnSuggestTitles" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i>
+                                        <span>✨ Suggest SEO Titles</span>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <input type="text" id="title" placeholder="e.g. OSSC CGL Smart Test 1" required class="form-input pr-10">
+                                    <button type="button" id="btnQuickSparkle" title="Suggest Best SEO Title" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-indigo-500 hover:text-indigo-700 p-1">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Document ID (Unique Test ID) <span class="text-red-500">*</span></label>
+                                <input type="text" id="documentId" placeholder="e.g. ossc_smart_01" required class="form-input font-mono">
+                            </div>
+                        </div>
+
+                        <!-- AI SEO Title Suggestions Tray -->
+                        <div id="seoAssistantTray" class="hidden mt-4 p-4 md:p-5 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-purple-50/40 to-white border border-indigo-200/90 shadow-sm transition-all duration-300">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-indigo-100">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-xs shadow-md shadow-indigo-500/25">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                            <span>AI SEO Title Assistant</span>
+                                            <span id="seoEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                                                Smart Engine
+                                            </span>
+                                        </h4>
+                                        <p class="text-[11px] text-slate-500">ପରୀକ୍ଷା ଉପଯୋଗୀ Best Titles — ଯେକୌଣସି ଗୋଟିଏ ଉପରେ କ୍ଲିକ୍ କଲେ Title ଓ Document ID ଆପେ ସେଟ୍ ହୋଇଯିବ:</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 self-end sm:self-auto">
+                                    <button type="button" id="btnRefreshSeo" class="text-xs font-semibold text-indigo-700 hover:text-indigo-900 px-2.5 py-1 rounded-lg bg-indigo-100/70 hover:bg-indigo-100 transition-colors flex items-center gap-1.5 border border-indigo-200/60">
+                                        <i class="fa-solid fa-rotate"></i>
+                                        <span>Refresh</span>
+                                    </button>
+                                    <button type="button" id="btnCloseSeoTray" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors">
+                                        <i class="fa-solid fa-xmark text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="seoLoading" class="hidden py-6 text-center text-indigo-600">
+                                <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+                                <p class="text-xs font-semibold">Gemini AI ଆପଣଙ୍କ ପରୀକ୍ଷା ଅନୁସାରେ Best SEO Titles ପ୍ରସ୍ତୁତ କରୁଛି...</p>
+                            </div>
+
+                            <div id="seoSuggestionsGrid" class="grid grid-cols-1 gap-2.5"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                            <div>
+                                <label class="form-label">Main Category <span class="text-red-500">*</span></label>
+                                <select id="categoryId" onchange="window.filterExams()" required class="form-select">
+                                    <option value="" disabled selected>-- Select Main Category --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Test Type <span class="text-red-500">*</span></label>
+                                <select id="type" onchange="window.handleTestTypeChange()" class="form-select">
+                                    <option value="Mock Test">Mock Test</option>
+                                    <option value="Previous Year">Previous Year Paper</option>
+                                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                                    <option value="Free">Free (Default Mock)</option>
+                                    <option value="Paid">Paid (Default Mock)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label text-amber-700">Access Status</label>
+                                <select id="isPremium" class="form-select border-amber-300 bg-amber-50/20">
+                                    <option value="false">🆓 Free Test</option>
+                                    <option value="true">👑 Premium Test</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="examDiv" class="hidden mt-4">
+                            <label class="form-label">Select Exam (Sub-Category)</label>
+                            <select id="subCategoryId" class="form-select"><option value="">-- Select Exam --</option></select>
+                        </div>
+
+                        <div id="badgeSubjectDiv" class="hidden mt-4 p-4 rounded-xl bg-amber-50/60 border border-amber-200">
+                            <label class="form-label text-amber-900 mb-1">Select Subject (For App Badge):</label>
+                            <select id="badgeSubject" class="form-select bg-white"><option value="All">All / Mixed</option></select>
+                        </div>
+
+                        <div id="pyqFields" class="hidden mt-4 p-4 rounded-xl bg-emerald-50/60 border border-emerald-200">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div><label class="form-label text-emerald-800">Exam Date:</label><input type="date" id="examDate" class="form-input bg-white"></div>
+                                <div><label class="form-label text-emerald-800">Shift:</label><input type="text" id="shift" placeholder="e.g. Shift 1" class="form-input bg-white"></div>
+                            </div>
+                        </div>
+
+                        <div id="subjectDiv" class="hidden mt-4 p-4 rounded-xl bg-purple-50/60 border border-purple-200">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label text-purple-900">Select Root Subject:</label>
+                                    <select id="subjectId" class="form-select bg-white"><option value="">-- Loading Subjects --</option></select>
+                                </div>
+                                <div>
+                                    <label class="form-label text-purple-900">Topic Name (Optional):</label>
+                                    <input type="text" id="topicName" placeholder="e.g. Time & Work" class="form-input bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                            <div><label class="form-label">Duration (Min)</label><input type="number" id="duration" value="60" class="form-input"></div>
+                            <div><label class="form-label">Total Marks</label><input type="number" id="marks" value="100" class="form-input"></div>
+                            <div><label class="form-label">Questions Count</label><input type="number" id="totalQuestions" value="10" required class="form-input"></div>
+                            <div><label class="form-label">Negative Marks</label><input type="number" step="0.01" id="negativeMarks" value="0.25" class="form-input"></div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: PASTE TABLE -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-600 font-bold text-xs flex items-center justify-center">2</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Paste Copied Cells</h3>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs mb-3 font-semibold">
+                            💡 Standard Column Sequence: <span class="font-bold">Question | Opt A | Opt B | Opt C | Opt D | Correct Answer | Explanation | Passage | ImageURL</span>
+                        </div>
+
+                        <div>
+                            <textarea id="tableInput" rows="9" placeholder="Copy rows directly from Excel/Google Sheets and paste here..." required class="form-textarea font-mono text-xs"></textarea>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" id="previewBtn" class="btn-primary w-full py-3.5 text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25">
+                                <i class="fas fa-eye"></i>
+                                <span>Parse & Preview Questions</span>
+                            </button>
+                        </div>
+
+                        <div id="statusText" class="hidden mt-4 p-4 rounded-xl text-xs font-semibold text-center border"></div>
+                    </div>
+
+                    <!-- STEP 3: PREVIEW & UPLOAD -->
+                    <div id="previewSection" class="hidden pt-4 border-t border-slate-100">
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center">3</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Parsed Table Preview & Upload</h3>
+                        </div>
+
+                        <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl mb-5">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead class="bg-slate-100 text-slate-700 uppercase tracking-wider sticky top-0 font-bold">
+                                    <tr>
+                                        <th class="p-3 w-12 text-center border-b border-slate-200">#</th>
+                                        <th class="p-3 border-b border-slate-200 min-w-[340px]">Question &amp; Options Preview</th>
+                                        <th class="p-3 w-28 text-center border-b border-slate-200">Correct Ans</th>
+                                        <th class="p-3 border-b border-slate-200 min-w-[200px]">Explanation &amp; Info</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" class="btn-primary w-full py-4 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <span>Create Header & Inject Questions to DB</span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
         </div>
-    </form>
-</div>
+    </main>
 
-<!-- Scripts -->
-<script type="module">
-    import { db, auth } from './firebase.js'; 
-    import { doc, setDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
+    <!-- Logic Script -->
+    <script type="module">
+        import { db } from './firebase.js'; 
+        import { doc, setDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
+        import { attachTitleAssistant } from './gemini-helper.js';
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) { document.getElementById("mainBody").style.display = "block"; } 
-        else { window.location.replace("index.html"); }
-    });
+        // Layout and Auth
+        renderAdminLayout({
+            pageTitle: "Smart Table Paste",
+            pageSubtitle: "Copy directly from spreadsheets and inject questions seamlessly",
+            pageIcon: "fas fa-paste",
+            activeNav: "smart_paste.html"
+        });
+        initAuthGuard();
 
-    let parsedQuestionsData = [];
-    let allExams = [];
+        let parsedQuestionsData = [];
+        let allExams = [];
 
-    // ==========================================
-    // 1. DROPDOWN LOGIC (EXACTLY LIKE AI GENERATOR)
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const catSelect = document.getElementById("categoryId");
-            const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
-            const catSnap = await getDocs(qCat);
+        // Attach Title & SEO Assistant (Backend Powered)
+        attachTitleAssistant({
+            titleInputId: "title",
+            docIdInputId: "documentId",
+            btnSuggestId: "btnSuggestTitles",
+            trayId: "seoAssistantTray",
+            gridId: "seoSuggestionsGrid",
+            loadingId: "seoLoading",
+            badgeId: "seoEngineBadge",
+            refreshBtnId: "btnRefreshSeo",
+            closeBtnId: "btnCloseSeoTray",
+            getContext: () => {
+                const catSelect = document.getElementById("categoryId");
+                const examSelect = document.getElementById("subCategoryId");
+                const typeSelect = document.getElementById("type");
+                const subjectSelect = document.getElementById("subjectId");
+                const badgeSubjectSelect = document.getElementById("badgeSubject");
 
-            let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
-            catSnap.forEach(doc => { catOptions += `<option value="${doc.id}">${doc.data().name}</option>`; });
-            catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
-            catSelect.innerHTML = catOptions;
-
-            const examSnap = await getDocs(collection(db, "subcategories"));
-            allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            const subSnap = await getDocs(collection(db, "subjects"));
-            const rootSubjectSelect = document.getElementById("subjectId");
-            subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
-        } catch(error) { console.error("Error loading initial data:", error); }
-    });
-
-    window.handleTestTypeChange = function() {
-        const typeVal = document.getElementById("type").value;
-        const pyqDiv = document.getElementById("pyqFields");
-        const badgeDiv = document.getElementById("badgeSubjectDiv");
-        
-        if (typeVal === "Previous Year" || typeVal === "previous") { pyqDiv.classList.remove("hidden"); } 
-        else {
-            pyqDiv.classList.add("hidden");
-            document.getElementById("examDate").value = "";
-            document.getElementById("shift").value = "";
-        }
-
-        if (typeVal === "Topic Wise") {
-            badgeDiv.classList.remove("hidden");
-            triggerSubjectLoad();
-        } else {
-            badgeDiv.classList.add("hidden");
-            document.getElementById("badgeSubject").value = "All"; 
-        }
-    };
-
-    window.filterExams = function() {
-        const cat = document.getElementById("categoryId").value;
-        const examSelect = document.getElementById("subCategoryId");
-        const examDiv = document.getElementById("examDiv");
-        const subjectDiv = document.getElementById("subjectDiv");
-
-        if (!cat) return; 
-
-        if(cat === "SUBJECT") {
-            examDiv.classList.add("hidden");
-            subjectDiv.classList.remove("hidden");
-            document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
-        } else {
-            examDiv.classList.remove("hidden");
-            subjectDiv.classList.add("hidden");
-            examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
-            
-            allExams.filter(e => e.categoryId === cat).forEach(e => {
-                examSelect.add(new Option(e.name || e.title || e.id, e.id));
-            });
-            
-            if (document.getElementById("type").value === "Topic Wise") {
-                document.getElementById("badgeSubjectDiv").classList.remove("hidden");
-                triggerSubjectLoad();
-            }
-        }
-    }
-
-    async function triggerSubjectLoad() {
-        const examId = document.getElementById("subCategoryId").value;
-        const badgeSubjectSelect = document.getElementById("badgeSubject");
-        const typeVal = document.getElementById("type").value;
-
-        if (!examId || typeVal !== "Topic Wise") return;
-
-        badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
-        try {
-            const subWiseCol = collection(db, "exams", examId, "subject_wise");
-            const snapshot = await getDocs(subWiseCol);
-            badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
-            
-            if(snapshot.empty) {
-                badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
-                return;
-            }
-            snapshot.forEach(doc => {
-                const subData = doc.data();
-                let sName = subData.name || subData.title;
-                if (!sName) { sName = doc.id.replace(/_/g, ' ').toUpperCase(); }
-                badgeSubjectSelect.add(new Option(sName, doc.id)); 
-            });
-        } catch (err) { badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>'; }
-    }
-
-    document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
-
-    function showStatus(msg, type) {
-        const statusText = document.getElementById("statusText");
-        statusText.innerHTML = msg;
-        statusText.className = `status-box status-${type}`;
-        statusText.classList.remove("hidden");
-    }
-
-    // ==========================================
-    // 2. PARSE TSV/CSV DATA
-    // ==========================================
-    document.getElementById("previewBtn").addEventListener("click", () => {
-        const rawData = document.getElementById('tableInput').value.trim();
-        const expectedCount = parseInt(document.getElementById('totalQuestions').value) || 0;
-        
-        if (!rawData) { alert("ଦୟାକରି ଟେବୁଲ୍ ବା ଡାଟା କପି କରି ପେଷ୍ଟ କରନ୍ତୁ!"); return; }
-
-        try {
-            parsedQuestionsData = [];
-            let rows = [];
-            let currentCell = '';
-            let currentRow = [];
-            let inQuotes = false;
-            
-            for (let i = 0; i < rawData.length; i++) {
-                let char = rawData[i];
-                let nextChar = rawData[i+1];
+                const categoryName = (catSelect && catSelect.selectedIndex > 0) ? catSelect.options[catSelect.selectedIndex].text : "";
+                const examName = (examSelect && examSelect.selectedIndex > 0) ? examSelect.options[examSelect.selectedIndex].text : "";
+                const testType = (typeSelect && typeSelect.value) ? typeSelect.value : "Mock Test";
                 
-                if (char === '"') {
-                    if (inQuotes && nextChar === '"') {
-                        currentCell += '"'; 
-                        i++; 
+                let subjectName = "";
+                if (catSelect && catSelect.value === "SUBJECT" && subjectSelect && subjectSelect.selectedIndex > 0) {
+                    subjectName = subjectSelect.options[subjectSelect.selectedIndex].text;
+                } else if (badgeSubjectSelect && badgeSubjectSelect.selectedIndex > 0) {
+                    subjectName = badgeSubjectSelect.options[badgeSubjectSelect.selectedIndex].text;
+                }
+
+                return { categoryName, examName, testType, subjectName };
+            }
+        });
+
+        document.getElementById("btnQuickSparkle")?.addEventListener("click", () => {
+            document.getElementById("btnSuggestTitles")?.click();
+        });
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const catSelect = document.getElementById("categoryId");
+                const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
+                const catSnap = await getDocs(qCat);
+
+                let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
+                catSnap.forEach(doc => { catOptions += `<option value="${doc.id}">${doc.data().name}</option>`; });
+                catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
+                catSelect.innerHTML = catOptions;
+
+                const examSnap = await getDocs(collection(db, "subcategories"));
+                allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                const subSnap = await getDocs(collection(db, "subjects"));
+                const rootSubjectSelect = document.getElementById("subjectId");
+                subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
+            } catch(error) { console.error("Init error:", error); }
+        });
+
+        window.handleTestTypeChange = function() {
+            const typeVal = document.getElementById("type").value;
+            const pyqDiv = document.getElementById("pyqFields");
+            const badgeDiv = document.getElementById("badgeSubjectDiv");
+            
+            if (typeVal === "Previous Year" || typeVal === "previous") { pyqDiv.classList.remove("hidden"); } 
+            else {
+                pyqDiv.classList.add("hidden");
+                document.getElementById("examDate").value = "";
+                document.getElementById("shift").value = "";
+            }
+
+            if (typeVal === "Topic Wise") {
+                badgeDiv.classList.remove("hidden");
+                triggerSubjectLoad();
+            } else {
+                badgeDiv.classList.add("hidden");
+                document.getElementById("badgeSubject").value = "All"; 
+            }
+        };
+
+        window.filterExams = function() {
+            const cat = document.getElementById("categoryId").value;
+            const examSelect = document.getElementById("subCategoryId");
+            const examDiv = document.getElementById("examDiv");
+            const subjectDiv = document.getElementById("subjectDiv");
+
+            if (!cat) return; 
+
+            if(cat === "SUBJECT") {
+                examDiv.classList.add("hidden");
+                subjectDiv.classList.remove("hidden");
+                document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
+            } else {
+                examDiv.classList.remove("hidden");
+                subjectDiv.classList.add("hidden");
+                examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+                
+                allExams.filter(e => e.categoryId === cat).forEach(e => {
+                    examSelect.add(new Option(e.name || e.title || e.id, e.id));
+                });
+                
+                if (document.getElementById("type").value === "Topic Wise") {
+                    document.getElementById("badgeSubjectDiv").classList.remove("hidden");
+                    triggerSubjectLoad();
+                }
+            }
+        };
+
+        async function triggerSubjectLoad() {
+            const examId = document.getElementById("subCategoryId").value;
+            const badgeSubjectSelect = document.getElementById("badgeSubject");
+            const typeVal = document.getElementById("type").value;
+
+            if (!examId || typeVal !== "Topic Wise") return;
+
+            badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
+            try {
+                const subWiseCol = collection(db, "exams", examId, "subject_wise");
+                const snapshot = await getDocs(subWiseCol);
+                badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+                
+                if(snapshot.empty) {
+                    badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const subData = doc.data();
+                    let sName = subData.name || subData.title;
+                    if (!sName) { sName = doc.id.replace(/_/g, ' ').toUpperCase(); }
+                    badgeSubjectSelect.add(new Option(sName, doc.id)); 
+                });
+            } catch (err) { badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>'; }
+        }
+
+        document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
+
+        function showStatus(msg, type) {
+            const statusText = document.getElementById("statusText");
+            statusText.innerHTML = msg;
+            let colorClasses = "bg-blue-50 text-blue-700 border-blue-200";
+            if (type === "wait") colorClasses = "bg-amber-50 text-amber-700 border-amber-200";
+            if (type === "success") colorClasses = "bg-emerald-50 text-emerald-700 border-emerald-200";
+            if (type === "error") colorClasses = "bg-red-50 text-red-700 border-red-200";
+
+            statusText.className = `mt-4 p-3 rounded-xl text-xs font-semibold text-center border ${colorClasses}`;
+            statusText.classList.remove("hidden");
+        }
+
+        function escapeHtml(str) {
+            if (!str && str !== 0) return "";
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Split pasted text into rows while preserving quoted multi-line cells
+        function splitPastedRows(text) {
+            const lines = [];
+            let cur = "";
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (c === '"') {
+                    inQuotes = !inQuotes;
+                    cur += c;
+                } else if ((c === '\n' || c === '\r') && !inQuotes) {
+                    if (c === '\r' && text[i + 1] === '\n') i++;
+                    if (cur.trim()) lines.push(cur);
+                    cur = "";
+                } else {
+                    cur += c;
+                }
+            }
+            if (cur.trim()) lines.push(cur);
+            return lines;
+        }
+
+        // Split a single row into column cells (handles tabs from Excel and commas with quotes)
+        function splitRowCols(rowStr) {
+            if (rowStr.includes("\t")) {
+                return rowStr.split("\t").map(c => c.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+            }
+            const cols = [];
+            let cur = "";
+            let inQuotes = false;
+            for (let i = 0; i < rowStr.length; i++) {
+                const c = rowStr[i];
+                if (c === '"') {
+                    if (inQuotes && rowStr[i + 1] === '"') {
+                        cur += '"';
+                        i++;
                     } else {
                         inQuotes = !inQuotes;
                     }
-                } else if ((char === ',' || char === '\t') && !inQuotes) {
-                    currentRow.push(currentCell.trim());
-                    currentCell = '';
-                } else if (char === '\n' && !inQuotes) {
-                    currentRow.push(currentCell.trim());
-                    if (currentRow.some(c => c !== "")) rows.push(currentRow);
-                    currentRow = [];
-                    currentCell = '';
+                } else if (c === ',' && !inQuotes) {
+                    cols.push(cur.trim().replace(/^"|"$/g, ''));
+                    cur = "";
                 } else {
-                    currentCell += char;
+                    cur += c;
                 }
             }
-            currentRow.push(currentCell.trim());
-            if (currentRow.some(c => c !== "")) rows.push(currentRow);
+            cols.push(cur.trim().replace(/^"|"$/g, ''));
+            return cols;
+        }
 
-            rows.forEach((cols) => {
-                if (cols.length >= 6) { 
-                    // HEADER FILTERING LOGIC ADDED HERE 
-                    let checkQ = cols[0] ? cols[0].trim().toLowerCase() : "";
-                    let checkAns = cols[5] ? cols[5].trim().toLowerCase() : "";
-                    
-                    if (checkQ === "questions" || checkQ === "question" || checkQ === "q" || checkAns === "correctanswer" || checkAns === "ans" || checkAns === "answer") {
-                        return; // Skip header row
+        // Normalizes raw answer input (handles option values like "T56", numbers 1-4, prefixes like "Option B", "(B)", etc.)
+        function normalizeAnswer(rawAns, optA, optB, optC, optD, fallbackCols = []) {
+            if (!rawAns && rawAns !== 0) {
+                for (let col of fallbackCols) {
+                    const trimmed = (col || "").toString().trim().toUpperCase();
+                    if (["A", "B", "C", "D"].includes(trimmed)) return trimmed;
+                }
+                return "";
+            }
+
+            let raw = rawAns.toString().trim();
+            if (!raw) return "";
+
+            let clean = raw.replace(/^["'`\s]+|["'`\s]+$/g, '');
+
+            // 1. Direct single letter A, B, C, D
+            if (/^[A-D]$/i.test(clean)) {
+                return clean.toUpperCase();
+            }
+
+            // 2. Decorated letter: (A), [A], A., A), A:, A-
+            let decMatch = clean.match(/^[\(\[\{]?([A-D])[\)\]\}\.\:\-\s]*$/i);
+            if (decMatch) {
+                return decMatch[1].toUpperCase();
+            }
+
+            // 3. Prefixes: "Option A", "Opt A", "Ans: A", "Answer: A", "Choice A"
+            let prefMatch = clean.match(/^(?:option|opt|ans|answer|choice|sahi\s*uttar)\s*[\:\-\.]?\s*[\(\[]?([A-D])[\)\]]?$/i);
+            if (prefMatch) {
+                return prefMatch[1].toUpperCase();
+            }
+
+            // 4. Letter followed by option text, e.g. "A) Delhi", "B. T56", "C - 1947"
+            let leadLetterMatch = clean.match(/^([A-D])[\)\.\:\-\]\s]+.+$/i);
+            if (leadLetterMatch) {
+                return leadLetterMatch[1].toUpperCase();
+            }
+
+            // 5. Numeric answers (1 -> A, 2 -> B, 3 -> C, 4 -> D)
+            let numMatch = clean.match(/^[\(\[]?([1-4])[\)\]\.]?$/);
+            if (numMatch) {
+                const numMap = { "1": "A", "2": "B", "3": "C", "4": "D" };
+                return numMap[numMatch[1]];
+            }
+            let numPrefMatch = clean.match(/^(?:option|opt|ans|answer|choice)\s*[\:\-\.]?\s*[\(\[]?([1-4])[\)\]]?$/i);
+            if (numPrefMatch) {
+                const numMap = { "1": "A", "2": "B", "3": "C", "4": "D" };
+                return numMap[numPrefMatch[1]];
+            }
+
+            // 6. Value matching against Option A, B, C, D texts! (e.g. answer column has "T56")
+            function cleanForCompare(txt) {
+                if (!txt && txt !== 0) return "";
+                return txt.toString()
+                    .trim()
+                    .replace(/^[\(\[]?[A-D1-4][\)\]\.\:\-]\s*/i, '') // strip leading "A) ", "(1) ", etc.
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .toLowerCase();
+            }
+
+            const targetClean = cleanForCompare(clean);
+            const targetLower = clean.toLowerCase();
+
+            const candidates = [
+                { key: "A", raw: (optA || "").toString().trim().toLowerCase(), clean: cleanForCompare(optA) },
+                { key: "B", raw: (optB || "").toString().trim().toLowerCase(), clean: cleanForCompare(optB) },
+                { key: "C", raw: (optC || "").toString().trim().toLowerCase(), clean: cleanForCompare(optC) },
+                { key: "D", raw: (optD || "").toString().trim().toLowerCase(), clean: cleanForCompare(optD) }
+            ];
+
+            // 6a. Direct exact comparison
+            for (let c of candidates) {
+                if (c.raw && (targetLower === c.raw || targetClean === c.clean || targetLower === c.clean || targetClean === c.raw)) {
+                    return c.key;
+                }
+            }
+
+            // 6b. Partial / Substring comparison for non-trivial strings (length >= 3)
+            if (targetClean.length >= 3) {
+                for (let c of candidates) {
+                    if (c.clean && (c.clean === targetClean || c.clean.startsWith(targetClean) || targetClean.startsWith(c.clean))) {
+                        return c.key;
+                    }
+                }
+            }
+
+            // 7. Check if any fallback column has A, B, C, D
+            for (let col of fallbackCols) {
+                const trimmed = (col || "").toString().trim().toUpperCase();
+                if (["A", "B", "C", "D"].includes(trimmed)) {
+                    return trimmed;
+                }
+            }
+
+            // If not auto-resolved, return the raw clean text so the admin can pick from the dropdown
+            return clean;
+        }
+
+        function updatePreviewWarningBanner() {
+            const invalidList = [];
+            parsedQuestionsData.forEach((q, i) => {
+                if (!["A", "B", "C", "D"].includes(q.correctAnswer)) {
+                    invalidList.push({ index: i + 1, raw: q.correctAnswer });
+                }
+            });
+
+            let warnBanner = document.getElementById("tableWarningBanner");
+            if (invalidList.length > 0) {
+                if (!warnBanner) {
+                    warnBanner = document.createElement("div");
+                    warnBanner.id = "tableWarningBanner";
+                    const previewSection = document.getElementById("previewSection");
+                    const tableDiv = previewSection.querySelector(".overflow-x-auto");
+                    previewSection.insertBefore(warnBanner, tableDiv);
+                }
+                warnBanner.className = "p-3.5 mb-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs";
+                warnBanner.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-triangle-exclamation text-amber-500 text-base"></i>
+                        <span><b>${invalidList.length} ଟି ପ୍ରଶ୍ନ</b> ରେ Answer Option (A, B, C, D) ଚିହ୍ନଟ ହୋଇପାରିଲା ନାହିଁ (ଯେପରି Row ${invalidList.slice(0, 3).map(x => `#${x.index}`).join(", ")} ${invalidList.length > 3 ? '...' : ''})। ଦୟାକରି ତଳ ଟେବୁଲରେ <b>A, B, C, କିମ୍ବା D</b> ବାଛି ନିଅନ୍ତୁ।</span>
+                    </div>
+                    <button type="button" id="btnScrollFirstInvalid" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs whitespace-nowrap transition-colors self-start sm:self-auto cursor-pointer">
+                        <i class="fas fa-arrow-down mr-1"></i>Fix Row #${invalidList[0].index}
+                    </button>
+                `;
+                document.getElementById("btnScrollFirstInvalid")?.addEventListener("click", () => {
+                    const el = document.getElementById(`ans-select-${invalidList[0].index - 1}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: "smooth", block: "center" });
+                        el.focus();
+                    }
+                });
+            } else if (warnBanner) {
+                warnBanner.remove();
+            }
+        }
+
+        function renderPreviewTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ""; 
+
+            parsedQuestionsData.forEach((row, index) => {
+                const isValid = ["A", "B", "C", "D"].includes(row.correctAnswer);
+                const tr = document.createElement('tr');
+                tr.id = `row-tr-${index}`;
+                tr.className = `hover:bg-slate-50/80 transition-colors ${!isValid ? 'bg-red-50/40' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-3 text-center font-bold text-slate-500 align-top">${index + 1}</td>
+                    <td class="p-3 align-top">
+                        <div class="font-semibold text-slate-900 leading-snug mb-2.5">${escapeHtml(row.questions)}</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
+                            <div id="opt-box-${index}-A" class="p-2 rounded-lg border transition-all ${row.correctAnswer === 'A' ? 'border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold shadow-xs' : 'border-slate-200 bg-slate-50/60 text-slate-700'}">
+                                <span class="font-bold mr-1.5 ${row.correctAnswer === 'A' ? 'text-emerald-700' : 'text-slate-400'}">A.</span> ${escapeHtml(row.optionA) || '<em class="text-slate-400">[Empty]</em>'}
+                            </div>
+                            <div id="opt-box-${index}-B" class="p-2 rounded-lg border transition-all ${row.correctAnswer === 'B' ? 'border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold shadow-xs' : 'border-slate-200 bg-slate-50/60 text-slate-700'}">
+                                <span class="font-bold mr-1.5 ${row.correctAnswer === 'B' ? 'text-emerald-700' : 'text-slate-400'}">B.</span> ${escapeHtml(row.optionB) || '<em class="text-slate-400">[Empty]</em>'}
+                            </div>
+                            <div id="opt-box-${index}-C" class="p-2 rounded-lg border transition-all ${row.correctAnswer === 'C' ? 'border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold shadow-xs' : 'border-slate-200 bg-slate-50/60 text-slate-700'}">
+                                <span class="font-bold mr-1.5 ${row.correctAnswer === 'C' ? 'text-emerald-700' : 'text-slate-400'}">C.</span> ${escapeHtml(row.optionC) || '<em class="text-slate-400">[Empty]</em>'}
+                            </div>
+                            <div id="opt-box-${index}-D" class="p-2 rounded-lg border transition-all ${row.correctAnswer === 'D' ? 'border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold shadow-xs' : 'border-slate-200 bg-slate-50/60 text-slate-700'}">
+                                <span class="font-bold mr-1.5 ${row.correctAnswer === 'D' ? 'text-emerald-700' : 'text-slate-400'}">D.</span> ${escapeHtml(row.optionD) || '<em class="text-slate-400">[Empty]</em>'}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center align-top">
+                        <select id="ans-select-${index}" data-index="${index}" class="ans-select text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${isValid ? 'bg-emerald-50 text-emerald-800 border-emerald-300 focus:ring-2 focus:ring-emerald-400' : 'bg-red-50 text-red-700 border-2 border-red-500 animate-pulse focus:ring-2 focus:ring-red-400'}">
+                            <option value="A" ${row.correctAnswer === 'A' ? 'selected' : ''}>A</option>
+                            <option value="B" ${row.correctAnswer === 'B' ? 'selected' : ''}>B</option>
+                            <option value="C" ${row.correctAnswer === 'C' ? 'selected' : ''}>C</option>
+                            <option value="D" ${row.correctAnswer === 'D' ? 'selected' : ''}>D</option>
+                            ${!isValid ? `<option value="${escapeHtml(row.correctAnswer)}" selected disabled>⚠️ ${escapeHtml(row.correctAnswer) || 'Select'} (A-D)</option>` : ''}
+                        </select>
+                        ${!isValid ? `<div id="warn-label-${index}" class="text-[10px] text-red-600 font-bold mt-1">Select A-D</div>` : ''}
+                    </td>
+                    <td class="p-3 text-slate-600 text-xs align-top">
+                        <div>${escapeHtml(row.explanation) || '<span class="text-slate-400 italic">No explanation</span>'}</div>
+                        ${row.passage ? `<div class="mt-1.5 text-[11px] text-indigo-700 bg-indigo-50/80 p-1.5 rounded-lg border border-indigo-100"><b>Passage:</b> ${escapeHtml(row.passage)}</div>` : ''}
+                        ${row.imageUrl ? `<div class="mt-1 text-[11px] text-amber-700 bg-amber-50/80 p-1.5 rounded-lg border border-amber-100"><b>Image:</b> ${escapeHtml(row.imageUrl)}</div>` : ''}
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            updatePreviewWarningBanner();
+        }
+
+        // Live answer selection listener
+        document.getElementById('tableBody').addEventListener('change', (e) => {
+            if (e.target && e.target.classList.contains('ans-select')) {
+                const idx = parseInt(e.target.getAttribute('data-index'));
+                const newAns = e.target.value;
+                if (parsedQuestionsData[idx]) {
+                    parsedQuestionsData[idx].correctAnswer = newAns;
+
+                    if (["A", "B", "C", "D"].includes(newAns)) {
+                        e.target.className = "ans-select text-xs font-bold px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer bg-emerald-50 text-emerald-800 border-emerald-300 focus:ring-2 focus:ring-emerald-400";
+                        const warnLabel = document.getElementById(`warn-label-${idx}`);
+                        if (warnLabel) warnLabel.remove();
+                        const rowTr = document.getElementById(`row-tr-${idx}`);
+                        if (rowTr) rowTr.classList.remove('bg-red-50/40');
+                    }
+
+                    ['A', 'B', 'C', 'D'].forEach(letter => {
+                        const box = document.getElementById(`opt-box-${idx}-${letter}`);
+                        if (box) {
+                            if (letter === newAns) {
+                                box.className = "p-2 rounded-lg border transition-all border-emerald-400 bg-emerald-50 text-emerald-900 font-semibold shadow-xs";
+                                const span = box.querySelector('span');
+                                if (span) span.className = "font-bold mr-1.5 text-emerald-700";
+                            } else {
+                                box.className = "p-2 rounded-lg border transition-all border-slate-200 bg-slate-50/60 text-slate-700";
+                                const span = box.querySelector('span');
+                                if (span) span.className = "font-bold mr-1.5 text-slate-400";
+                            }
+                        }
+                    });
+
+                    updatePreviewWarningBanner();
+                }
+            }
+        });
+
+        // Preview Pasted Table
+        document.getElementById("previewBtn").addEventListener("click", () => {
+            const raw = document.getElementById('tableInput').value.trim();
+            const expectedCount = parseInt(document.getElementById('totalQuestions').value) || 0;
+
+            if(!raw) return window.showAlert("Empty Input", "ଦୟାକରି ଏକ୍ସେଲ୍ ରୁ କପି କରିଥିବା ଡାଟା ପେଷ୍ଟ କରନ୍ତୁ!", "warning");
+
+            parsedQuestionsData = [];
+            const rows = splitPastedRows(raw);
+
+            rows.forEach((row, i) => {
+                if(!row.trim()) return;
+
+                let cols = splitRowCols(row);
+
+                // Skip header row if present
+                if(i === 0 && cols[0].toLowerCase().includes("question")) return; 
+
+                if(cols.length >= 5) {
+                    const qText = cols[0] || "";
+                    const optA = cols[1] || "";
+                    const optB = cols[2] || "";
+                    const optC = cols[3] || "";
+                    const optD = cols[4] || "";
+                    let rawAns = cols[5] || "";
+                    let expText = cols[6] || "";
+
+                    // Auto-detect if answer and explanation were swapped
+                    const isCol5Letter = /^[A-D1-4]$/i.test(rawAns.trim());
+                    const isCol6Letter = /^[A-D1-4]$/i.test(expText.trim());
+                    if (!isCol5Letter && isCol6Letter) {
+                        const tmp = rawAns;
+                        rawAns = expText;
+                        expText = tmp;
+                    }
+
+                    // Normalize answer to canonical A, B, C, D (handles "T56", "Option B", "2", "(C)", etc.)
+                    const normalizedAns = normalizeAnswer(rawAns, optA, optB, optC, optD, cols.slice(5));
+
+                    let pText = "";
+                    let imgText = "";
+
+                    if(cols.length >= 11) {
+                        pText = cols[10] || "";
+                        imgText = cols[9] || "";
+                    } else if (cols.length === 10) {
+                        imgText = cols[9] || "";
+                    } else if (cols.length === 8) {
+                        pText = cols[7] || "";
                     }
 
                     parsedQuestionsData.push({
-                        questions: cols[0] || "",
-                        optionA: cols[1] || "",
-                        optionB: cols[2] || "",
-                        optionC: cols[3] || "",
-                        optionD: cols[4] || "",
-                        correctAnswer: cols[5] || "",
-                        explanation: cols[6] || "",
-                        passage: cols[9] || "",  // Index 9 in your specific CSV logic
-                        imageUrl: cols[10] || "" // Index 10
+                        questions: qText,
+                        optionA: optA,
+                        optionB: optB,
+                        optionC: optC,
+                        optionD: optD,
+                        correctAnswer: normalizedAns,
+                        explanation: expText,
+                        passage: pText, 
+                        imageUrl: imgText
                     });
                 }
             });
 
             if(parsedQuestionsData.length === 0) {
-                alert("❌ କୌଣସି ପ୍ରଶ୍ନ ମିଳିଲା ନାହିଁ! ଡାଟା ଠିକ୍ ଭାବେ କପି କରିଛନ୍ତି ତ?");
-                return;
+                return window.showAlert("Parse Error", "❌ କୌଣସି ପ୍ରଶ୍ନ ମିଳିଲା ନାହିଁ! ଡାଟା ଠିକ୍ ଭାବେ କପି କରିଛନ୍ତି ତ?", "error");
             }
 
-            // Slice the array if it exceeds the expected count
             if(expectedCount > 0 && parsedQuestionsData.length > expectedCount) {
                 parsedQuestionsData = parsedQuestionsData.slice(0, expectedCount);
             }
 
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ""; 
-            
-            parsedQuestionsData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${row.questions}</td>
-                    <td><strong>${row.correctAnswer}</strong></td>
-                    <td style="max-width: 300px;">${row.explanation}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
+            renderPreviewTable();
 
             document.getElementById("previewSection").classList.remove("hidden");
-            
-            // Auto-update the 'Total Questions' input box to match reality
             document.getElementById('totalQuestions').value = parsedQuestionsData.length;
             
-            showStatus(`✅ ସଫଳତାର ସହ ${parsedQuestionsData.length} ଟି ପ୍ରଶ୍ନ ଲୋଡ୍ ହେଲା! ତଳକୁ ଯାଇ Upload କରନ୍ତୁ।`, "success");
+            showStatus(`✅ ସଫଳତାର ସହ ${parsedQuestionsData.length} ଟି ପ୍ରଶ୍ନ ଲୋଡ୍ ହେଲା! Scroll down to review answers and upload.`, "success");
+            window.showToast(`Parsed ${parsedQuestionsData.length} questions!`, "success");
+        });
 
-        } catch (error) { 
-            showStatus("❌ ଭୁଲ୍ ହେଲା: " + error.message, "error"); 
-        } 
-    });
+        // Submit form
+        document.getElementById("smartUploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            if(parsedQuestionsData.length === 0) return window.showAlert("No Questions", "ପ୍ରଥମେ ପ୍ରଶ୍ନ Preview କରନ୍ତୁ!", "warning");
 
-    // ==========================================
-    // 3. UPLOAD HEADER AND BATCH QUESTIONS (EXACTLY LIKE AI GENERATOR)
-    // ==========================================
-    document.getElementById("smartUploadForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        if(parsedQuestionsData.length === 0) { alert("⚠️ ପ୍ରଥମେ ପ୍ରଶ୍ନ Preview କରନ୍ତୁ!"); return; }
-
-        const btn = document.getElementById("submitBtn");
-        btn.disabled = true; btn.innerText = "UPLOADING... ⏳";
-
-        const docId = document.getElementById("documentId").value.trim();
-        const cat = document.getElementById("categoryId").value;
-        const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
-
-        const typeVal = document.getElementById("type").value;
-        const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
-        let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
-        
-        const badgeDropdown = document.getElementById("badgeSubject");
-        const finalSubjectText = (finalTestType === "Topic Wise") ? badgeDropdown.options[badgeDropdown.selectedIndex].text : "All";
-        const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
-
-        // Determine DB Path
-        let testRef;
-        if (cat === "SUBJECT") { testRef = doc(db, "subjects", subCatId, "tests", docId); } 
-        else {
-            if (finalTestType === "Mock Test") { testRef = doc(db, "exams", subCatId, "mock_tests", docId); } 
-            else if (finalTestType === "Previous Year") { testRef = doc(db, "exams", subCatId, "previous_years", docId); } 
-            else if (finalTestType === "Topic Wise") {
-                if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading")) {
-                    alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଜରୁରୀ!");
-                    btn.disabled = false; btn.innerText = "🚀 Create Header & Inject Questions to DB"; return;
+            // VALIDATION: Ensure all questions have a valid A, B, C, or D selected
+            const invalidRows = [];
+            parsedQuestionsData.forEach((q, idx) => {
+                if (!["A", "B", "C", "D"].includes(q.correctAnswer)) {
+                    invalidRows.push({ num: idx + 1, val: q.correctAnswer });
                 }
-                testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
-            } else { testRef = doc(db, "exams", subCatId, "tests", docId); }
-        }
-
-        try {
-            // 1. SET HEADER
-            await setDoc(testRef, {
-                id: docId,
-                title: document.getElementById("title").value,
-                duration: parseInt(document.getElementById("duration").value),
-                totalMarks: parseInt(document.getElementById("marks").value),
-                totalQuestions: parsedQuestionsData.length,
-                negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
-                categoryId: cat,
-                subCategoryId: subCatId,
-                type: typeVal, 
-                testType: finalTestType, 
-                subjectName: finalSubjectText, 
-                premium: document.getElementById("isPremium").value === "true",
-                isPreviousYear: isPrevYear, 
-                examDate: isPrevYear ? document.getElementById("examDate").value : "",          
-                shift: isPrevYear ? document.getElementById("shift").value : "",            
-                topic: document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "",
-                isActive: true,
-                createdAt: new Date().toISOString()
             });
 
-            // 2. BATCH UPLOAD QUESTIONS
-            const batch = writeBatch(db);
+            if (invalidRows.length > 0) {
+                const firstInvalid = invalidRows[0];
+                const sel = document.getElementById(`ans-select-${firstInvalid.num - 1}`);
+                if (sel) {
+                    sel.scrollIntoView({ behavior: "smooth", block: "center" });
+                    sel.focus();
+                }
+                return Swal.fire({
+                    icon: "warning",
+                    title: "Answer Required!",
+                    html: `<b>Question #${invalidRows.slice(0, 5).map(x => x.num).join(", ")}</b> ${invalidRows.length > 5 ? `ଏବଂ ଆହୁରି ${invalidRows.length - 5} ଟି ପ୍ରଶ୍ନ` : ''} ରେ Answer (A, B, C, D) ସିଲେକ୍ଟ ହୋଇନାହିଁ।<br><br>ଦୟାକରି ତଳ ଟେବୁଲରେ ସଠିକ୍ Option (<b>A, B, C, କିମ୍ବା D</b>) ବାଛି upload କରନ୍ତୁ।`,
+                    confirmButtonColor: "#4f46e5"
+                });
+            }
+
+            const btn = document.getElementById("submitBtn");
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>Uploading Questions to Database...</span>';
+
+            const docId = document.getElementById("documentId").value.trim();
+            const cat = document.getElementById("categoryId").value;
+            const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
+
+            const typeVal = document.getElementById("type").value;
+            const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
+            let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
             
-            parsedQuestionsData.forEach((aiData, index) => {
+            const badgeDropdown = document.getElementById("badgeSubject");
+            const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
+            
+            let finalSubjectText = "General"; 
+            if (cat === "SUBJECT") {
+                const rootSubjectDropdown = document.getElementById("subjectId");
+                finalSubjectText = rootSubjectDropdown.options[rootSubjectDropdown.selectedIndex].text;
+            } else if (finalTestType === "Topic Wise") {
+                finalSubjectText = badgeDropdown.options[badgeDropdown.selectedIndex].text;
+            }
+
+            const optionalTopicName = document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "";
+            const finalTopicToSave = optionalTopicName !== "" ? optionalTopicName : finalSubjectText;
+
+            let testRef;
+            if (cat === "SUBJECT") { testRef = doc(db, "subjects", subCatId, "tests", docId); } 
+            else {
+                if (finalTestType === "Mock Test") { testRef = doc(db, "exams", subCatId, "mock_tests", docId); } 
+                else if (finalTestType === "Previous Year") { testRef = doc(db, "exams", subCatId, "previous_years", docId); } 
+                else if (finalTestType === "Topic Wise") {
+                    if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading")) {
+                        window.showAlert("Subject Required", "Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଜରୁରୀ!", "warning");
+                        btn.disabled = false; 
+                        btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject Questions to DB</span>'; 
+                        return;
+                    }
+                    testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
+                } else { testRef = doc(db, "exams", subCatId, "tests", docId); }
+            }
+
+            try {
+                await setDoc(testRef, {
+                    id: docId,
+                    title: document.getElementById("title").value,
+                    duration: parseInt(document.getElementById("duration").value),
+                    totalMarks: parseInt(document.getElementById("marks").value),
+                    totalQuestions: parsedQuestionsData.length,
+                    negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
+                    categoryId: cat,
+                    subCategoryId: subCatId,
+                    type: typeVal, 
+                    testType: finalTestType, 
+                    subjectName: finalSubjectText, 
+                    premium: document.getElementById("isPremium").value === "true",
+                    isPreviousYear: isPrevYear, 
+                    examDate: isPrevYear ? document.getElementById("examDate").value : "",          
+                    shift: isPrevYear ? document.getElementById("shift").value : "",            
+                    topic: optionalTopicName,
+                    isActive: true,
+                    createdAt: new Date().toISOString()
+                });
+
+                const batch = writeBatch(db);
                 
-                const formattedQuestion = {
-                    serialNo: index + 1,
-                    subjectName: finalSubjectText ? finalSubjectText : "General",
-                    passage: aiData.passage ? aiData.passage : "",
-                    question: aiData.questions ? aiData.questions : "",   
-                    optionA: aiData.optionA ? aiData.optionA : "",
-                    optionB: aiData.optionB ? aiData.optionB : "",
-                    optionC: aiData.optionC ? aiData.optionC : "",
-                    optionD: aiData.optionD ? aiData.optionD : "",
-                    correctAnswer: aiData.correctAnswer ? aiData.correctAnswer : "",
-                    explanation: aiData.explanation ? aiData.explanation : "",
-                    questionImage: aiData.imageUrl ? aiData.imageUrl : "" 
-                };
+                parsedQuestionsData.forEach((aiData, index) => {
+                    const formattedQuestion = {
+                        serialNo: index + 1,
+                        subjectName: finalSubjectText, 
+                        topic: finalTopicToSave,
+                        passage: aiData.passage ? aiData.passage : "",
+                        question: aiData.questions ? aiData.questions : "",   
+                        optionA: aiData.optionA ? aiData.optionA : "",
+                        optionB: aiData.optionB ? aiData.optionB : "",
+                        optionC: aiData.optionC ? aiData.optionC : "",
+                        optionD: aiData.optionD ? aiData.optionD : "",
+                        correctAnswer: aiData.correctAnswer ? aiData.correctAnswer : "",
+                        explanation: aiData.explanation ? aiData.explanation : "",
+                        questionImage: aiData.imageUrl ? aiData.imageUrl : "" 
+                    };
 
-                const qRef = doc(collection(testRef, "questions")); 
-                batch.set(qRef, formattedQuestion);
-            });
+                    const qRef = doc(collection(testRef, "questions")); 
+                    batch.set(qRef, formattedQuestion);
+                });
 
-            await batch.commit();
+                await batch.commit();
 
-            alert(`🎉 ମ୍ୟାଜିକ୍ ସଫଳ ହେଲା!\nHeader ଏବଂ ${parsedQuestionsData.length} ଟି ପ୍ରଶ୍ନ ସିଧାସଳଖ ଡାଟାବେସ୍ ରେ ଅପଲୋଡ୍ ହୋଇଗଲା!\n\nନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ ଦୟାକରି Test Title ଏବଂ Test ID ବଦଳାଇ ଦିଅନ୍ତୁ।`);
-            
-            // 🔥 CLEAR TABLE AND RESET DATA 🔥
-            parsedQuestionsData = []; 
-            document.getElementById("tableBody").innerHTML = ""; 
-            document.getElementById("previewSection").classList.add("hidden"); 
-            document.getElementById("tableInput").value = ""; 
-            
-            showStatus("✅ ଅପଲୋଡ୍ ସଫଳ ହେଲା! ଏବେ ଆପଣ ନୂଆ ଡାଟା ପେଷ୍ଟ କରିପାରିବେ। ନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ Test Title ଓ ID ବଦଳାଇବାକୁ ଭୁଲିବେ ନାହିଁ।", "success");
+                await Swal.fire({
+                    title: "Smart Paste Uploaded! 🎉",
+                    text: `Header and ${parsedQuestionsData.length} questions successfully injected to Firestore!`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
+                
+                parsedQuestionsData = []; 
+                document.getElementById("tableBody").innerHTML = ""; 
+                document.getElementById("previewSection").classList.add("hidden"); 
+                document.getElementById("tableInput").value = ""; 
+                showStatus("✅ Upload successful! You can paste more rows.", "success");
 
-            btn.disabled = false; 
-            btn.innerText = "🚀 Create Header & Inject Questions to DB";
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject Questions to DB</span>';
 
-        } catch (err) { 
-            alert("Upload Error: " + err.message); 
-            btn.disabled = false; 
-            btn.innerText = "🚀 Create Header & Inject Questions to DB";
-        }
-    });
-</script>
+            } catch (err) { 
+                window.showAlert("Upload Failed", err.message, "error"); 
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject Questions to DB</span>'; 
+            }
+        });
+    </script>
 </body>
 </html>

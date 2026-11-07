@@ -1,0 +1,27 @@
+{
+  "name": "admin-panel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kumarhemantahkb/odisha-exam-prep-admin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kumarhemantahkb/odisha-exam-prep-admin/issues"
+  },
+  "homepage": "https://github.com/kumarhemantahkb/odisha-exam-prep-admin#readme",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "pino": "^10.4.0",
+    "qrcode": "^1.5.4"
+  }
+}

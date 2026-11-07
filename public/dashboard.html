@@ -4,147 +4,348 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .sidebar-item:hover, .sidebar-item.active {
-            background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 100%);
-            color: white;
-            border-radius: 0.5rem;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
-        
-        /* Action Button Hover Effects */
-        .action-btn { transition: all 0.3s ease; }
-        .action-btn:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    </style>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
 </head>
-<body class="bg-slate-50 font-sans m-0 p-0 flex h-screen overflow-hidden" id="mainBody" style="display: none;">
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
 
     <!-- LEFT SIDEBAR -->
-    <aside class="w-64 bg-[#0F172A] text-gray-300 flex flex-col h-full shadow-2xl transition-all duration-300 z-20 shrink-0">
-        <div class="p-6 flex items-center gap-3 border-b border-gray-700/50">
-            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-white leading-tight">Odisha Exam</h2>
-                <p class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Prep Panel</p>
-            </div>
-        </div>
-        
-        <div class="p-4">
-            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mb-6 transition-colors text-sm shadow-lg shadow-indigo-500/30">
-                ADMIN PANEL
-            </button>
-        </div>
-
-        <nav class="flex-1 px-4 overflow-y-auto space-y-1 custom-scrollbar">
-            <a href="dashboard.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-white transition-all">
-                <i class="fas fa-home w-5"></i> Dashboard
-            </a>
-            <a href="users.html" class="sidebar-item flex items-center justify-between gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <div class="flex items-center gap-3"><i class="fas fa-users w-5"></i> User Management</div>
-            </a>
-            <!-- 🌟 NEW: Messaging Link Added to Sidebar 🌟 -->
-            <a href="messaging.html" class="sidebar-item flex items-center justify-between gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <div class="flex items-center gap-3"><i class="fas fa-bell w-5"></i> Send Notice</div>
-            </a>
-        </nav>
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden w-full">
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
         <!-- TOP HEADER -->
-        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 shrink-0">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg text-sm"><i class="fas fa-border-all"></i></span>
-                    Dashboard
-                </h1>
-            </div>
-            
-            <div class="flex items-center gap-6">
-                <button id="logoutBtn" class="text-red-500 hover:text-white border border-red-500 hover:bg-red-500 px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-                <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
-                    <div class="text-right hidden md:block">
-                        <p class="text-sm font-bold text-gray-800 leading-tight">Admin</p>
-                        <p class="text-xs text-gray-500 font-medium">Super Admin</p>
-                    </div>
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=4F46E5&color=fff" alt="Admin" class="w-10 h-10 rounded-full border-2 border-indigo-100">
-                </div>
-            </div>
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
         </header>
 
-        <!-- DASHBOARD CONTENT -->
-        <div class="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+        <!-- DASHBOARD SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
             
-            <div class="mb-8">
-                <h2 class="text-3xl font-black text-gray-800">Welcome back, Admin! 🚀</h2>
-                <p class="text-gray-500 font-medium mt-1">Control and manage all tools for Odisha Exam Prep from here.</p>
+            <!-- Welcome Banner -->
+            <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Admin Overview 🚀</h2>
+                    <p class="text-sm text-slate-500 font-medium mt-1">Manage all tests, questions, users, and AI generation tools for Odisha Exam Prep.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="refreshStatsBtn" class="inline-flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                        <span>Refresh Metrics</span>
+                    </button>
+                    <a href="admin.html" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-sm shadow-indigo-500/25 transition-all">
+                        <i class="fas fa-plus"></i>
+                        <span>New Test</span>
+                    </a>
+                </div>
             </div>
 
-            <!-- ACTION GRIDS -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl">
+            <!-- LIVE STATS CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <!-- Stat 1: Total Users -->
+                <div class="panel-card p-5 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Registered Users</p>
+                            <h3 id="statUsers" class="text-2xl md:text-3xl font-black text-slate-900 mt-1">--</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-xs group-hover:scale-110 transition-transform">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                        <span class="text-emerald-600 font-bold flex items-center gap-1">
+                            <i class="fas fa-check-circle"></i> Live DB
+                        </span>
+                        <span>Firestore Auth & Docs</span>
+                    </div>
+                </div>
+
+                <!-- Stat 2: Active Categories -->
+                <div class="panel-card p-5 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Main Categories</p>
+                            <h3 id="statCategories" class="text-2xl md:text-3xl font-black text-slate-900 mt-1">--</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-xs group-hover:scale-110 transition-transform">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                        <span class="text-amber-600 font-bold">OSSSC, OSSC, OPSC</span>
+                    </div>
+                </div>
+
+                <!-- Stat 3: Total Exams -->
+                <div class="panel-card p-5 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Exam Subcategories</p>
+                            <h3 id="statExams" class="text-2xl md:text-3xl font-black text-slate-900 mt-1">--</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-xs group-hover:scale-110 transition-transform">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                        <span class="text-emerald-600 font-bold">Targeted Exams</span>
+                    </div>
+                </div>
+
+                <!-- Stat 4: Subject Wise Hubs -->
+                <div class="panel-card p-5 relative overflow-hidden group">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Root Subjects</p>
+                            <h3 id="statSubjects" class="text-2xl md:text-3xl font-black text-slate-900 mt-1">--</h3>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-xs group-hover:scale-110 transition-transform">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-slate-500 border-t border-slate-100 pt-3">
+                        <span class="text-purple-600 font-bold">Odia, Math, GK, etc.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION SECTIONS -->
+            <div class="space-y-8">
                 
-                <!-- MANUAL OPERATIONS CARD -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col">
-                    <h3 class="text-xl font-bold text-blue-700 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
-                        <i class="fas fa-cog"></i> Manual Operations
-                    </h3>
-                    
-                    <div class="flex flex-col gap-4 flex-1">
-                        <a href="manage_subjects.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            <i class="fas fa-folder-tree"></i> 1. Manage Categories & Subjects
+                <!-- SECTION 1: MANUAL & CORE OPERATIONS -->
+                <div class="panel-card p-6 md:p-7">
+                    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base">
+                                <i class="fas fa-sliders"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">Core Test & Question Management</h3>
+                                <p class="text-xs text-slate-500">Create tests, manage subjects, and upload question banks.</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100 hidden sm:inline-block">Essential Tools</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Tool 1: Subjects & Categories -->
+                        <a href="manage_subjects.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-amber-400 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-folder-tree"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-amber-600 transition-colors">1. Manage Categories & Subjects</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Add new exam types, root subjects, and subject-wise links.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-amber-600 gap-1.5">
+                                <span>Configure</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
-                        <a href="admin.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            <i class="fas fa-file-signature"></i> 2. Create New Test Header
+
+                        <!-- Tool 2: Create Test Header -->
+                        <a href="admin.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-blue-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-blue-600/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-file-circle-plus"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">2. Create Test Header</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Define test metadata: marks, negative marking, duration, access.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-blue-600 gap-1.5">
+                                <span>Create Header</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
-                        <a href="upload.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            <i class="fas fa-file-excel"></i> 3. Upload Questions (Excel)
+
+                        <!-- Tool 3: Upload Questions (Excel) -->
+                        <a href="upload.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-emerald-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-emerald-600/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-emerald-600 transition-colors">3. Upload Questions (Excel)</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Bulk import spreadsheets with image folder previews directly.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-emerald-600 gap-1.5">
+                                <span>Upload Excel</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </a>
+
+                        <!-- Tool 4: Manage / Edit Questions -->
+                        <a href="edit_questions.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-cyan-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-cyan-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-cyan-600/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-cyan-600 transition-colors">4. Manage / Edit Questions</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Search questions in tests, modify options, fix answers, delete rows.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-cyan-600 gap-1.5">
+                                <span>Edit Bank</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
                     </div>
                 </div>
 
-                <!-- AI & SMART TOOLS CARD -->
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col">
-                    <h3 class="text-xl font-bold text-pink-600 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
-                        <i class="fas fa-robot"></i> AI Automation & Smart Tools
-                    </h3>
-                    
-                    <div class="flex flex-col gap-4 flex-1">
-                        <a href="ai_generator.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            ✨ 4. AI Generate & Auto-Upload
+                <!-- SECTION 2: AI AUTOMATION & SMART TOOLS -->
+                <div class="panel-card p-6 md:p-7 border-indigo-100 bg-gradient-to-b from-indigo-50/20 to-white">
+                    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900">AI Automation & Rapid Ingestion</h3>
+                                <p class="text-xs text-slate-500">Harness Gemini AI & Smart Parsers to generate and extract questions in seconds.</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 border border-purple-200">
+                            ⚡ AI Enabled
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <!-- AI 1: AI Generate & Auto-Upload -->
+                        <a href="ai_generator.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-purple-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-purple-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-purple-600 transition-colors">5. AI Generator</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Auto-generate syllabus questions with answers via Gemini.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-purple-600 gap-1.5">
+                                <span>Generate</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
-                        <a href="ai_extractor.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500 to-pink-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            📸 5. AI Extract from PDF/Image
+
+                        <!-- AI 2: AI Extract from PDF / Image -->
+                        <a href="ai_extractor.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-pink-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-pink-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-pink-600 transition-colors">6. AI PDF / Image</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Extract text from scanned exam question papers automatically.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-pink-600 gap-1.5">
+                                <span>Extract</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
-                        <a href="smart_paste.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-sky-400 to-sky-600 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            ⚡ 6. Smart Paste & Upload
+
+                        <!-- AI 3: AI Text Formatter -->
+                        <a href="ai_text_formatter.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-violet-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-violet-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-align-left"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-violet-600 transition-colors">7. AI Text Formatter</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Turn messy unformatted text into neat structured questions.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-violet-600 gap-1.5">
+                                <span>Format</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
-                        <a href="test_assembler.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-500 to-indigo-700 text-white font-bold py-4 px-6 rounded-xl text-lg w-full">
-                            ♻️ 7. Firebase Test Assembler
+
+                        <!-- AI 4: Smart Table Paste -->
+                        <a href="smart_paste.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-amber-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-paste"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-amber-600 transition-colors">8. Smart Paste</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Copy tabular data from sheets and paste directly into Firestore.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-amber-600 gap-1.5">
+                                <span>Paste In</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </a>
+
+                        <!-- AI 5: Firebase Test Assembler -->
+                        <a href="test_assembler.html" class="action-card p-5 rounded-xl border border-slate-200 bg-white hover:border-indigo-500 flex flex-col justify-between group">
+                            <div>
+                                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-indigo-600 to-blue-600 text-white flex items-center justify-center text-lg mb-4 shadow-sm shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                                    <i class="fas fa-layer-group"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">9. Test Assembler</h4>
+                                <p class="text-xs text-slate-500 mt-1 leading-relaxed">Assemble existing questions into brand new mock papers.</p>
+                            </div>
+                            <div class="mt-4 flex items-center text-xs font-bold text-indigo-600 gap-1.5">
+                                <span>Assemble</span>
+                                <i class="fas fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+                            </div>
                         </a>
                     </div>
                 </div>
 
-                <!-- 🌟 NEW: COMMUNICATION CARD (Full Width Bottom) 🌟 -->
-                <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col mt-2">
-                    <h3 class="text-xl font-bold text-rose-600 mb-6 flex items-center gap-2 pb-4 border-b border-gray-100">
-                        <i class="fas fa-bullhorn"></i> User Communication & Alerts
-                    </h3>
-                    
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <a href="messaging.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-bold py-5 px-6 rounded-xl text-lg w-full md:w-1/2">
-                            <i class="fas fa-bell text-2xl"></i> Send Push Notice & Announcements
-                        </a>
-                        <a href="users.html" class="action-btn flex items-center justify-center gap-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-bold py-5 px-6 rounded-xl text-lg w-full md:w-1/2">
-                            <i class="fas fa-users-cog text-2xl"></i> View Registered Users List
-                        </a>
+                <!-- SECTION 3: USERS & NOTIFICATIONS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- User Management Card -->
+                    <div class="panel-card p-6 md:p-7 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl">
+                                    <i class="fas fa-users-gear"></i>
+                                </div>
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                                    Members
+                                </span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900">User Management & Subscriptions</h3>
+                            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                                View registered students, track premium subscriptions, modify expiry dates, and inspect learner activity.
+                            </p>
+                        </div>
+                        <div class="mt-6">
+                            <a href="users.html" class="btn-primary w-full bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 shadow-teal-500/20">
+                                <i class="fas fa-user-check"></i>
+                                <span>Open Users Console</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Notification Card -->
+                    <div class="panel-card p-6 md:p-7 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                                    <i class="fas fa-bullhorn"></i>
+                                </div>
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                                    Announcements
+                                </span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900">Push Notifications & Notice Board</h3>
+                            <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+                                Broadcast high-priority exam notices, test announcements, syllabus revisions, and app banners to all devices.
+                            </p>
+                        </div>
+                        <div class="mt-6">
+                            <a href="messaging.html" class="btn-primary w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 shadow-rose-500/20">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Send Broadcast Notice</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -153,28 +354,67 @@
         </div>
     </main>
 
-    <!-- Firebase Logic -->
+    <!-- Layout & Logic Scripts -->
     <script type="module">
-        import { auth } from './firebase.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { db } from './firebase.js';
+        import { collection, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById("mainBody").style.display = "flex";
-            } else {
-                window.location.replace("index.html");
+        // 1. Initialize Layout and Auth
+        renderAdminLayout({
+            pageTitle: "Dashboard",
+            pageSubtitle: "Platform analytics & central operations control",
+            pageIcon: "fas fa-chart-pie",
+            activeNav: "dashboard.html"
+        });
+        initAuthGuard();
+
+        // 2. Fetch Live Dashboard Metrics
+        async function fetchDashboardMetrics() {
+            const refreshIcon = document.getElementById("refreshIcon");
+            if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
+            try {
+                // Fetch Users Count
+                try {
+                    const userCol = collection(db, "users");
+                    const userCountSnap = await getCountFromServer(userCol);
+                    document.getElementById("statUsers").innerText = userCountSnap.data().count.toLocaleString();
+                } catch(e) {
+                    const userSnap = await getDocs(collection(db, "users"));
+                    document.getElementById("statUsers").innerText = userSnap.size.toLocaleString();
+                }
+
+                // Fetch Categories Count
+                const catSnap = await getDocs(collection(db, "categories"));
+                document.getElementById("statCategories").innerText = catSnap.size.toString();
+
+                // Fetch Subcategories (Exams) Count
+                const subSnap = await getDocs(collection(db, "subcategories"));
+                document.getElementById("statExams").innerText = subSnap.size.toString();
+
+                // Fetch Root Subjects Count
+                const subjectSnap = await getDocs(collection(db, "subjects"));
+                document.getElementById("statSubjects").innerText = subjectSnap.size.toString();
+
+            } catch (err) {
+                console.error("Metrics load error:", err);
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove("fa-spin");
             }
-        });
+        }
 
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            document.getElementById("logoutBtn").innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
-            signOut(auth).then(() => {
-                window.location.replace("index.html"); 
-            }).catch((error) => {
-                alert("Logout Error: " + error.message);
-                document.getElementById("logoutBtn").innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+        // Run metrics fetch
+        fetchDashboardMetrics();
+
+        // Refresh Button
+        const refreshBtn = document.getElementById("refreshStatsBtn");
+        if (refreshBtn) {
+            refreshBtn.addEventListener("click", () => {
+                fetchDashboardMetrics();
+                window.showToast("Metrics updated from Firestore", "info");
             });
-        });
+        }
     </script>
 </body>
 </html>

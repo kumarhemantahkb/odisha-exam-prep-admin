@@ -3,304 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Generate & Upload - Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; color: #1e293b; }
-        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2563eb; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #64748b; margin-bottom: 25px; font-size: 14px; }
-        
-        .section-title { font-size: 1.1rem; color: #1e40af; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 25px; font-weight: bold; background: #f1f5f9; padding: 10px; border-radius: 5px; }
-        
-        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        input:focus, select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        
-        button { width: 100%; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
-        .btn-ai { background: #8b5cf6; }
-        .btn-ai:hover { background: #7c3aed; }
-        .btn-upload { background: #10b981; }
-        .btn-upload:hover { background: #059669; }
-        
-        .hidden { display: none !important; }
-        .back-btn { display: inline-block; margin-bottom: 10px; text-decoration: none; color: #2563eb; font-weight: bold; }
-        .back-btn:hover { text-decoration: underline; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
-        th { background-color: #f8fafc; color: #1e293b; }
-        .status-box { text-align: center; font-weight: bold; margin-top: 15px; padding: 10px; border-radius: 8px; }
-        .status-wait { background: #fef3c7; color: #b45309; }
-        .status-success { background: #d1fae5; color: #047857; }
-        .status-error { background: #fee2e2; color: #b91c1c; }
-        
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    </style>
+    <title>AI Generate & Upload - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
 </head>
-<body id="mainBody" style="display: none;">
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
 
-<div class="container">
-    <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
-    <h2>🤖 AI Generator & Auto-Upload</h2>
-    <div class="subtitle">Create Test Header and Inject Questions in One Click</div>
-    
-    <form id="aiUploadForm">
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
-        <!-- STEP 1: HEADER DETAILS -->
-        <div class="section-title">📝 1. Test Header Details</div>
-        
-        <div class="grid-2">
-            <div>
-                <label>Test Title:</label>
-                <input type="text" id="title" placeholder="e.g. OSSC CGL AI Test 1" required>
-            </div>
-            <div>
-                <label>Document ID (Test ID):</label>
-                <input type="text" id="documentId" placeholder="e.g. ossc_cgl_ai_01" required>
-            </div>
-        </div>
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
+        </header>
 
-        <div class="grid-2" style="grid-template-columns: 1fr 1fr 1fr;">
-            <div>
-                <label>Main Category:</label>
-                <select id="categoryId" onchange="window.filterExams()" required>
-                    <option value="" disabled selected>-- Select Main Category --</option>
-                </select>
-            </div>
-            <div>
-                <label>Test Type (App Tab):</label>
-                <select id="type" onchange="window.handleTestTypeChange()">
-                    <option value="Mock Test">Mock Test</option>
-                    <option value="Previous Year">Previous Year Paper</option>
-                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
-                    <option value="Free">Free (Default Mock)</option>
-                    <option value="Paid">Paid (Default Mock)</option>
-                </select>
-            </div>
-            <div>
-                <label style="color: #d97706;">Access Status:</label>
-                <select id="isPremium">
-                    <option value="false">🆓 Free Test</option>
-                    <option value="true">👑 Premium Test</option>
-                </select>
-            </div>
-        </div>
-
-        <div id="examDiv" class="hidden">
-            <label>Select Exam (Sub-Category):</label>
-            <select id="subCategoryId"><option value="">-- Select Exam --</option></select>
-        </div>
-
-        <div id="badgeSubjectDiv" class="hidden" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; margin-top:15px;">
-            <label style="color: #1e40af; margin-top:0;">Select Subject (For App Badge / Topic Wise):</label>
-            <select id="badgeSubject"><option value="All">All / Mixed</option></select>
-        </div>
-
-        <div id="pyqFields" class="hidden" style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; margin-top:15px;">
-            <div class="grid-2">
-                <div><label style="color: #166534; margin-top:0;">Exam Date:</label><input type="date" id="examDate"></div>
-                <div><label style="color: #166534; margin-top:0;">Shift:</label><input type="text" id="shift" placeholder="e.g. Shift 1"></div>
-            </div>
-        </div>
-
-        <div id="subjectDiv" class="hidden">
-            <label>Select Root Subject:</label>
-            <select id="subjectId"><option value="">-- Loading Subjects --</option></select>
-            <label>Topic Name (Optional):</label>
-            <input type="text" id="topicName" placeholder="e.g. Time & Work">
-        </div>
-
-        <div class="grid-2">
-            <div><label>Duration (Min):</label><input type="number" id="duration" value="60"></div>
-            <div><label>Total Marks:</label><input type="number" id="marks" value="100"></div>
-            <div><label>Total Questions to Generate:</label><input type="number" id="totalQuestions" value="10" required></div>
-            <div><label>Negative Marks:</label><input type="number" step="0.01" id="negativeMarks" value="0.25"></div>
-        </div>
-
-        <!-- STEP 2: AI DETAILS -->
-        <div class="section-title">✨ 2. Gemini AI Prompt</div>
-        <div class="grid-2">
-            <div>
-                <label>AI Subject (For Generation):</label>
-                <input type="text" id="aiSubject" placeholder="e.g. Mathematics, Reasoning" required>
-            </div>
-            <div>
-                <label>AI Topic (Write 'Mix' for Mixed):</label>
-                <input type="text" id="aiTopic" placeholder="e.g. Profit & Loss, Mix" required>
-            </div>
-        </div>
-
-        <button type="button" id="generateBtn" class="btn-ai">✨ Generate AI Questions</button>
-        <div id="statusText" class="hidden status-box"></div>
-
-        <!-- STEP 3: PREVIEW & UPLOAD -->
-        <div id="previewSection" class="hidden">
-            <div class="section-title">☁️ 3. Preview & Upload to Firebase</div>
-            <div style="overflow-x: auto; max-height: 400px; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <table id="questionTable">
-                    <thead>
-                        <tr>
-                            <th>Q#</th>
-                            <th>Question (Eng)</th>
-                            <th>Ans</th>
-                            <th>Explanation (Odia)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
             
-            <button type="submit" id="submitBtn" class="btn-upload">🚀 Create Header & Inject Questions to DB</button>
+            <!-- Page Header -->
+            <div class="max-w-5xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>AI Tools</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">AI Question Generator & Ingestion 🤖</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Generate competitive mock test questions with Odia explanations via Gemini.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold">
+                        <i class="fas fa-bolt text-purple-600"></i>
+                        <span>Gemini 3.5 Flash</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="max-w-5xl mx-auto panel-card p-6 md:p-8 bg-white border border-slate-200">
+                <form id="aiUploadForm" class="space-y-6">
+                    
+                    <!-- STEP 1: TEST METADATA -->
+                    <div>
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Test Header Details</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="form-label mb-0">Test Title <span class="text-red-500">*</span></label>
+                                    <button type="button" id="btnSuggestTitles" class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i>
+                                        <span>✨ Suggest SEO Titles</span>
+                                    </button>
+                                </div>
+                                <div class="relative">
+                                    <input type="text" id="title" placeholder="e.g. OSSC CGL AI Test 1" required class="form-input pr-10">
+                                    <button type="button" id="btnQuickSparkle" title="Suggest Best SEO Title" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-indigo-500 hover:text-indigo-700 p-1">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Document ID (Unique Test ID) <span class="text-red-500">*</span></label>
+                                <input type="text" id="documentId" placeholder="e.g. ossc_cgl_ai_01" required class="form-input font-mono">
+                            </div>
+                        </div>
+
+                        <!-- AI SEO Title Suggestions Tray -->
+                        <div id="seoAssistantTray" class="hidden mt-4 p-4 md:p-5 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-purple-50/40 to-white border border-indigo-200/90 shadow-sm transition-all duration-300">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 mb-3 border-b border-indigo-100">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-xs shadow-md shadow-indigo-500/25">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                            <span>AI SEO Title Assistant</span>
+                                            <span id="seoEngineBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+                                                Smart Engine
+                                            </span>
+                                        </h4>
+                                        <p class="text-[11px] text-slate-500">ପରୀକ୍ଷା ଉପଯୋଗୀ Best Titles — ଯେକୌଣସି ଗୋଟିଏ ଉପରେ କ୍ଲିକ୍ କଲେ Title ଓ Document ID ଆପେ ସେଟ୍ ହୋଇଯିବ:</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 self-end sm:self-auto">
+                                    <button type="button" id="btnRefreshSeo" class="text-xs font-semibold text-indigo-700 hover:text-indigo-900 px-2.5 py-1 rounded-lg bg-indigo-100/70 hover:bg-indigo-100 transition-colors flex items-center gap-1.5 border border-indigo-200/60">
+                                        <i class="fa-solid fa-rotate"></i>
+                                        <span>Refresh</span>
+                                    </button>
+                                    <button type="button" id="btnCloseSeoTray" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors">
+                                        <i class="fa-solid fa-xmark text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="seoLoading" class="hidden py-6 text-center text-indigo-600">
+                                <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+                                <p class="text-xs font-semibold">Gemini AI ଆପଣଙ୍କ ପରୀକ୍ଷା ଅନୁସାରେ Best SEO Titles ପ୍ରସ୍ତୁତ କରୁଛି...</p>
+                            </div>
+
+                            <div id="seoSuggestionsGrid" class="grid grid-cols-1 gap-2.5"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                            <div>
+                                <label class="form-label">Main Category <span class="text-red-500">*</span></label>
+                                <select id="categoryId" onchange="window.filterExams()" required class="form-select">
+                                    <option value="" disabled selected>-- Select Main Category --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Test Type <span class="text-red-500">*</span></label>
+                                <select id="type" onchange="window.handleTestTypeChange()" class="form-select">
+                                    <option value="Mock Test">Mock Test</option>
+                                    <option value="Previous Year">Previous Year Paper</option>
+                                    <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                                    <option value="Free">Free (Default Mock)</option>
+                                    <option value="Paid">Paid (Default Mock)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label text-amber-700">Access Status</label>
+                                <select id="isPremium" class="form-select border-amber-300 bg-amber-50/20">
+                                    <option value="false">🆓 Free Test</option>
+                                    <option value="true">👑 Premium Test</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="examDiv" class="hidden mt-4">
+                            <label class="form-label">Select Exam (Sub-Category)</label>
+                            <select id="subCategoryId" class="form-select"><option value="">-- Select Exam --</option></select>
+                        </div>
+
+                        <div id="badgeSubjectDiv" class="hidden mt-4 p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+                            <label class="form-label text-blue-900 mb-1">Select Subject (For App Badge):</label>
+                            <select id="badgeSubject" class="form-select bg-white"><option value="All">All / Mixed</option></select>
+                        </div>
+
+                        <div id="pyqFields" class="hidden mt-4 p-4 rounded-xl bg-emerald-50/60 border border-emerald-200">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div><label class="form-label text-emerald-800">Exam Date:</label><input type="date" id="examDate" class="form-input bg-white"></div>
+                                <div><label class="form-label text-emerald-800">Shift:</label><input type="text" id="shift" placeholder="e.g. Shift 1" class="form-input bg-white"></div>
+                            </div>
+                        </div>
+
+                        <div id="subjectDiv" class="hidden mt-4 p-4 rounded-xl bg-purple-50/60 border border-purple-200">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label text-purple-900">Select Root Subject:</label>
+                                    <select id="subjectId" class="form-select bg-white"><option value="">-- Loading Subjects --</option></select>
+                                </div>
+                                <div>
+                                    <label class="form-label text-purple-900">Topic Name (Optional):</label>
+                                    <input type="text" id="topicName" placeholder="e.g. Time & Work" class="form-input bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                            <div><label class="form-label">Duration (Min)</label><input type="number" id="duration" value="60" class="form-input"></div>
+                            <div><label class="form-label">Total Marks</label><input type="number" id="marks" value="100" class="form-input"></div>
+                            <div><label class="form-label">Questions to Gen</label><input type="number" id="totalQuestions" value="10" required min="1" max="100" class="form-input"></div>
+                            <div><label class="form-label">Negative Marks</label><input type="number" step="0.01" id="negativeMarks" value="0.25" class="form-input"></div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: AI PROMPT PARAMS -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-600 font-bold text-xs flex items-center justify-center">2</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Gemini AI Prompt Parameters</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="form-label">Subject for AI <span class="text-red-500">*</span></label>
+                                <input type="text" id="aiSubject" placeholder="e.g. Mathematics, Reasoning, General Science" required class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">Topic for AI <span class="text-red-500">*</span></label>
+                                <input type="text" id="aiTopic" placeholder="e.g. Profit & Loss, Percentage, Mix" required class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">Question Level (କଠିନତା ସ୍ତର)</label>
+                                <select id="aiDifficulty" class="form-select font-medium text-slate-800">
+                                    <option value="Medium" selected>🟡 Medium (OSSC/OSSSC Standard)</option>
+                                    <option value="Easy">🟢 Easy (Basic / Foundation Level)</option>
+                                    <option value="Hard">🔴 Hard (Advanced / High Competition)</option>
+                                    <option value="Exam Mix">🎯 Exam Mix (30% Easy, 50% Med, 20% Hard)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" id="generateBtn" class="btn-primary w-full py-3.5 text-sm bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-500/25">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                                <span>Generate AI Questions with Gemini</span>
+                            </button>
+                        </div>
+
+                        <div id="statusText" class="hidden mt-4 p-4 rounded-xl text-xs font-semibold text-center border"></div>
+                    </div>
+
+                    <!-- STEP 3: PREVIEW & UPLOAD -->
+                    <div id="previewSection" class="hidden pt-4 border-t border-slate-100">
+                        <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center">3</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Review Generated Questions & Save</h3>
+                        </div>
+
+                        <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl mb-5">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead class="bg-slate-100 text-slate-700 uppercase tracking-wider sticky top-0 font-bold">
+                                    <tr>
+                                        <th class="p-3 w-12 text-center border-b border-slate-200">#</th>
+                                        <th class="p-3 border-b border-slate-200">Question</th>
+                                        <th class="p-3 w-16 text-center border-b border-slate-200">Ans</th>
+                                        <th class="p-3 border-b border-slate-200">Explanation (Odia)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                        
+                        <button type="submit" id="submitBtn" class="btn-primary w-full py-4 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <span>Create Header & Inject AI Questions to DB</span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
         </div>
-    </form>
-</div>
+    </main>
 
-<!-- Scripts -->
-<script type="module">
-    import { db, auth } from './firebase.js'; 
-    import { doc, setDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"; 
+    <!-- Logic Script -->
+    <script type="module">
+        import { db } from './firebase.js'; 
+        import { doc, setDoc, collection, getDocs, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
+        import { attachTitleAssistant, generateQuestionsBackend, formatQuestionTextWithGap } from './gemini-helper.js';
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) { document.getElementById("mainBody").style.display = "block"; } 
-        else { window.location.replace("index.html"); }
-    });
+        // Layout and Auth
+        renderAdminLayout({
+            pageTitle: "AI Generator & Auto-Upload",
+            pageSubtitle: "Create test header and inject AI questions with Odia explanations in one click",
+            pageIcon: "fas fa-wand-magic-sparkles",
+            activeNav: "ai_generator.html"
+        });
+        initAuthGuard();
 
-    const GEMINI_API_KEY = "AIzaSyDlDrxHP4RyVHGnaF_W-FK810Hzjgle_-g"; 
-    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    let generatedQuestionsData = [];
-    let allExams = [];
+        let generatedQuestionsData = [];
+        let allExams = [];
 
-    // ==========================================
-    // 1. DROPDOWN LOGIC (From your Create Test Header)
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const catSelect = document.getElementById("categoryId");
-            const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
-            const catSnap = await getDocs(qCat);
+        // Attach Title & SEO Assistant (Backend Powered)
+        attachTitleAssistant({
+            titleInputId: "title",
+            docIdInputId: "documentId",
+            btnSuggestId: "btnSuggestTitles",
+            trayId: "seoAssistantTray",
+            gridId: "seoSuggestionsGrid",
+            loadingId: "seoLoading",
+            badgeId: "seoEngineBadge",
+            refreshBtnId: "btnRefreshSeo",
+            closeBtnId: "btnCloseSeoTray",
+            getContext: () => {
+                const catSelect = document.getElementById("categoryId");
+                const examSelect = document.getElementById("subCategoryId");
+                const typeSelect = document.getElementById("type");
+                const subjectSelect = document.getElementById("subjectId");
+                const badgeSubjectSelect = document.getElementById("badgeSubject");
 
-            let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
-            catSnap.forEach(doc => { catOptions += `<option value="${doc.id}">${doc.data().name}</option>`; });
-            catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
-            catSelect.innerHTML = catOptions;
+                const categoryName = (catSelect && catSelect.selectedIndex > 0) ? catSelect.options[catSelect.selectedIndex].text : "";
+                const examName = (examSelect && examSelect.selectedIndex > 0) ? examSelect.options[examSelect.selectedIndex].text : "";
+                const testType = (typeSelect && typeSelect.value) ? typeSelect.value : "Mock Test";
+                
+                let subjectName = "";
+                if (catSelect && catSelect.value === "SUBJECT" && subjectSelect && subjectSelect.selectedIndex > 0) {
+                    subjectName = subjectSelect.options[subjectSelect.selectedIndex].text;
+                } else if (badgeSubjectSelect && badgeSubjectSelect.selectedIndex > 0) {
+                    subjectName = badgeSubjectSelect.options[badgeSubjectSelect.selectedIndex].text;
+                } else {
+                    subjectName = document.getElementById("aiSubject") ? document.getElementById("aiSubject").value.trim() : "";
+                }
 
-            const examSnap = await getDocs(collection(db, "subcategories"));
-            allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                return { categoryName, examName, testType, subjectName };
+            }
+        });
 
-            const subSnap = await getDocs(collection(db, "subjects"));
-            const rootSubjectSelect = document.getElementById("subjectId");
-            subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
-        } catch(error) { console.error("Error loading initial data:", error); }
-    });
+        document.getElementById("btnQuickSparkle")?.addEventListener("click", () => {
+            document.getElementById("btnSuggestTitles")?.click();
+        });
 
-    window.handleTestTypeChange = function() {
-        const typeVal = document.getElementById("type").value;
-        const pyqDiv = document.getElementById("pyqFields");
-        const badgeDiv = document.getElementById("badgeSubjectDiv");
-        
-        if (typeVal === "Previous Year" || typeVal === "previous") { pyqDiv.classList.remove("hidden"); } 
-        else {
-            pyqDiv.classList.add("hidden");
-            document.getElementById("examDate").value = "";
-            document.getElementById("shift").value = "";
-        }
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const catSelect = document.getElementById("categoryId");
+                const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
+                const catSnap = await getDocs(qCat);
 
-        if (typeVal === "Topic Wise") {
-            badgeDiv.classList.remove("hidden");
-            triggerSubjectLoad();
-        } else {
-            badgeDiv.classList.add("hidden");
-            document.getElementById("badgeSubject").value = "All"; 
-        }
-    };
+                let catOptions = '<option value="" disabled selected>-- Select Main Category --</option>';
+                catSnap.forEach(doc => { catOptions += `<option value="${doc.id}">${doc.data().name}</option>`; });
+                catOptions += `<option value="SUBJECT">SUBJECT Wise (Root)</option>`;
+                catSelect.innerHTML = catOptions;
 
-    window.filterExams = function() {
-        const cat = document.getElementById("categoryId").value;
-        const examSelect = document.getElementById("subCategoryId");
-        const examDiv = document.getElementById("examDiv");
-        const subjectDiv = document.getElementById("subjectDiv");
+                const examSnap = await getDocs(collection(db, "subcategories"));
+                allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        if (!cat) return; 
+                const subSnap = await getDocs(collection(db, "subjects"));
+                const rootSubjectSelect = document.getElementById("subjectId");
+                subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
+            } catch(error) { console.error("Error loading initial data:", error); }
+        });
 
-        if(cat === "SUBJECT") {
-            examDiv.classList.add("hidden");
-            subjectDiv.classList.remove("hidden");
-            document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
-        } else {
-            examDiv.classList.remove("hidden");
-            subjectDiv.classList.add("hidden");
-            examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+        window.handleTestTypeChange = function() {
+            const typeVal = document.getElementById("type").value;
+            const pyqDiv = document.getElementById("pyqFields");
+            const badgeDiv = document.getElementById("badgeSubjectDiv");
             
-            allExams.filter(e => e.categoryId === cat).forEach(e => {
-                examSelect.add(new Option(e.name || e.title || e.id, e.id));
-            });
-            
-            if (document.getElementById("type").value === "Topic Wise") {
-                document.getElementById("badgeSubjectDiv").classList.remove("hidden");
+            if (typeVal === "Previous Year" || typeVal === "previous") { pyqDiv.classList.remove("hidden"); } 
+            else {
+                pyqDiv.classList.add("hidden");
+                document.getElementById("examDate").value = "";
+                document.getElementById("shift").value = "";
+            }
+
+            if (typeVal === "Topic Wise") {
+                badgeDiv.classList.remove("hidden");
                 triggerSubjectLoad();
+            } else {
+                badgeDiv.classList.add("hidden");
+                document.getElementById("badgeSubject").value = "All"; 
             }
+        };
+
+        window.filterExams = function() {
+            const cat = document.getElementById("categoryId").value;
+            const examSelect = document.getElementById("subCategoryId");
+            const examDiv = document.getElementById("examDiv");
+            const subjectDiv = document.getElementById("subjectDiv");
+
+            if (!cat) return; 
+
+            if(cat === "SUBJECT") {
+                examDiv.classList.add("hidden");
+                subjectDiv.classList.remove("hidden");
+                document.getElementById("badgeSubjectDiv").classList.add("hidden"); 
+            } else {
+                examDiv.classList.remove("hidden");
+                subjectDiv.classList.add("hidden");
+                examSelect.innerHTML = '<option value="" disabled selected>-- Select Exam --</option>';
+                
+                allExams.filter(e => e.categoryId === cat).forEach(e => {
+                    examSelect.add(new Option(e.name || e.title || e.id, e.id));
+                });
+                
+                if (document.getElementById("type").value === "Topic Wise") {
+                    document.getElementById("badgeSubjectDiv").classList.remove("hidden");
+                    triggerSubjectLoad();
+                }
+            }
+        };
+
+        async function triggerSubjectLoad() {
+            const examId = document.getElementById("subCategoryId").value;
+            const badgeSubjectSelect = document.getElementById("badgeSubject");
+            const typeVal = document.getElementById("type").value;
+
+            if (!examId || typeVal !== "Topic Wise") return;
+
+            badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
+            try {
+                const subWiseCol = collection(db, "exams", examId, "subject_wise");
+                const snapshot = await getDocs(subWiseCol);
+                badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+                
+                if(snapshot.empty) {
+                    badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const subData = doc.data();
+                    let sName = subData.name || subData.title;
+                    if (!sName) { sName = doc.id.replace(/_/g, ' ').toUpperCase(); }
+                    badgeSubjectSelect.add(new Option(sName, doc.id)); 
+                });
+            } catch (err) { badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>'; }
         }
-    }
 
-    async function triggerSubjectLoad() {
-        const examId = document.getElementById("subCategoryId").value;
-        const badgeSubjectSelect = document.getElementById("badgeSubject");
-        const typeVal = document.getElementById("type").value;
+        document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
 
-        if (!examId || typeVal !== "Topic Wise") return;
-
-        badgeSubjectSelect.innerHTML = '<option value="All">⏳ Loading Exam Subjects... </option>';
-        try {
-            const subWiseCol = collection(db, "exams", examId, "subject_wise");
-            const snapshot = await getDocs(subWiseCol);
-            badgeSubjectSelect.innerHTML = '<option value="All">All / Mixed</option>';
+        function showStatus(msg, type) {
+            const statusText = document.getElementById("statusText");
+            statusText.innerHTML = msg;
             
-            if(snapshot.empty) {
-                badgeSubjectSelect.innerHTML = '<option value="All">No Subjects Found</option>';
-                return;
+            let colorClasses = "bg-blue-50 text-blue-700 border-blue-200";
+            if (type === "wait") colorClasses = "bg-amber-50 text-amber-700 border-amber-200 animate-pulse";
+            if (type === "success") colorClasses = "bg-emerald-50 text-emerald-700 border-emerald-200";
+            if (type === "error") colorClasses = "bg-red-50 text-red-700 border-red-200";
+
+            statusText.className = `mt-4 p-3 rounded-xl text-xs font-semibold text-center border ${colorClasses}`;
+            statusText.classList.remove("hidden");
+        }
+
+        document.getElementById("generateBtn").addEventListener("click", async () => {
+            const subject = document.getElementById('aiSubject').value.trim();
+            const topic = document.getElementById('aiTopic').value.trim();
+            const noOfQuestions = document.getElementById('totalQuestions').value || 10;
+
+            if (!subject || !topic) {
+                return window.showAlert("Input Required", "ଦୟାକରି AI Subject ଏବଂ Topic ପ୍ରଦାନ କରନ୍ତୁ!", "warning");
             }
-            snapshot.forEach(doc => {
-                const subData = doc.data();
-                let sName = subData.name || subData.title;
-                if (!sName) { sName = doc.id.replace(/_/g, ' ').toUpperCase(); }
-                badgeSubjectSelect.add(new Option(sName, doc.id)); 
-            });
-        } catch (err) { badgeSubjectSelect.innerHTML = '<option value="All">❌ Error loading subjects</option>'; }
-    }
 
-    document.getElementById("subCategoryId").addEventListener("change", triggerSubjectLoad);
+            const difficultyEl = document.getElementById("aiDifficulty");
+            const difficulty = difficultyEl ? difficultyEl.value : "Medium";
 
-    // ==========================================
-    // 2. GENERATE AI QUESTIONS
-    // ==========================================
-    function showStatus(msg, type) {
-        const statusText = document.getElementById("statusText");
-        statusText.innerHTML = msg;
-        statusText.className = `status-box status-${type}`;
-        statusText.classList.remove("hidden");
-    }
+            let difficultyRule = "Maintain a standard competitive exam difficulty level (Moderate to Advanced). Balanced difficulty with standard calculations and logical traps.";
+            if (difficulty === "Easy") {
+                difficultyRule = "STRICTLY EASY / BASIC FOUNDATION LEVEL. Questions must test fundamental concepts, direct definitions, single-step arithmetic, and basic rules for beginners.";
+            } else if (difficulty === "Hard") {
+                difficultyRule = "STRICTLY HARD / ADVANCED LEVEL (OPSC/ASO Mains standard). Questions must be multi-step, analytically challenging, complex calculations, in-depth reasoning, with clever and deceptive distractors.";
+            } else if (difficulty === "Exam Mix") {
+                difficultyRule = "REALISTIC EXAM PROPORTIONAL MIX. Exactly 30% Easy (direct formulas), 50% Medium (standard 2-step), and 20% Hard (tricky/multi-step) questions.";
+            }
 
-    document.getElementById("generateBtn").addEventListener("click", async () => {
-        const subject = document.getElementById('aiSubject').value.trim();
-        const topic = document.getElementById('aiTopic').value.trim();
-        const noOfQuestions = document.getElementById('totalQuestions').value || 10;
+            const genBtn = document.getElementById("generateBtn");
+            genBtn.disabled = true;
+            showStatus(`<i class="fas fa-spinner fa-spin"></i> Gemini AI generating ${noOfQuestions} [${difficulty}] questions for "${subject} - ${topic}"... Please wait!`, "wait");
+            document.getElementById("previewSection").classList.add("hidden");
 
-        if (!subject || !topic) { alert("ଦୟାକରି AI Subject ଏବଂ Topic ପ୍ରଦାନ କରନ୍ତୁ!"); return; }
-
-        const genBtn = document.getElementById("generateBtn");
-        genBtn.disabled = true;
-        showStatus(`Gemini AI ତିଆରି କରୁଛି ${noOfQuestions} ଟି ପ୍ରଶ୍ନ... ⏳`, "wait");
-        document.getElementById("previewSection").classList.add("hidden");
-
-      const promptText = `Act as an expert educational content creator and professional exam setter for competitive mock tests (like OSSC, OSSSC, OPSC pattern). 
+            const promptText = `Act as an expert educational content creator and professional exam setter for competitive mock tests (like OSSC, OSSSC, OPSC pattern). 
 Your exact task is to generate ${noOfQuestions} UNIQUE, HIGH-STANDARD, and 100% ACCURATE multiple-choice questions for Subject: "${subject}" and Topic: "${topic}".
+TARGET LEVEL: ${difficulty.toUpperCase()} DIFFICULTY.
 
 CRITICAL QUALITY & ACCURACY RULES:
 1. RELEVANCE: Questions MUST strictly belong to the specified syllabus of the topic.
-2. DIFFICULTY: Maintain a standard competitive exam difficulty level (Moderate to Advanced). 
+2. DIFFICULTY: ${difficultyRule}
 3. FACTUAL ACCURACY: You must mathematically and factually double-check every question before generating. There must be STRICTLY ONLY ONE unambiguously correct answer.
 4. DISTRACTORS: The incorrect options (distractors) should be highly logical and confusing for an unprepared student.
 
@@ -312,149 +470,154 @@ Each object MUST follow these explicit constraints:
 1. Keys exactly: questions, optionA, optionB, optionC, optionD, correctAnswer, explanation, marks, negativeMarks, imageUrl, passage
 2. 'correctAnswer' must contain ONLY a single uppercase letter (A, B, C, or D).
 3. EXCLUDE question numbers or prefixes (like "1.", "Q1)") from the 'questions' value.
-4. NO line breaks (actual Enter or hard returns) inside any value string.
-5. In 'questions', separate instructions from actual questions using "\\n\\n".
-6. Default 'marks' to "1.00" and 'negativeMarks' to "0.25". 'imageUrl' blank ("") if empty.
-7. CRUCIAL: If any option contains a fraction (like 1/2) or ratio (like 2:3), prepend a single quotation mark (') (e.g., "'1/2"). Do not evaluate.
-8. CRUCIAL FOR SYLLOGISM: In 'questions', break down statements and conclusions using "\\n".
-9. LANGUAGE RULE: Output questions, optionA, optionB, optionC, optionD STRICTLY in English.
+4. Keep JSON strings valid.
+5. MANDATORY GAP RULE ACROSS ALL SUBJECTS: In 'questions', whenever there is any instruction, direction, problem description, family tree / puzzle scenario, or statement list before the actual question, you MUST separate the instruction/statements from the actual question with "\\n\\n" (e.g. "P, Q, R, S, T, and U are six members... U is the brother of Q. \\n\\n How is T related to S?" or "Read the following information: \\n 'P x Q' means... \\n\\n Which of the following equations...").
+6. CRUCIAL FOR STATEMENTS / CODED CONDITIONS / SYLLOGISM: In 'questions', break down individual statements, conditions, and conclusions using "\\n".
+7. Default 'marks' to "1.00" and 'negativeMarks' to "0.25". 'imageUrl' blank ("") if empty.
+8. CRUCIAL FOR OPTIONS: If any option contains a fraction (like 1/2) or ratio (like 2:3), prepend a single quotation mark (') (e.g., "'1/2"). Do not evaluate.
+9. LANGUAGE RULE: Output questions, optionA, optionB, optionC, optionD in the subject's appropriate medium (Odia for Odia grammar/language; English for others).
 10. EXPLANATION RULE: The 'explanation' field MUST be written entirely in detailed, student-friendly Odia language (ଓଡ଼ିଆ ବ୍ୟାଖ୍ୟା). Provide step-by-step calculation, real logic, and a short trick where applicable.`;
-        try {
-            const response = await fetch(GEMINI_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: { responseMimeType: "application/json" } })
-            });
 
-            if (!response.ok) throw new Error("API Request Failed!");
-            const jsonResponse = await response.json();
-            generatedQuestionsData = JSON.parse(jsonResponse.candidates[0].content.parts[0].text.trim());
+            try {
+                const res = await generateQuestionsBackend(promptText);
+                generatedQuestionsData = res.questions || [];
 
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = ""; 
-            
-            generatedQuestionsData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${row.questions || ''}</td>
-                    <td><strong>${row.correctAnswer || ''}</strong></td>
-                    <td style="max-width: 300px;">${row.explanation || ''}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-
-            document.getElementById("previewSection").classList.remove("hidden");
-            showStatus("✅ ପ୍ରଶ୍ନ ସଫଳତାର ସହ ଜେନେରେଟ୍ ହେଲା! ତଳକୁ ଯାଇ Upload ବଟନ୍ ଦବାନ୍ତୁ।", "success");
-
-        } catch (error) { showStatus("❌ Error: " + error.message, "error"); } 
-        finally { genBtn.disabled = false; }
-    });
-
-    // ==========================================
-    // 3. UPLOAD HEADER AND BATCH QUESTIONS
-    // ==========================================
-    document.getElementById("aiUploadForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        if(generatedQuestionsData.length === 0) { alert("⚠️ ପ୍ରଥମେ ପ୍ରଶ୍ନ ତିଆରି କରନ୍ତୁ!"); return; }
-
-        const btn = document.getElementById("submitBtn");
-        btn.disabled = true; btn.innerText = "UPLOADING... ⏳";
-
-        const docId = document.getElementById("documentId").value.trim();
-        const cat = document.getElementById("categoryId").value;
-        const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
-
-        const typeVal = document.getElementById("type").value;
-        const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
-        let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
-        
-        const badgeDropdown = document.getElementById("badgeSubject");
-        const finalSubjectText = (finalTestType === "Topic Wise") ? badgeDropdown.options[badgeDropdown.selectedIndex].text : "All";
-        const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
-
-        // Determine DB Path
-        let testRef;
-        if (cat === "SUBJECT") { testRef = doc(db, "subjects", subCatId, "tests", docId); } 
-        else {
-            if (finalTestType === "Mock Test") { testRef = doc(db, "exams", subCatId, "mock_tests", docId); } 
-            else if (finalTestType === "Previous Year") { testRef = doc(db, "exams", subCatId, "previous_years", docId); } 
-            else if (finalTestType === "Topic Wise") {
-                if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading")) {
-                    alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଜରୁରୀ!");
-                    btn.disabled = false; btn.innerText = "🚀 Create Header & Inject Questions to DB"; return;
+                if (!generatedQuestionsData || generatedQuestionsData.length === 0) {
+                    throw new Error("କୌଣସି ପ୍ରଶ୍ନ ଜେନେରେଟ୍ ହେଲା ନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।");
                 }
-                testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
-            } else { testRef = doc(db, "exams", subCatId, "tests", docId); }
-        }
 
-        try {
-            // 1. SET HEADER
-            await setDoc(testRef, {
-                id: docId,
-                title: document.getElementById("title").value,
-                duration: parseInt(document.getElementById("duration").value),
-                totalMarks: parseInt(document.getElementById("marks").value),
-                totalQuestions: generatedQuestionsData.length,
-                negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
-                categoryId: cat,
-                subCategoryId: subCatId,
-                type: typeVal, 
-                testType: finalTestType, 
-                subjectName: finalSubjectText, 
-                premium: document.getElementById("isPremium").value === "true",
-                isPreviousYear: isPrevYear, 
-                examDate: isPrevYear ? document.getElementById("examDate").value : "",          
-                shift: isPrevYear ? document.getElementById("shift").value : "",            
-                topic: document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "",
-                isActive: true,
-                createdAt: new Date().toISOString()
-            });
-
-            // 2. BATCH UPLOAD QUESTIONS
-            const batch = writeBatch(db);
-            
-            generatedQuestionsData.forEach((aiData, index) => {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = ""; 
                 
-                const formattedQuestion = {
-                    serialNo: index + 1,
-                    subjectName: finalSubjectText ? finalSubjectText : "General",
-                    passage: aiData.passage ? aiData.passage : "",
-                    question: aiData.questions ? aiData.questions : "",   
-                    optionA: aiData.optionA ? aiData.optionA : "",
-                    optionB: aiData.optionB ? aiData.optionB : "",
-                    optionC: aiData.optionC ? aiData.optionC : "",
-                    optionD: aiData.optionD ? aiData.optionD : "",
-                    correctAnswer: aiData.correctAnswer ? aiData.correctAnswer : "",
-                    explanation: aiData.explanation ? aiData.explanation : "",
-                    questionImage: aiData.imageUrl ? aiData.imageUrl : "" 
-                };
+                generatedQuestionsData.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-3 text-center font-bold text-slate-500">${index + 1}</td>
+                        <td class="p-3 font-semibold text-slate-900">${row.questions || ''}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold border border-blue-200">${row.correctAnswer || ''}</span></td>
+                        <td class="p-3 text-slate-600 text-xs">${row.explanation || ''}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
 
-                const qRef = doc(collection(testRef, "questions")); 
-                batch.set(qRef, formattedQuestion);
-            });
+                document.getElementById("previewSection").classList.remove("hidden");
+                showStatus(`✅ Success! Generated ${generatedQuestionsData.length} [${difficulty}] questions. Scroll down to review and click Upload.`, "success");
+                window.showToast(`Questions generated (${difficulty})!`, "success");
 
-            await batch.commit();
+            } catch (error) { 
+                showStatus("❌ Generation Error: " + error.message, "error"); 
+                window.showAlert("AI Error", error.message, "error");
+            } finally { 
+                genBtn.disabled = false; 
+            }
+        });
 
-            alert(`🎉 ମ୍ୟାଜିକ୍ ସଫଳ ହେଲା!\nHeader ଏବଂ ${generatedQuestionsData.length} ଟି AI ପ୍ରଶ୍ନ ସିଧାସଳଖ ଡାଟାବେସ୍ ରେ ଅପଲୋଡ୍ ହୋଇଗଲା!\n\nନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ ଦୟାକରି Test Title ଏବଂ Test ID ବଦଳାଇ ଦିଅନ୍ତୁ।`);
+        document.getElementById("aiUploadForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
             
-            // 🔥 CLEAR TABLE AND RESET DATA 🔥
-            generatedQuestionsData = []; 
-            document.getElementById("tableBody").innerHTML = ""; 
-            document.getElementById("previewSection").classList.add("hidden"); 
+            if(generatedQuestionsData.length === 0) { 
+                return window.showAlert("No Questions", "ପ୍ରଥମେ ପ୍ରଶ୍ନ ତିଆରି କରନ୍ତୁ!", "warning"); 
+            }
+
+            const btn = document.getElementById("submitBtn");
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>Uploading to Firestore...</span>';
+
+            const docId = document.getElementById("documentId").value.trim();
+            const cat = document.getElementById("categoryId").value;
+            const subCatId = (cat === "SUBJECT") ? document.getElementById("subjectId").value : document.getElementById("subCategoryId").value;
+
+            const typeVal = document.getElementById("type").value;
+            const isPrevYear = (typeVal === "Previous Year" || typeVal === "previous");
+            let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
             
-            showStatus("✅ ଅପଲୋଡ୍ ସଫଳ ହେଲା! ଏବେ ଆପଣ ନୂଆ ପ୍ରଶ୍ନ ଜେନେରେଟ୍ କରିପାରିବେ। ନୂଆ ଟେଷ୍ଟ୍ ପାଇଁ Test Title ଓ ID ବଦଳାଇବାକୁ ଭୁଲିବେ ନାହିଁ।", "success");
+            const badgeDropdown = document.getElementById("badgeSubject");
+            const finalSubjectText = (finalTestType === "Topic Wise") ? badgeDropdown.options[badgeDropdown.selectedIndex].text : "All";
+            const exactDatabaseId = (finalTestType === "Topic Wise") ? badgeDropdown.value : "All";
 
-            btn.disabled = false; 
-            btn.innerText = "🚀 Create Header & Inject Questions to DB";
+            let testRef;
+            if (cat === "SUBJECT") { testRef = doc(db, "subjects", subCatId, "tests", docId); } 
+            else {
+                if (finalTestType === "Mock Test") { testRef = doc(db, "exams", subCatId, "mock_tests", docId); } 
+                else if (finalTestType === "Previous Year") { testRef = doc(db, "exams", subCatId, "previous_years", docId); } 
+                else if (finalTestType === "Topic Wise") {
+                    if(exactDatabaseId === "All" || exactDatabaseId.includes("Loading")) {
+                        window.showAlert("Subject Required", "Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଜରୁରୀ!", "warning");
+                        btn.disabled = false; 
+                        btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject AI Questions to DB</span>'; 
+                        return;
+                    }
+                    testRef = doc(db, "exams", subCatId, "subject_wise", exactDatabaseId, "tests", docId);
+                } else { testRef = doc(db, "exams", subCatId, "tests", docId); }
+            }
 
-        } catch (err) { 
-            alert("Upload Error: " + err.message); 
-            btn.disabled = false; 
-            btn.innerText = "🚀 Create Header & Inject Questions to DB";
-        }
-    });
-</script>
+            try {
+                await setDoc(testRef, {
+                    id: docId,
+                    title: document.getElementById("title").value,
+                    duration: parseInt(document.getElementById("duration").value),
+                    totalMarks: parseInt(document.getElementById("marks").value),
+                    totalQuestions: generatedQuestionsData.length,
+                    negativeMarks: parseFloat(document.getElementById("negativeMarks").value),
+                    categoryId: cat,
+                    subCategoryId: subCatId,
+                    type: typeVal, 
+                    testType: finalTestType, 
+                    subjectName: finalSubjectText, 
+                    premium: document.getElementById("isPremium").value === "true",
+                    isPreviousYear: isPrevYear, 
+                    examDate: isPrevYear ? document.getElementById("examDate").value : "",          
+                    shift: isPrevYear ? document.getElementById("shift").value : "",            
+                    topic: document.getElementById("topicName") ? document.getElementById("topicName").value.trim() : "",
+                    difficulty: document.getElementById("aiDifficulty") ? document.getElementById("aiDifficulty").value : "Medium",
+                    isActive: true,
+                    createdAt: new Date().toISOString()
+                });
+
+                const batch = writeBatch(db);
+                
+                generatedQuestionsData.forEach((aiData, index) => {
+                    const formattedQuestion = {
+                        serialNo: index + 1,
+                        subjectName: finalSubjectText ? finalSubjectText : "General",
+                        passage: aiData.passage ? aiData.passage : "",
+                        question: formatQuestionTextWithGap(aiData.questions || aiData.question || ""),   
+                        optionA: aiData.optionA ? aiData.optionA : "",
+                        optionB: aiData.optionB ? aiData.optionB : "",
+                        optionC: aiData.optionC ? aiData.optionC : "",
+                        optionD: aiData.optionD ? aiData.optionD : "",
+                        correctAnswer: aiData.correctAnswer ? aiData.correctAnswer : "",
+                        explanation: aiData.explanation ? aiData.explanation : "",
+                        questionImage: aiData.imageUrl ? aiData.imageUrl : "" 
+                    };
+
+                    const qRef = doc(collection(testRef, "questions")); 
+                    batch.set(qRef, formattedQuestion);
+                });
+
+                await batch.commit();
+
+                await Swal.fire({
+                    title: "AI Test Created! 🎉",
+                    text: `Header and ${generatedQuestionsData.length} AI questions were successfully uploaded to Firebase!`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
+                
+                generatedQuestionsData = []; 
+                document.getElementById("tableBody").innerHTML = ""; 
+                document.getElementById("previewSection").classList.add("hidden"); 
+                showStatus("✅ Upload successful! You can now generate more questions.", "success");
+
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject AI Questions to DB</span>';
+
+            } catch (err) { 
+                window.showAlert("Upload Error", err.message, "error"); 
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-cloud-arrow-up"></i><span>Create Header & Inject AI Questions to DB</span>';
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 # Logs
 logs
 *.log
+service-account.json
+backend-config.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -67,3 +69,7 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Sensitive secrets
+functions/config.json
+whatsapp_auth/

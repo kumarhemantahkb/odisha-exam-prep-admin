@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage / Edit Questions - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
+</head>
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
+        
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
+        </header>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
+            
+            <!-- Page Header -->
+            <div class="max-w-6xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Manage Questions</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Question Bank Editor</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Filter, inspect, edit options, or remove questions from live tests.</p>
+                </div>
+
+                <a href="upload.html" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition-colors">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Upload New Sheet</span>
+                </a>
+            </div>
+
+            <!-- STEP 1: TEST LOCATOR CARD -->
+            <div class="max-w-6xl mx-auto panel-card p-6 md:p-7 bg-white border border-slate-200 mb-6">
+                <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                    <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Locate Target Test</h3>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="form-label">Main Category</label>
+                        <select id="categoryId" onchange="window.filterExams()" class="form-select">
+                            <option value="" disabled selected>-- Select Category --</option>
+                        </select>
+                    </div>
+
+                    <div id="typeDiv">
+                        <label class="form-label">Test Type</label>
+                        <select id="type" onchange="window.handleTypeChange()" class="form-select">
+                            <option value="Mock Test">Mock Test</option>
+                            <option value="Previous Year">Previous Year Paper</option>
+                            <option value="Main Exam">Main Exam</option>
+                            <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                            <option value="Free">Free (Default Mock)</option>
+                            <option value="Paid">Paid (Default Mock)</option>
+                        </select>
+                    </div>
+
+                    <div id="examDiv">
+                        <label class="form-label">Exam (Sub-Category)</label>
+                        <select id="subCategoryId" onchange="window.handleExamChange()" class="form-select">
+                            <option value="">-- Select Exam --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Root Subject Group -->
+                <div id="subjectDiv" class="hidden mt-4 p-4 rounded-xl bg-purple-50/60 border border-purple-200">
+                    <label class="form-label text-purple-900 mb-1">Select Root Subject:</label>
+                    <select id="subjectId" onchange="window.loadTests()" class="form-select bg-white">
+                        <option value="">-- Select Subject --</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Topic Badge Group -->
+                <div id="badgeSubjectDiv" class="hidden mt-4 p-4 rounded-xl bg-blue-50/60 border border-blue-200">
+                    <label class="form-label text-blue-900 mb-1">Select Subject (Badge):</label>
+                    <select id="badgeSubject" onchange="window.loadTests()" class="form-select bg-white">
+                        <option value="All">All / Mixed</option>
+                    </select>
+                </div>
+
+                <!-- Test Selector Dropdown -->
+                <div class="mt-5 p-4 rounded-2xl bg-emerald-50/40 border border-emerald-200 flex flex-col sm:flex-row items-center gap-3">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1.5">Select Target Test</label>
+                        <select id="existingTestSelect" class="form-select border-emerald-300 font-semibold text-slate-800">
+                            <option value="">-- Select Category & Exam Above First --</option>
+                        </select>
+                    </div>
+                    <button id="loadQuestionsBtn" class="btn-primary w-full sm:w-auto px-6 py-3 text-xs sm:mt-5 bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20">
+                        <i class="fas fa-download"></i>
+                        <span>Fetch Questions</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: QUESTIONS TABLE SECTION -->
+            <div id="tableSection" class="max-w-6xl mx-auto panel-card p-6 md:p-7 bg-white border border-slate-200 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 font-bold text-xs flex items-center justify-center">2</span>
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Loaded Questions Bank</h3>
+                        <span id="questionCountBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">0 Qs</span>
+                    </div>
+
+                    <div class="relative w-full sm:w-64">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fas fa-search text-xs"></i>
+                        </span>
+                        <input type="text" id="filterInput" placeholder="Quick filter questions..." class="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[600px] border border-slate-200 rounded-xl custom-scrollbar">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-100 text-slate-700 uppercase tracking-wider sticky top-0 shadow-xs">
+                            <tr>
+                                <th class="p-3 w-12 text-center border-b border-slate-200 font-bold">No.</th>
+                                <th class="p-3 border-b border-slate-200 font-bold">Question Details & Options</th>
+                                <th class="p-3 w-16 text-center border-b border-slate-200 font-bold">Ans</th>
+                                <th class="p-3 w-56 border-b border-slate-200 font-bold">Explanation</th>
+                                <th class="p-3 w-28 text-center border-b border-slate-200 font-bold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Injected rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl border border-slate-200 p-6 md:p-8">
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Edit Question</h3>
+                </div>
+                <button onclick="window.closeModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg text-lg focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <input type="hidden" id="editDocId">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="form-label">Question Text <span class="text-red-500">*</span></label>
+                    <textarea id="editQuestion" rows="3" class="form-textarea"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div><label class="form-label">Option A</label><input type="text" id="editOptA" class="form-input"></div>
+                    <div><label class="form-label">Option B</label><input type="text" id="editOptB" class="form-input"></div>
+                    <div><label class="form-label">Option C</label><input type="text" id="editOptC" class="form-input"></div>
+                    <div><label class="form-label">Option D</label><input type="text" id="editOptD" class="form-input"></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="form-label">Correct Answer</label>
+                        <select id="editAns" class="form-select font-bold text-indigo-600">
+                            <option value="A">A</option><option value="B">B</option>
+                            <option value="C">C</option><option value="D">D</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Image URL (Optional)</label>
+                        <input type="text" id="editImage" placeholder="https://..." class="form-input">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Explanation</label>
+                    <textarea id="editExplanation" rows="3" class="form-textarea"></textarea>
+                </div>
+                
+                <div>
+                    <label class="form-label">Passage / Reading Paragraph (Optional)</label>
+                    <textarea id="editPassage" rows="2" class="form-textarea"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                <button onclick="window.closeModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold rounded-xl text-xs transition-colors">
+                    Cancel
+                </button>
+                <button id="saveChangesBtn" class="btn-primary text-xs px-6 py-2.5">
+                    <i class="fas fa-save"></i>
+                    <span>Save Changes to Firebase</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic Script -->
+    <script type="module">
+        import { db } from './firebase.js'; 
+        import { collection, getDocs, doc, query, orderBy, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
+
+        // Layout and Auth
+        renderAdminLayout({
+            pageTitle: "Manage / Edit Questions",
+            pageSubtitle: "Live search, modification, and deletion of test questions",
+            pageIcon: "fas fa-pencil-alt",
+            activeNav: "edit_questions.html"
+        });
+        initAuthGuard();
+
+        let allExams = [];
+        let currentQuestions = [];
+        let activeTestRef = null;
+
+        // Init Dropdowns
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const catSelect = document.getElementById("categoryId");
+                const qCat = query(collection(db, "categories"), orderBy("order", "asc"));
+                const catSnap = await getDocs(qCat);
+
+                catSnap.forEach(doc => { catSelect.add(new Option(doc.data().name, doc.id)); });
+                catSelect.add(new Option("SUBJECT Wise (Root)", "SUBJECT"));
+
+                const examSnap = await getDocs(collection(db, "subcategories"));
+                allExams = examSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                const subSnap = await getDocs(collection(db, "subjects"));
+                const rootSubjectSelect = document.getElementById("subjectId");
+                subSnap.forEach(d => { rootSubjectSelect.add(new Option(d.data().name || d.id, d.id)); });
+            } catch(error) { 
+                console.error("Init error:", error); 
+                window.showToast("Failed to load exams", "error");
+            }
+        });
+
+        window.filterExams = function() {
+            const cat = document.getElementById("categoryId").value;
+            const examSelect = document.getElementById("subCategoryId");
+            const examDiv = document.getElementById("examDiv");
+            const subjectDiv = document.getElementById("subjectDiv");
+            const typeDiv = document.getElementById("typeDiv");
+            const badgeDiv = document.getElementById("badgeSubjectDiv");
+            
+            if (!cat) return; 
+
+            if(cat === "SUBJECT") {
+                examDiv.classList.add("hidden");
+                typeDiv.classList.add("hidden");
+                badgeDiv.classList.add("hidden");
+                subjectDiv.classList.remove("hidden");
+                window.loadTests();
+            } else {
+                examDiv.classList.remove("hidden");
+                typeDiv.classList.remove("hidden");
+                subjectDiv.classList.add("hidden");
+                
+                examSelect.innerHTML = '<option value="">-- Select Exam --</option>';
+                allExams.filter(e => e.categoryId === cat).forEach(e => { examSelect.add(new Option(e.name || e.title, e.id)); });
+                window.handleTypeChange();
+            }
+        };
+
+        window.handleTypeChange = async function() {
+            const typeVal = document.getElementById("type").value;
+            const badgeDiv = document.getElementById("badgeSubjectDiv");
+            
+            if (typeVal === "Topic Wise") {
+                badgeDiv.classList.remove("hidden");
+                await window.loadBadgeSubjects(); 
+            } else {
+                badgeDiv.classList.add("hidden");
+                document.getElementById("badgeSubject").value = "All";
+            }
+            window.loadTests();
+        };
+
+        window.handleExamChange = async function() {
+            await window.loadBadgeSubjects();
+            window.loadTests();
+        };
+
+        window.loadBadgeSubjects = async function() {
+            const examId = document.getElementById("subCategoryId").value;
+            const badgeSelect = document.getElementById("badgeSubject");
+            const typeVal = document.getElementById("type").value;
+
+            if (!examId || typeVal !== "Topic Wise") return;
+
+            badgeSelect.innerHTML = '<option value="All">⏳ Loading Subjects... </option>';
+            try {
+                const subWiseCol = collection(db, "exams", examId, "subject_wise");
+                const snapshot = await getDocs(subWiseCol);
+                badgeSelect.innerHTML = '<option value="All">All / Mixed</option>';
+                if(!snapshot.empty) {
+                    snapshot.forEach(doc => {
+                        let sName = doc.data().name || doc.data().title || doc.id.replace(/_/g, ' ').toUpperCase();
+                        badgeSelect.add(new Option(sName, doc.id)); 
+                    });
+                }
+            } catch(err) { 
+                console.error(err); 
+                badgeSelect.innerHTML = '<option value="All">All / Mixed</option>'; 
+            }
+        };
+
+        window.loadTests = async function() {
+            const cat = document.getElementById("categoryId").value;
+            const testSelect = document.getElementById("existingTestSelect");
+
+            testSelect.innerHTML = '<option value="">⏳ Searching Tests...</option>';
+            let testCol;
+
+            if (cat === "SUBJECT") {
+                const subjectId = document.getElementById("subjectId").value;
+                if(!subjectId) { testSelect.innerHTML = '<option value="">-- Select Root Subject First --</option>'; return; }
+                testCol = collection(db, "subjects", subjectId, "tests");
+            } else {
+                const subCatId = document.getElementById("subCategoryId").value;
+                const typeVal = document.getElementById("type").value;
+                let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
+                const badgeId = document.getElementById("badgeSubject").value;
+
+                if(!subCatId || !typeVal) { testSelect.innerHTML = '<option value="">-- Select Exam & Type First --</option>'; return; }
+                if(finalTestType === "Topic Wise" && (!badgeId || badgeId === "All")) { testSelect.innerHTML = '<option value="">-- Select Subject First --</option>'; return; }
+
+                if (finalTestType === "Mock Test") testCol = collection(db, "exams", subCatId, "mock_tests");
+                else if (finalTestType === "Previous Year") testCol = collection(db, "exams", subCatId, "previous_years");
+                else if (finalTestType === "Main Exam") testCol = collection(db, "exams", subCatId, "mains_tests");
+                else if (finalTestType === "Topic Wise") testCol = collection(db, "exams", subCatId, "subject_wise", badgeId, "tests");
+                else testCol = collection(db, "exams", subCatId, "tests");
+            }
+
+            try {
+                const snapshot = await getDocs(testCol);
+                if(snapshot.empty) { testSelect.innerHTML = '<option value="">❌ No tests found in this category.</option>'; return; }
+                
+                testSelect.innerHTML = '<option value="">-- Click to Select a Test --</option>';
+                snapshot.forEach(doc => {
+                    testSelect.add(new Option(`${doc.data().title || doc.id} (Contains: ${doc.data().totalQuestions || 0} Qs)`, doc.id)); 
+                });
+            } catch(err) { testSelect.innerHTML = '<option value="">❌ Error fetching tests</option>'; }
+        };
+
+        // Fetch Questions
+        document.getElementById("loadQuestionsBtn").addEventListener("click", async () => {
+            const testId = document.getElementById("existingTestSelect").value;
+            if(!testId) return window.showAlert("Select Test", "Please select a test from the dropdown first!", "warning");
+
+            const btn = document.getElementById("loadQuestionsBtn");
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+
+            const cat = document.getElementById("categoryId").value;
+            let testRef;
+
+            if (cat === "SUBJECT") {
+                testRef = doc(db, "subjects", document.getElementById("subjectId").value, "tests", testId);
+            } else {
+                const subCatId = document.getElementById("subCategoryId").value;
+                const typeVal = document.getElementById("type").value;
+                let finalTestType = (typeVal === "Free" || typeVal === "Paid" || typeVal === "mock") ? "Mock Test" : typeVal;
+                const badgeId = document.getElementById("badgeSubject").value;
+
+                if (finalTestType === "Mock Test") testRef = doc(db, "exams", subCatId, "mock_tests", testId);
+                else if (finalTestType === "Previous Year") testRef = doc(db, "exams", subCatId, "previous_years", testId);
+                else if (finalTestType === "Main Exam") testRef = doc(db, "exams", subCatId, "mains_tests", testId);
+                else if (finalTestType === "Topic Wise") testRef = doc(db, "exams", subCatId, "subject_wise", badgeId, "tests", testId);
+                else testRef = doc(db, "exams", subCatId, "tests", testId);
+            }
+
+            activeTestRef = testRef;
+            const qCol = collection(testRef, "questions");
+
+            try {
+                const qSnap = await getDocs(qCol);
+                currentQuestions = [];
+                
+                qSnap.forEach(doc => {
+                    currentQuestions.push({ id: doc.id, ...doc.data() });
+                });
+
+                currentQuestions.sort((a, b) => (a.serialNo || 0) - (b.serialNo || 0));
+
+                renderTable(currentQuestions);
+                document.getElementById("tableSection").classList.remove("hidden");
+                document.getElementById("questionCountBadge").innerText = `${currentQuestions.length} Questions`;
+                window.showToast(`Loaded ${currentQuestions.length} questions!`, "success");
+            } catch(err) {
+                window.showAlert("Fetch Error", err.message, "error");
+            } finally {
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-download"></i> Fetch Questions';
+            }
+        });
+
+        function renderTable(list) {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            if(list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan='5' class="p-8 text-center text-slate-400 font-medium">No questions found matching criteria.</td></tr>`;
+                return;
+            }
+
+            list.forEach((q, index) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-3 text-center font-bold text-slate-500">${q.serialNo || index + 1}</td>
+                    <td class="p-3">
+                        <div class="font-bold text-slate-900 leading-snug">${q.question || '<em class="text-slate-400">[Passage/Image Question]</em>'}</div>
+                        <div class="grid grid-cols-2 gap-1.5 mt-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <div><b class="text-slate-400">A:</b> ${q.optionA || '-'}</div>
+                            <div><b class="text-slate-400">B:</b> ${q.optionB || '-'}</div>
+                            <div><b class="text-slate-400">C:</b> ${q.optionC || '-'}</div>
+                            <div><b class="text-slate-400">D:</b> ${q.optionD || '-'}</div>
+                        </div>
+                        ${q.questionImage ? `<div class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-semibold border border-amber-200"><i class="fas fa-image"></i> Attached Image</div>` : ''}
+                        ${q.passage ? `<div class="mt-1 text-[11px] text-slate-400">P: ${q.passage.substring(0,40)}...</div>` : ''}
+                    </td>
+                    <td class="p-3 text-center">
+                        <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-black border border-emerald-200">${q.correctAnswer}</span>
+                    </td>
+                    <td class="p-3 text-slate-500 text-[11px]">
+                        ${q.explanation ? q.explanation.substring(0, 90) + (q.explanation.length > 90 ? '...' : '') : '<span class="text-slate-300">No explanation</span>'}
+                    </td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button class="w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white transition-colors" title="Edit Question" onclick="window.openEditModal('${q.id}')">
+                                <i class="fas fa-pencil-alt text-xs"></i>
+                            </button>
+                            <button class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white transition-colors" title="Delete Question" onclick="window.deleteQuestion('${q.id}')">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Live Search Filter
+        const filterInput = document.getElementById("filterInput");
+        if (filterInput) {
+            filterInput.addEventListener("input", (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) {
+                    renderTable(currentQuestions);
+                } else {
+                    const filtered = currentQuestions.filter(q => 
+                        (q.question && q.question.toLowerCase().includes(term)) ||
+                        (q.explanation && q.explanation.toLowerCase().includes(term)) ||
+                        (q.optionA && q.optionA.toLowerCase().includes(term)) ||
+                        (q.optionB && q.optionB.toLowerCase().includes(term))
+                    );
+                    renderTable(filtered);
+                }
+            });
+        }
+
+        // Modal Logic
+        window.openEditModal = function(docId) {
+            const q = currentQuestions.find(item => item.id === docId);
+            if(!q) return;
+
+            document.getElementById("editDocId").value = docId;
+            document.getElementById("editQuestion").value = q.question || "";
+            document.getElementById("editOptA").value = q.optionA || "";
+            document.getElementById("editOptB").value = q.optionB || "";
+            document.getElementById("editOptC").value = q.optionC || "";
+            document.getElementById("editOptD").value = q.optionD || "";
+            document.getElementById("editAns").value = q.correctAnswer || "A";
+            document.getElementById("editExplanation").value = q.explanation || "";
+            document.getElementById("editPassage").value = q.passage || "";
+            document.getElementById("editImage").value = q.questionImage || "";
+
+            document.getElementById("editModal").classList.remove("hidden");
+        };
+
+        window.closeModal = function() {
+            document.getElementById("editModal").classList.add("hidden");
+        };
+
+        document.getElementById("saveChangesBtn").addEventListener("click", async () => {
+            const docId = document.getElementById("editDocId").value;
+            const btn = document.getElementById("saveChangesBtn");
+            
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
+
+            const updatedData = {
+                question: document.getElementById("editQuestion").value.trim(),
+                optionA: document.getElementById("editOptA").value.trim(),
+                optionB: document.getElementById("editOptB").value.trim(),
+                optionC: document.getElementById("editOptC").value.trim(),
+                optionD: document.getElementById("editOptD").value.trim(),
+                correctAnswer: document.getElementById("editAns").value,
+                explanation: document.getElementById("editExplanation").value.trim(),
+                passage: document.getElementById("editPassage").value.trim(),
+                questionImage: document.getElementById("editImage").value.trim()
+            };
+
+            try {
+                const qRef = doc(collection(activeTestRef, "questions"), docId);
+                await updateDoc(qRef, updatedData);
+
+                const index = currentQuestions.findIndex(q => q.id === docId);
+                if(index !== -1) {
+                    currentQuestions[index] = { ...currentQuestions[index], ...updatedData };
+                }
+                renderTable(currentQuestions);
+                window.closeModal();
+                window.showToast("Question updated successfully!", "success");
+
+            } catch(err) {
+                window.showAlert("Update Failed", err.message, "error");
+            } finally {
+                btn.disabled = false; 
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes to Firebase';
+            }
+        });
+
+        window.deleteQuestion = async function(docId) {
+            const confirmed = await window.showConfirm("Delete Question?", "This question will be permanently removed from this test.");
+            if(!confirmed) return;
+
+            try {
+                const qRef = doc(collection(activeTestRef, "questions"), docId);
+                await deleteDoc(qRef);
+
+                const prevTotal = currentQuestions.length;
+                await updateDoc(activeTestRef, { totalQuestions: prevTotal - 1 });
+
+                currentQuestions = currentQuestions.filter(q => q.id !== docId);
+                renderTable(currentQuestions);
+                document.getElementById("questionCountBadge").innerText = `${currentQuestions.length} Questions`;
+
+                window.showToast("Question deleted from test!", "success");
+            } catch(err) {
+                window.showAlert("Delete Failed", err.message, "error");
+            }
+        };
+    </script>
+</body>
+</html>

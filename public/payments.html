@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments & Failed Recovery - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
+    <style>
+        .pay-tab.active {
+            color: #4f46e5;
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
+        
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
+        </header>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
+            
+            <!-- Page Header -->
+            <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Payments &amp; Recovery</span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Razorpay Payments &amp; Failed Recovery 💳⚡</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Track live transactions, extract student mobile numbers from payment checkouts, and recover failed payments via WhatsApp.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <span id="syncStatusBadge" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        <i class="fas fa-spinner fa-spin text-indigo-600"></i>
+                        <span>Connecting...</span>
+                    </span>
+                    <button id="btnOpenWhatsAppBotModal" class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                        <i class="fab fa-whatsapp text-sm text-white"></i>
+                        <span id="waBotBtnLabel">Link WhatsApp (QR Bot) 📱</span>
+                    </button>
+                    <button id="btnOpenWaTemplates" class="inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold shadow-xs transition-colors">
+                        <i class="fab fa-whatsapp text-emerald-600 text-sm"></i>
+                        <span>Templates 💬</span>
+                    </button>
+                    <button id="btnRefreshPayments" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/25 transition-all">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                        <span>Sync Live</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STATS CARDS -->
+            <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
+                <!-- Total Revenue -->
+                <div class="panel-card p-4 bg-white border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+                            <h3 id="statRevenue" class="text-xl font-black text-slate-900 mt-1">₹0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                            <i class="fas fa-indian-rupee-sign"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Payments -->
+                <div class="panel-card p-4 bg-white border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Captured Orders</p>
+                            <h3 id="statSuccessCount" class="text-xl font-black text-emerald-600 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                            <i class="fas fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Authorized Payments (Needs Capture Action) -->
+                <div class="panel-card p-4 bg-white border border-amber-300 bg-amber-50/20" id="cardAuthorizedWrapper">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1">
+                                <span>Authorized</span>
+                                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-extrabold">Needs Action</span>
+                            </p>
+                            <h3 id="statAuthorizedCount" class="text-xl font-black text-amber-600 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Failed Payments (Hot Leads) -->
+                <div class="panel-card p-4 bg-white border border-rose-200 bg-rose-50/20">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1">
+                                <span>Failed Orders</span>
+                                <span class="px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 text-[9px] font-extrabold">Hot Leads</span>
+                            </p>
+                            <h3 id="statFailedCount" class="text-xl font-black text-rose-600 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg">
+                            <i class="fas fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Numbers Captured -->
+                <div class="panel-card p-4 bg-white border border-slate-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phones Captured</p>
+                            <h3 id="statPhonesCaptured" class="text-xl font-black text-blue-600 mt-1">0</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URGENT ACTION BANNER FOR AUTHORIZED PAYMENTS -->
+            <div id="authorizedAlertBanner" class="hidden max-w-7xl mx-auto mb-6 p-4 rounded-2xl bg-amber-500 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-pulse">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-lg shrink-0">
+                        <i class="fas fa-hand-holding-dollar"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-extrabold text-sm text-white">Action Required: <span id="bannerAuthCount">0</span> Payments Waiting in 'Authorized' Status!</h4>
+                        <p class="text-xs text-amber-100 mt-0.5">Money is blocked in student's bank account. Capture it now so it is credited to your bank and unlocks the test series.</p>
+                    </div>
+                </div>
+                <button id="btnCaptureAll" class="px-4 py-2 bg-white text-amber-900 hover:bg-amber-50 rounded-xl text-xs font-black shadow-sm transition-all whitespace-nowrap flex items-center gap-2">
+                    <i class="fas fa-bolt text-amber-600"></i>
+                    <span>Capture All Pending</span>
+                </button>
+            </div>
+
+            <!-- TABS & ACTIONS BAR -->
+            <div class="max-w-7xl mx-auto mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div class="flex items-center gap-2 overflow-x-auto">
+                        <button id="tabAuthorizedBtn" class="pay-tab py-2.5 px-4 rounded-xl text-xs font-bold text-amber-800 bg-amber-50/80 hover:bg-amber-100 transition-all flex items-center gap-2 border border-amber-200 whitespace-nowrap">
+                            <i class="fas fa-hand-holding-dollar text-amber-600"></i>
+                            <span>⚠️ Pending Capture (Authorized)</span>
+                            <span id="badgeAuthCount" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-extrabold">0</span>
+                        </button>
+                        <button id="tabFailedBtn" class="pay-tab active py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-triangle-exclamation text-rose-500"></i>
+                            <span>1. Failed Payments Recovery (Hot Leads)</span>
+                            <span id="badgeFailedCount" class="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-extrabold">0</span>
+                        </button>
+                        <button id="tabSuccessBtn" class="pay-tab py-2.5 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2 border border-transparent whitespace-nowrap">
+                            <i class="fas fa-circle-check text-emerald-500"></i>
+                            <span>2. Successful Payments</span>
+                            <span id="badgeSuccessCount" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">0</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-full sm:w-64 md:w-72">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" placeholder="Search name, phone, order ID..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:border-indigo-500 focus:outline-none transition-all">
+                        </div>
+                        <button id="btnSyncFirestore" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap">
+                            <i class="fas fa-cloud-arrow-up text-emerald-600"></i>
+                            <span class="hidden sm:inline">Auto-Sync Phones to Profiles</span>
+                            <span class="sm:hidden">Sync Profiles</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 0: AUTHORIZED PAYMENTS (PENDING CAPTURE) -->
+            <div id="sectionAuthorized" class="hidden max-w-7xl mx-auto">
+                <div class="panel-card bg-white border border-amber-300 overflow-hidden shadow-xs">
+                    <div class="p-4 bg-amber-50/70 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-2 text-amber-900 font-bold">
+                            <i class="fas fa-hand-holding-dollar text-amber-600 text-sm"></i>
+                            <span>Authorized Payments: Money is locked in student's bank account. Click "Capture" to credit it to your account and unlock their Mock Test Series!</span>
+                        </div>
+                        <button id="btnBulkCaptureInside" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow-xs transition-colors whitespace-nowrap">
+                            <i class="fas fa-bolt"></i> Capture All
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-amber-100/50 text-slate-800 uppercase font-bold tracking-wider">
+                                    <th class="p-3.5 border-b border-amber-200">Student Info</th>
+                                    <th class="p-3.5 border-b border-amber-200">Mobile (From Checkout)</th>
+                                    <th class="p-3.5 border-b border-amber-200">Amount</th>
+                                    <th class="p-3.5 border-b border-amber-200">Payment ID</th>
+                                    <th class="p-3.5 border-b border-amber-200">Date &amp; Time</th>
+                                    <th class="p-3.5 border-b border-amber-200 text-center">Capture Action &amp; Notify</th>
+                                </tr>
+                            </thead>
+                            <tbody id="authorizedTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="6" class="p-12 text-center text-slate-400 font-medium">
+                                        Loading authorized payments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: FAILED PAYMENTS RECOVERY -->
+            <div id="sectionFailed" class="max-w-7xl mx-auto">
+                <div class="panel-card bg-white border border-rose-200/80 overflow-hidden shadow-xs">
+                    <div class="p-4 bg-rose-50/50 border-b border-rose-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div class="flex items-center gap-2 text-rose-900 font-bold">
+                            <i class="fas fa-fire text-rose-500 text-sm"></i>
+                            <span>Failed Checkout Recovery Hub: Click WhatsApp to directly follow up and recover these payments!</span>
+                        </div>
+                        <span class="text-rose-700 font-semibold" id="failedSubText">Showing recent failed transactions</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100/80 text-slate-700 uppercase font-bold tracking-wider">
+                                    <th class="p-3.5 border-b border-slate-200">Student Info</th>
+                                    <th class="p-3.5 border-b border-slate-200">Mobile (From Razorpay)</th>
+                                    <th class="p-3.5 border-b border-slate-200">Attempted Amount</th>
+                                    <th class="p-3.5 border-b border-slate-200">Failure Reason</th>
+                                    <th class="p-3.5 border-b border-slate-200">Date &amp; Time</th>
+                                    <th class="p-3.5 border-b border-slate-200 text-center">Recovery Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="failedTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="6" class="p-12 text-center text-slate-400 font-medium">
+                                        <i class="fas fa-spinner fa-spin text-xl mb-2 text-indigo-600"></i><br>
+                                        Connecting to Razorpay API and loading transactions...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SUCCESSFUL PAYMENTS -->
+            <div id="sectionSuccess" class="hidden max-w-7xl mx-auto">
+                <div class="panel-card bg-white border border-slate-200 overflow-hidden shadow-xs">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 uppercase font-bold tracking-wider">
+                                    <th class="p-3.5 border-b border-slate-200">Payment ID / Order</th>
+                                    <th class="p-3.5 border-b border-slate-200">Student Details</th>
+                                    <th class="p-3.5 border-b border-slate-200">Phone (Captured)</th>
+                                    <th class="p-3.5 border-b border-slate-200">Amount Paid</th>
+                                    <th class="p-3.5 border-b border-slate-200">Method</th>
+                                    <th class="p-3.5 border-b border-slate-200">Date &amp; Time</th>
+                                    <th class="p-3.5 border-b border-slate-200 text-center">1-Click WhatsApp Access</th>
+                                </tr>
+                            </thead>
+                            <tbody id="successTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="7" class="p-12 text-center text-slate-400 font-medium">
+                                        Loading successful payments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- WHATSAPP TEMPLATES SETTINGS MODAL -->
+    <div id="waTemplateModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 text-xs overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header (Fixed) -->
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">WhatsApp Message Templates</h3>
+                        <p class="text-[11px] text-slate-500">Customize default Odia messages sent with 1-click to students</p>
+                    </div>
+                </div>
+                <button type="button" id="btnCloseWaTplModal" class="text-slate-400 hover:text-slate-600 text-lg p-1 rounded-lg hover:bg-slate-200/50">&times;</button>
+            </div>
+
+            <!-- Modal Body (Scrollable!) -->
+            <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                <!-- Placeholders Info -->
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex flex-wrap gap-2 items-center">
+                    <span class="font-bold text-slate-700">Available Tags:</span>
+                    <code class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-indigo-600 font-mono text-[10px]">{name}</code>
+                    <code class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-indigo-600 font-mono text-[10px]">{exam}</code>
+                    <code class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-indigo-600 font-mono text-[10px]">{amount}</code>
+                    <code class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-indigo-600 font-mono text-[10px]">{id}</code>
+                    <code class="px-1.5 py-0.5 bg-white border border-slate-300 rounded text-indigo-600 font-mono text-[10px]">{link}</code>
+                </div>
+
+                <!-- Website URL input -->
+                <div>
+                    <label class="form-label font-bold text-slate-700">Website Link ({link})</label>
+                    <input type="url" id="tplSiteLink" placeholder="https://odishaexamprep.com" class="form-input text-xs font-mono">
+                </div>
+
+                <!-- Success Template -->
+                <div>
+                    <label class="form-label font-bold text-emerald-700 flex items-center gap-1.5 mb-1">
+                        <i class="fas fa-circle-check text-emerald-600"></i>
+                        <span>1. Payment Success Message (Receipt &amp; Test Unlock)</span>
+                    </label>
+                    <textarea id="tplSuccessText" rows="4" class="form-input text-xs font-sans leading-relaxed"></textarea>
+                </div>
+
+                <!-- Failed Template -->
+                <div>
+                    <label class="form-label font-bold text-rose-700 flex items-center gap-1.5 mb-1">
+                        <i class="fas fa-triangle-exclamation text-rose-500"></i>
+                        <span>2. Failed Payment Recovery Message (Hot Leads)</span>
+                    </label>
+                    <textarea id="tplFailedText" rows="4" class="form-input text-xs font-sans leading-relaxed"></textarea>
+                </div>
+
+                <!-- Captured Confirmation Template -->
+                <div>
+                    <label class="form-label font-bold text-amber-700 flex items-center gap-1.5 mb-1">
+                        <i class="fas fa-hand-holding-dollar text-amber-600"></i>
+                        <span>3. Payment Captured &amp; Activated Notice (Authorized &rarr; Captured)</span>
+                    </label>
+                    <textarea id="tplCapturedText" rows="4" class="form-input text-xs font-sans leading-relaxed"></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Fixed Sticky) -->
+            <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+                <button type="button" id="btnResetWaTpl" class="text-xs text-rose-600 hover:text-rose-800 font-bold underline">
+                    Reset to Defaults
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnCancelWaTpl" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-100">Cancel</button>
+                    <button type="button" id="btnSaveWaTpl" class="btn-primary py-2 px-5 text-xs font-bold shadow-xs">Save Templates</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW & EDIT MESSAGE MODAL (Before sending to student) -->
+    <div id="waPreviewModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 text-xs overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header (Fixed) -->
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80 shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Preview WhatsApp Message</h3>
+                        <p class="text-[11px] text-slate-500" id="previewStudentHeader">Sending to Student</p>
+                    </div>
+                </div>
+                <button type="button" id="btnCloseWaPreview" class="text-slate-400 hover:text-slate-600 text-lg p-1 rounded-lg hover:bg-slate-200/50">&times;</button>
+            </div>
+
+            <!-- Modal Body (Scrollable!) -->
+            <div class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-3">
+                <!-- Recipient Badge -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">Recipient</span>
+                        <h4 class="font-bold text-slate-900" id="previewStudentName">Student</h4>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">Mobile Number</span>
+                        <div class="font-mono font-bold text-emerald-700 flex items-center gap-1 justify-end">
+                            <i class="fas fa-phone text-[10px]"></i>
+                            <span id="previewStudentPhone">+91-0000000000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label font-bold text-slate-700">Message Text (You can edit or add notes before sending):</label>
+                    <textarea id="previewWaMessageText" rows="6" class="form-input text-xs font-sans leading-relaxed"></textarea>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-[11px] flex items-center gap-2">
+                    <i class="fas fa-info-circle text-emerald-600 text-sm"></i>
+                    <span>Send via Bot automatically or open pre-filled in WhatsApp app/web.</span>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Fixed Sticky) -->
+            <div class="p-4 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/80 shrink-0">
+                <button type="button" id="btnCancelWaPreview" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-100">Cancel</button>
+                <button type="button" id="btnLaunchWaPreview" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+                    <i class="fab fa-whatsapp text-sm text-emerald-600"></i>
+                    <span>Open WhatsApp (wa.me)</span>
+                </button>
+                <button type="button" id="btnBotSendWaPreview" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/25 transition-all">
+                    <i class="fas fa-robot text-sm"></i>
+                    <span>Send with Bot ⚡</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WHATSAPP QR AUTO-SENDER BOT MODAL -->
+    <div id="waBotModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150 text-xs">
+            <!-- Modal Header (Fixed) -->
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl shadow-xs">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-slate-900">WhatsApp QR Auto-Sender Bot 🤖</h3>
+                        <p class="text-[11px] text-slate-500">100% Free automatic messages directly from your WhatsApp number</p>
+                    </div>
+                </div>
+                <button type="button" id="btnCloseWaBotModal" class="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-white/80 transition-colors">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable!) -->
+            <div class="p-5 sm:p-6 overflow-y-auto flex-1">
+                <!-- State 1: Connected View -->
+                <div id="waBotConnectedView" class="hidden text-center py-2">
+                    <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-2xl mb-3 shadow-inner">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h4 class="font-black text-base text-slate-900">WhatsApp Connected! 🎉</h4>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Ready to automatically send messages on Payment Capture &amp; Recovery.</p>
+                    
+                    <div class="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 inline-block text-left font-mono text-[11px] text-slate-700 w-full max-w-xs">
+                        <div><b>Connected Number:</b> <span id="waBotPhoneDisplay" class="text-emerald-700 font-bold">+91 ...</span></div>
+                        <div class="mt-1"><b>Status:</b> <span class="text-emerald-600 font-bold">🟢 Active &amp; Ready</span></div>
+                    </div>
+
+                    <!-- Send Test Message -->
+                    <div class="mt-4 p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 text-left">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Send a Test WhatsApp Message:</label>
+                        <div class="flex gap-2">
+                            <input type="tel" id="waTestPhone" placeholder="Enter 10-digit phone number" class="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <button type="button" id="btnSendWaTest" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap">
+                                <i class="fas fa-paper-plane mr-1"></i> Send Test
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 flex justify-center gap-3">
+                        <button type="button" id="btnDisconnectWa" class="px-4 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition-colors">
+                            <i class="fas fa-power-off mr-1"></i> Disconnect / Link Another Number
+                        </button>
+                    </div>
+                </div>
+
+                <!-- State 2: QR Code Scan View -->
+                <div id="waBotQrView" class="text-center py-2">
+                    <div id="waQrContainer" class="p-3 bg-white border-2 border-dashed border-emerald-300 rounded-2xl inline-block shadow-xs">
+                        <img id="waQrImage" class="w-60 h-60 mx-auto object-contain hidden" alt="WhatsApp QR Code">
+                        <div id="waQrLoading" class="w-60 h-60 flex flex-col items-center justify-center text-slate-400 gap-2">
+                            <i class="fas fa-spinner fa-spin text-3xl text-emerald-600"></i>
+                            <span class="text-xs font-bold text-slate-700">Connecting to WhatsApp Engine...</span>
+                            <span class="text-[10px] text-slate-400">Ensure start-server.bat is running</span>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="mt-4 text-left bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <h5 class="text-xs font-bold text-slate-900 mb-1.5 flex items-center gap-1.5">
+                            <i class="fas fa-mobile-screen text-emerald-600"></i>
+                            <span>How to Link Your WhatsApp (100% Free):</span>
+                        </h5>
+                        <ol class="text-[11px] text-slate-600 space-y-1 list-decimal list-inside">
+                            <li>Open <b>WhatsApp</b> on your phone.</li>
+                            <li>Tap <b>3 Dots Menu (Android)</b> or <b>Settings (iPhone)</b>.</li>
+                            <li>Select <b>Linked Devices</b> &gt; <b>Link a Device</b>.</li>
+                            <li>Point your phone camera at this QR code to scan.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script type="module">
+        import { db, auth } from './firebase.js';
+        import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
+
+        renderAdminLayout({
+            pageTitle: "Payments & Failed Recovery",
+            pageSubtitle: "Capture student mobile numbers from Razorpay and recover failed payments",
+            pageIcon: "fas fa-credit-card",
+            activeNav: "payments.html"
+        });
+        initAuthGuard();
+
+        // State Store
+        let rawPayments = [];
+        let failedPayments = [];
+        let successPayments = [];
+        let authorizedPayments = [];
+        let filteredFailed = [];
+        let filteredSuccess = [];
+        let filteredAuthorized = [];
+        let firestoreUsersMap = {};
+        let firestorePhoneMap = {};
+        let searchQuery = "";
+
+        // Tab Switching (Authorized, Failed Hot Leads, Successful)
+        const tabAuthorizedBtn = document.getElementById("tabAuthorizedBtn");
+        const tabFailedBtn = document.getElementById("tabFailedBtn");
+        const tabSuccessBtn = document.getElementById("tabSuccessBtn");
+        const sectionAuthorized = document.getElementById("sectionAuthorized");
+        const sectionFailed = document.getElementById("sectionFailed");
+        const sectionSuccess = document.getElementById("sectionSuccess");
+
+        function switchTab(target) {
+            tabAuthorizedBtn.className = "pay-tab py-2.5 px-4 rounded-xl text-xs font-bold text-amber-800 bg-amber-50/60 hover:bg-amber-100 transition-all flex items-center gap-2 border border-transparent whitespace-nowrap";
+            tabFailedBtn.className = "pay-tab py-2.5 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2 border border-transparent whitespace-nowrap";
+            tabSuccessBtn.className = "pay-tab py-2.5 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center gap-2 border border-transparent whitespace-nowrap";
+
+            sectionAuthorized.classList.add("hidden");
+            sectionFailed.classList.add("hidden");
+            sectionSuccess.classList.add("hidden");
+
+            if (target === 'authorized') {
+                tabAuthorizedBtn.className = "pay-tab active py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-amber-900 bg-amber-100 border border-amber-300 whitespace-nowrap";
+                sectionAuthorized.classList.remove("hidden");
+            } else if (target === 'failed') {
+                tabFailedBtn.className = "pay-tab active py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap";
+                sectionFailed.classList.remove("hidden");
+            } else if (target === 'success') {
+                tabSuccessBtn.className = "pay-tab active py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap";
+                sectionSuccess.classList.remove("hidden");
+            }
+        }
+
+        tabAuthorizedBtn.addEventListener("click", () => switchTab('authorized'));
+        tabFailedBtn.addEventListener("click", () => switchTab('failed'));
+        tabSuccessBtn.addEventListener("click", () => switchTab('success'));
+
+        // Search Input Handling
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+            searchInput.addEventListener("input", (e) => {
+                searchQuery = (e.target.value || "").toLowerCase().trim();
+                applyFilter();
+            });
+        }
+
+        // Helper to update sync status badge in header
+        function updateSyncBadge(type, text) {
+            const badge = document.getElementById("syncStatusBadge");
+            if (!badge) return;
+            if (type === "loading") {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200";
+                badge.innerHTML = `<i class="fas fa-spinner fa-spin text-amber-600"></i> <span>${text}</span>`;
+            } else if (type === "live") {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                badge.innerHTML = `<i class="fas fa-check-circle text-emerald-600"></i> <span>${text}</span>`;
+            } else if (type === "cloud") {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+                badge.innerHTML = `<i class="fas fa-cloud text-indigo-600"></i> <span>${text}</span>`;
+            } else {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200";
+                badge.innerHTML = `<i class="fas fa-database text-slate-500"></i> <span>${text}</span>`;
+            }
+        }
+
+        // Load Firestore Users for Matching & Contact Enhancement
+        async function loadFirestoreUsers() {
+            try {
+                const [basicSnap, premiumSnap] = await Promise.all([
+                    getDocs(collection(db, "user")),
+                    getDocs(collection(db, "users"))
+                ]);
+                firestoreUsersMap = {};
+                firestorePhoneMap = {};
+
+                const processDoc = (d, col) => {
+                    const data = d.data();
+                    const email = (data.email || "").toLowerCase().trim();
+                    const rawPhone = (data.phoneNumber || data.phone || "").toString();
+                    const phone = rawPhone.replace(/[^0-9]/g, '').slice(-10);
+                    const entry = { id: d.id, col, data };
+                    if (email) firestoreUsersMap[email] = entry;
+                    if (phone && phone.length === 10) firestorePhoneMap[phone] = entry;
+                };
+
+                basicSnap.forEach(d => processDoc(d, "user"));
+                premiumSnap.forEach(d => processDoc(d, "users"));
+            } catch (e) {
+                console.warn("Could not preload firestore users:", e);
+            }
+        }
+
+        function findMatchedStudent(email, contact) {
+            const safeEmail = (email || "").toLowerCase().trim();
+            const cleanPhone = contact ? contact.toString().replace(/[^0-9]/g, '').slice(-10) : "";
+
+            if (safeEmail && firestoreUsersMap[safeEmail]) {
+                return firestoreUsersMap[safeEmail];
+            }
+            if (cleanPhone && cleanPhone.length === 10 && firestorePhoneMap[cleanPhone]) {
+                return firestorePhoneMap[cleanPhone];
+            }
+            return null;
+        }
+
+        function getStudentDisplayName(email, contact) {
+            const matched = findMatchedStudent(email, contact);
+            if (matched && matched.data) {
+                const n = matched.data.fullName || matched.data.name;
+                if (n && n.trim()) return n.trim();
+            }
+            if (email && email.includes("@")) {
+                const userPart = email.split("@")[0];
+                if (!/^[0-9]+$/.test(userPart)) return userPart;
+            }
+            if (contact) {
+                const clean = contact.toString().replace(/[^0-9]/g, '').slice(-10);
+                if (clean) return `Student (${clean.slice(0, 5)}...)`;
+            }
+            return "Student";
+        }
+
+        function getStudentTargetExam(email, contact) {
+            const matched = findMatchedStudent(email, contact);
+            return matched?.data?.targetExam || "Mock Test Series";
+        }
+
+        async function getBackendApiUrl(endpoint) {
+            if (window.location.protocol === 'file:') {
+                return `https://us-central1-odisha-exam-prep-7ee0b.cloudfunctions.net/api${endpoint}`;
+            }
+            // In hosted environment (web.app / firebaseapp.com) or local dev server
+            return endpoint;
+        }
+
+        // Fetch Payments from Firestore Cloud Cache first, then background sync
+        async function loadPayments(forceSync = false) {
+            updateSyncBadge("loading", "Loading transactions...");
+
+            let loadedCount = 0;
+
+            // 1. Load directly from Firestore Cloud cache
+            try {
+                const snap = await getDocs(collection(db, "razorpay_transactions"));
+                if (!snap.empty) {
+                    rawPayments = snap.docs.map(d => d.data());
+                    rawPayments.sort((a, b) => {
+                        const timeA = typeof a.created_at === 'number' ? a.created_at : parseInt(a.created_at) || 0;
+                        const timeB = typeof b.created_at === 'number' ? b.created_at : parseInt(b.created_at) || 0;
+                        return timeB - timeA;
+                    });
+                    loadedCount = rawPayments.length;
+                    processPaymentsData();
+                    updateSyncBadge("cloud", `Cloud Synced (${loadedCount} txns)`);
+                }
+            } catch (fsErr) {
+                console.warn("Firestore transactions read error:", fsErr);
+            }
+
+            // 2. If forceSync or if Firestore was completely empty, trigger backend sync
+            if (forceSync || loadedCount === 0) {
+                await runBackendSync(loadedCount > 0);
+            } else {
+                // Background check if backend server is available
+                checkBackendStatus();
+            }
+        }
+
+        async function runBackendSync(hasExistingData) {
+            const refreshIcon = document.getElementById("refreshIcon");
+            if (refreshIcon) refreshIcon.classList.add("fa-spin");
+            updateSyncBadge("loading", "Syncing Razorpay...");
+
+            try {
+                const apiUrl = await getBackendApiUrl('/api/razorpay/sync?count=100');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                const res = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => ({}));
+                    throw new Error(errJson.error || `HTTP ${res.status}`);
+                }
+
+                const data = await res.json();
+                
+                // Reload from Firestore to get freshly synced records
+                const snap = await getDocs(collection(db, "razorpay_transactions"));
+                if (!snap.empty) {
+                    rawPayments = snap.docs.map(d => d.data());
+                    rawPayments.sort((a, b) => {
+                        const timeA = typeof a.created_at === 'number' ? a.created_at : parseInt(a.created_at) || 0;
+                        const timeB = typeof b.created_at === 'number' ? b.created_at : parseInt(b.created_at) || 0;
+                        return timeB - timeA;
+                    });
+                    processPaymentsData();
+                }
+
+                updateSyncBadge("live", `Live Connected (${rawPayments.length} txns)`);
+                window.showToast(`Razorpay sync complete! (${rawPayments.length} transactions)`, 'success');
+
+            } catch (err) {
+                console.warn("Backend sync notice:", err.message);
+                if (hasExistingData) {
+                    updateSyncBadge("cloud", `Cloud Synced (${rawPayments.length} txns)`);
+                    window.showToast(`Cloud data active (${rawPayments.length} transactions). Local server offline.`, 'info');
+                } else {
+                    document.getElementById("failedTableBody").innerHTML = `
+                        <tr>
+                            <td colspan="6" class="p-10 text-center text-slate-600">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl mx-auto mb-3">
+                                    <i class="fas fa-plug-circle-exclamation"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-900 text-sm">Local Server ସହିତ Connect ହୋଇପାରିଲା ନାହିଁ</h4>
+                                <p class="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-3">
+                                    Razorpay ରୁ transactions ଟାଣିବା ପାଇଁ ଆପଣଙ୍କ PC ରେ <b>start-server.bat</b> ଚାଲୁ ରଖନ୍ତୁ।
+                                </p>
+                            </td>
+                        </tr>
+                    `;
+                    updateSyncBadge("offline", "Server Offline");
+                }
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+            }
+        }
+
+        async function checkBackendStatus() {
+            try {
+                const apiUrl = await getBackendApiUrl('/api/config');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2500);
+                const res = await fetch(apiUrl, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) {
+                    updateSyncBadge("live", `Live Server Active (${rawPayments.length} txns)`);
+                }
+            } catch (e) {
+                // Keep cloud badge
+            }
+        }
+
+        // Process Payments into Authorized, Success & Failed Lists
+        function processPaymentsData() {
+            failedPayments = [];
+            successPayments = [];
+            authorizedPayments = [];
+            let totalRevenue = 0;
+            const phoneSet = new Set();
+
+            rawPayments.forEach(p => {
+                let amountInRs = 0;
+                if (typeof p.rawAmount === 'number' && p.rawAmount > 0) {
+                    amountInRs = Math.round(p.rawAmount / 100);
+                } else if (typeof p.amount === 'number' && p.amount > 0) {
+                    amountInRs = (p.amount >= 500) ? Math.round(p.amount / 100) : p.amount;
+                }
+                const contact = p.contact ? p.contact.toString() : "";
+                if (contact && contact.replace(/[^0-9]/g, '').length >= 10) {
+                    phoneSet.add(contact.replace(/[^0-9]/g, '').slice(-10));
+                }
+
+                const rawCreatedAt = typeof p.created_at === 'number' ? p.created_at : parseInt(p.created_at) || 0;
+                const createdAtDate = rawCreatedAt ? new Date(rawCreatedAt * 1000) : new Date();
+
+                if (p.status === "authorized") {
+                    authorizedPayments.push({
+                        id: p.id,
+                        orderId: p.order_id || p.id,
+                        amount: amountInRs,
+                        rawAmount: p.amount || 0,
+                        contact: contact,
+                        email: p.email || "",
+                        method: p.method || "upi",
+                        notes: p.notes || {},
+                        createdAt: createdAtDate
+                    });
+                } else if (p.status === "failed") {
+                    failedPayments.push({
+                        id: p.id,
+                        amount: amountInRs,
+                        contact: contact,
+                        email: p.email || "",
+                        notes: p.notes || {},
+                        errorDescription: p.error_description || p.error_reason || "Payment gateway error / User dropped",
+                        createdAt: createdAtDate
+                    });
+                } else if (p.status === "captured") {
+                    totalRevenue += amountInRs;
+                    successPayments.push({
+                        id: p.id,
+                        orderId: p.order_id || p.id,
+                        amount: amountInRs,
+                        contact: contact,
+                        email: p.email || "",
+                        method: p.method || "online",
+                        createdAt: createdAtDate
+                    });
+                }
+            });
+
+            // Update Metric Cards
+            document.getElementById("statRevenue").innerText = `₹${totalRevenue.toLocaleString('en-IN')}`;
+            document.getElementById("statSuccessCount").innerText = successPayments.length;
+            document.getElementById("statAuthorizedCount").innerText = authorizedPayments.length;
+            document.getElementById("statFailedCount").innerText = failedPayments.length;
+            document.getElementById("statPhonesCaptured").innerText = phoneSet.size;
+
+            document.getElementById("badgeAuthCount").innerText = authorizedPayments.length;
+            document.getElementById("badgeFailedCount").innerText = failedPayments.length;
+            document.getElementById("badgeSuccessCount").innerText = successPayments.length;
+
+            // Highlight Alert Banner & Tab if Authorized payments exist
+            const alertBanner = document.getElementById("authorizedAlertBanner");
+            if (authorizedPayments.length > 0) {
+                if (alertBanner) alertBanner.classList.remove("hidden");
+                const bCount = document.getElementById("bannerAuthCount");
+                if (bCount) bCount.innerText = authorizedPayments.length;
+                switchTab('authorized');
+            } else {
+                if (alertBanner) alertBanner.classList.add("hidden");
+            }
+
+            applyFilter();
+        }
+
+        function applyFilter() {
+            if (!searchQuery) {
+                filteredAuthorized = [...authorizedPayments];
+                filteredFailed = [...failedPayments];
+                filteredSuccess = [...successPayments];
+            } else {
+                const matchItem = (item) => {
+                    const studentName = getStudentDisplayName(item.email, item.contact).toLowerCase();
+                    const email = (item.email || "").toLowerCase();
+                    const phone = (item.contact || "").toString().replace(/[^0-9]/g, '');
+                    const id = (item.id || "").toLowerCase();
+                    const orderId = (item.orderId || "").toLowerCase();
+                    return studentName.includes(searchQuery) ||
+                           email.includes(searchQuery) ||
+                           phone.includes(searchQuery) ||
+                           id.includes(searchQuery) ||
+                           orderId.includes(searchQuery);
+                };
+
+                filteredAuthorized = authorizedPayments.filter(matchItem);
+                filteredFailed = failedPayments.filter(matchItem);
+                filteredSuccess = successPayments.filter(matchItem);
+            }
+
+            renderAuthorizedTable();
+            renderFailedTable();
+            renderSuccessTable();
+        }
+
+        // ==========================================
+        // WHATSAPP TEMPLATES & AUTOMATION ENGINE
+        // ==========================================
+        const DEFAULT_SUCCESS_TPL = `🙏 *ନମସ୍କାର {name} ମହାଶୟ!*
+
+🎉 *ଆପଣଙ୍କର ପେମେଣ୍ଟ ସଫଳ ହୋଇଛି!*
+
+Odisha Exam Prep ରେ *{exam}* ପାଇଁ ଆପଣ କରିଥିବା ₹{amount} ର ପେମେଣ୍ଟ ସଫଳତାର ସହ ଗ୍ରହଣ କରାଯାଇଛି।
+
+✅ *Payment Status:* Successful  
+💰 *Amount Paid:* ₹{amount}  
+🧾 *Order ID:* {id}  
+🔓 *Test Series:* Successfully Unlocked
+
+📚 *ଏବେ ଆପଣଙ୍କର Test Series ରେ ଲଗ୍ଇନ୍ କରି ପରୀକ୍ଷା ଅଭ୍ୟାସ ଆରମ୍ଭ କରନ୍ତୁ।*
+
+🌐 *Website:* {link}
+
+ଆପଣଙ୍କର ସଫଳତା ହିଁ ଆମର ପ୍ରେରଣା! 💯
+
+OSSSC, OSSC ଓ ଅନ୍ୟାନ୍ୟ Odisha Government Exams ପାଇଁ ଆପଣଙ୍କର ପ୍ରସ୍ତୁତିକୁ ଆହୁରି ମଜବୁତ କରନ୍ତୁ।
+
+କୌଣସି ସମସ୍ୟା କିମ୍ବା ସନ୍ଦେହ ଥିଲେ ଆମ WhatsApp Support ରେ ଯୋଗାଯୋଗ କରନ୍ତୁ।
+
+*ଶୁଭେଚ୍ଛା ସହିତ,*  
+💙 *Team Odisha Exam Prep*  
+_Prepare Smart. Practice More. Succeed with Confidence!_`;
+
+        const DEFAULT_FAILED_TPL = `🙏 *ନମସ୍କାର {name} ମହାଶୟ!*
+
+*Odisha Exam Prep* ରେ ଆପଣଙ୍କର {exam} Mock Test ପାଇଁ ₹{amount} ର ପେମେଣ୍ଟ ବ୍ୟାଙ୍କିଂ ସମସ୍ୟା ଯୋଗୁଁ ସଫଳ ହୋଇପାରିନାହିଁ।
+
+ଚିନ୍ତା କରନ୍ତୁ ନାହିଁ! 😊 ଆପଣ ନିମ୍ନ ଲିଙ୍କ୍ ମାଧ୍ୟମରେ ପୁନର୍ବାର ପେମେଣ୍ଟ କରି ଆପଣଙ୍କର Mock Test ଅନଲକ୍ କରିପାରିବେ।
+
+🌐 *Website:* {link}
+
+💳 *ଯଦି ଆପଣଙ୍କ ବ୍ୟାଙ୍କ ଆକାଉଣ୍ଟରୁ ଟଙ୍କା କଟିଯାଇଛି*, ତେବେ ଦୟାକରି ପେମେଣ୍ଟର Screenshot ଆମ WhatsApp Support ନମ୍ବରକୁ ପଠାନ୍ତୁ। ଆମ ଟିମ୍ ଆପଣଙ୍କ ପେମେଣ୍ଟ ଯାଞ୍ଚ କରି ଆବଶ୍ୟକୀୟ ସହାୟତା ପ୍ରଦାନ କରିବ।
+
+🎯 *Odisha Exam Prep ସହିତ ଆପଣଙ୍କର ପ୍ରସ୍ତୁତି ଜାରି ରଖନ୍ତୁ ଏବଂ ସଫଳତା ଆଡ଼କୁ ଆଉ ଏକ ପାଦ ଆଗକୁ ବଢ଼ାନ୍ତୁ!*
+
+ଧନ୍ୟବାଦ 🙏  
+*Team Odisha Exam Prep*`;
+
+        const DEFAULT_CAPTURED_TPL = `🙏 *ନମସ୍କାର {name} ମହାଶୟ!*
+
+🎉 *ଆପଣଙ୍କର ପେମେଣ୍ଟ ସଫଳତାର ସହ Verify ଓ Capture ହୋଇଛି!*
+
+Odisha Exam Prep ରେ *{exam}* Mock Test ପାଇଁ ଆପଣ କରିଥିବା ₹{amount} ର ପେମେଣ୍ଟ Verify ହୋଇସାରିଛି ଏବଂ ଆପଣଙ୍କର Test Series Successfully Unlock ହୋଇଯାଇଛି।
+
+✅ *Payment Status:* Captured & Activated  
+💰 *Amount:* ₹{amount}  
+🧾 *Payment ID:* {id}  
+🔓 *Test Series Access:* Successfully Unlocked
+
+📚 *ଏବେ ଆପଣ App ରେ ଲଗଇନ୍ କରି ନିଜର Mock Test ଅଭ୍ୟାସ ଆରମ୍ଭ କରିପାରିବେ।*
+
+🌐 *Website:* {link}
+
+କୌଣସି ସମସ୍ୟା କିମ୍ବା ସନ୍ଦେହ ଥିଲେ ଆମ WhatsApp Support ରେ ଯୋଗାଯୋଗ କରନ୍ତୁ।
+
+*ଶୁଭେଚ୍ଛା ସହିତ,*  
+💙 *Team Odisha Exam Prep*`;
+
+        const TPL_VERSION = "v3_clean_utf8";
+        try {
+            if (localStorage.getItem("odisha_tpl_ver") !== TPL_VERSION) {
+                localStorage.removeItem("odisha_tpl_success");
+                localStorage.removeItem("odisha_tpl_failed");
+                localStorage.removeItem("odisha_tpl_captured");
+                localStorage.setItem("odisha_tpl_ver", TPL_VERSION);
+            }
+        } catch(e) {}
+
+        function cleanTpl(str, defaultVal) {
+            if (!str || typeof str !== 'string' || !str.trim()) return defaultVal;
+            // Purge corrupted Unicode replacement characters or bad encodings
+            if (str.includes('\uFFFD') || str.includes('\u25B2') || str.includes('ï¿½')) {
+                return defaultVal;
+            }
+            return str;
+        }
+
+        function getTplSuccess() {
+            return cleanTpl(localStorage.getItem("odisha_tpl_success"), DEFAULT_SUCCESS_TPL);
+        }
+        function getTplFailed() {
+            return cleanTpl(localStorage.getItem("odisha_tpl_failed"), DEFAULT_FAILED_TPL);
+        }
+        function getTplCaptured() {
+            return cleanTpl(localStorage.getItem("odisha_tpl_captured"), DEFAULT_CAPTURED_TPL);
+        }
+        function getSiteLink() {
+            return localStorage.getItem("odisha_site_link") || "https://odishaexamprep.com";
+        }
+
+        function buildMessage(tpl, params) {
+            let msg = tpl;
+            msg = msg.replaceAll("{name}", params.name || "Student");
+            msg = msg.replaceAll("{exam}", params.exam || "Mock Test Series");
+            msg = msg.replaceAll("{amount}", params.amount || "0");
+            msg = msg.replaceAll("{id}", params.id || "");
+            msg = msg.replaceAll("{link}", params.link || getSiteLink());
+            return msg;
+        }
+
+        function getWaSentInfo(paymentId) {
+            try {
+                const map = JSON.parse(localStorage.getItem("odisha_wa_sent_ids") || "{}");
+                return map[paymentId] || null;
+            } catch (e) { return null; }
+        }
+
+        window.recordWaSent = function(paymentId, phone, type) {
+            try {
+                const map = JSON.parse(localStorage.getItem("odisha_wa_sent_ids") || "{}");
+                map[paymentId] = {
+                    sentAt: new Date().toISOString(),
+                    phone: phone || "",
+                    type: type || "unknown"
+                };
+                localStorage.setItem("odisha_wa_sent_ids", JSON.stringify(map));
+                renderAuthorizedTable();
+                renderFailedTable();
+                renderSuccessTable();
+            } catch (e) {}
+        };
+
+        // WhatsApp Templates Modal
+        const waTplModal = document.getElementById("waTemplateModal");
+        document.getElementById("btnOpenWaTemplates").addEventListener("click", () => {
+            document.getElementById("tplSiteLink").value = getSiteLink();
+            document.getElementById("tplSuccessText").value = getTplSuccess();
+            document.getElementById("tplFailedText").value = getTplFailed();
+            const capInput = document.getElementById("tplCapturedText");
+            if (capInput) capInput.value = getTplCaptured();
+            waTplModal.classList.remove("hidden");
+        });
+        document.getElementById("btnCloseWaTplModal").addEventListener("click", () => waTplModal.classList.add("hidden"));
+        document.getElementById("btnCancelWaTpl").addEventListener("click", () => waTplModal.classList.add("hidden"));
+
+        document.getElementById("btnSaveWaTpl").addEventListener("click", () => {
+            const site = document.getElementById("tplSiteLink").value.trim() || "https://odishaexamprep.com";
+            const successTpl = document.getElementById("tplSuccessText").value.trim() || DEFAULT_SUCCESS_TPL;
+            const failedTpl = document.getElementById("tplFailedText").value.trim() || DEFAULT_FAILED_TPL;
+            const capInput = document.getElementById("tplCapturedText");
+            const capturedTpl = capInput ? capInput.value.trim() || DEFAULT_CAPTURED_TPL : DEFAULT_CAPTURED_TPL;
+
+            localStorage.setItem("odisha_site_link", site);
+            localStorage.setItem("odisha_tpl_success", successTpl);
+            localStorage.setItem("odisha_tpl_failed", failedTpl);
+            localStorage.setItem("odisha_tpl_captured", capturedTpl);
+
+            waTplModal.classList.add("hidden");
+            window.showToast("WhatsApp templates saved successfully!", "success");
+            renderAuthorizedTable();
+            renderFailedTable();
+            renderSuccessTable();
+        });
+
+        document.getElementById("btnResetWaTpl").addEventListener("click", () => {
+            localStorage.removeItem("odisha_tpl_success");
+            localStorage.removeItem("odisha_tpl_failed");
+            localStorage.removeItem("odisha_tpl_captured");
+            document.getElementById("tplSiteLink").value = "https://odishaexamprep.com";
+            document.getElementById("tplSuccessText").value = DEFAULT_SUCCESS_TPL;
+            document.getElementById("tplFailedText").value = DEFAULT_FAILED_TPL;
+            const capInput = document.getElementById("tplCapturedText");
+            if (capInput) capInput.value = DEFAULT_CAPTURED_TPL;
+            window.showToast("Defaults restored! Clean templates applied.", "success");
+            renderAuthorizedTable();
+            renderFailedTable();
+            renderSuccessTable();
+        });
+
+        // 1-Click Capture Payment Handler
+        window.capturePayment = async function(paymentId, amountInPaise) {
+            const confirmed = await window.showConfirm(
+                "Capture this payment?",
+                `Payment ID: ${paymentId}\nAmount: ₹${(amountInPaise / 100).toFixed(2)}\n\nThis will transfer the funds to your account and activate the student's mock test series.`,
+                "Yes, Capture Now"
+            );
+            if (!confirmed) return;
+
+            window.showToast("Capturing payment via Razorpay...", "info");
+            try {
+                const apiUrl = await getBackendApiUrl('/api/razorpay/capture');
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paymentId, amount: amountInPaise })
+                });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+
+                // Update local status
+                const item = rawPayments.find(p => p.id === paymentId);
+                if (item) item.status = "captured";
+                processPaymentsData();
+
+                // Auto-send WhatsApp message if bot is connected and phone exists
+                const studentContact = item ? (item.contact || "").toString().replace(/[^0-9]/g, '').slice(-10) : "";
+                if (isWaBotConnected && studentContact && studentContact.length === 10) {
+                    const studentName = getStudentDisplayName(item?.email, item?.contact);
+                    const targetExam = getStudentTargetExam(item?.email, item?.contact);
+                    const msg = buildMessage(getTplCaptured(), {
+                        name: studentName,
+                        exam: targetExam,
+                        amount: (amountInPaise / 100),
+                        id: paymentId,
+                        link: getSiteLink()
+                    });
+                    fetch("/api/whatsapp/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ phone: studentContact, message: msg })
+                    }).then(r => r.json()).then(res => {
+                        if (res.success) {
+                            window.recordWaSent(paymentId, studentContact, 'captured');
+                            window.showToast(`Auto-sent WhatsApp confirmation to +91 ${studentContact}! 🤖📱`, "success");
+                        }
+                    }).catch(() => {});
+                }
+
+                window.showAlert("Payment Captured! 🎉", `Payment ${paymentId} has been successfully captured!${isWaBotConnected && studentContact ? '\n\n⚡ Auto-sent confirmation message to student on WhatsApp!' : '\nClick OK to send WhatsApp notification.'}`, "success")
+                    .then(() => {
+                        if (!isWaBotConnected || !studentContact) {
+                            window.openCustomWaModal(paymentId, 'captured');
+                        }
+                    });
+
+            } catch (err) {
+                console.error("Capture error:", err);
+                const isOffline = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+                if (isOffline) {
+                    Swal.fire({
+                        title: "Local Server Offline",
+                        html: `Local backend server is not running.<br><br>
+                        1. Start <b>start-server.bat</b> on your PC to enable 1-Click Capture, or<br>
+                        2. <a href="https://dashboard.razorpay.com/app/payments/${paymentId}" target="_blank" class="text-indigo-600 font-bold underline">Capture directly in Razorpay Dashboard</a>`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Open Razorpay Dashboard",
+                        confirmButtonColor: "#4f46e5",
+                        cancelButtonText: "Close"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.open(`https://dashboard.razorpay.com/app/payments/${paymentId}`, '_blank');
+                        }
+                    });
+                } else {
+                    window.showAlert("Capture Failed", err.message, "error");
+                }
+            }
+        };
+
+        // Bulk Capture Handler
+        async function runBulkCapture() {
+            if (authorizedPayments.length === 0) {
+                return window.showAlert("No Authorized Payments", "There are no pending authorized payments to capture right now.", "info");
+            }
+            const confirmed = await window.showConfirm(
+                `Capture All ${authorizedPayments.length} Payments?`,
+                `Total Amount: ₹${authorizedPayments.reduce((s, p) => s + p.amount, 0).toLocaleString('en-IN')}\n\nThis will capture all pending payments and update them in Firestore.`,
+                "Yes, Capture All"
+            );
+            if (!confirmed) return;
+
+            window.showToast("Capturing payments in batch...", "info");
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const p of authorizedPayments) {
+                try {
+                    const apiUrl = await getBackendApiUrl('/api/razorpay/capture');
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId: p.id, amount: p.rawAmount })
+                    });
+                    if (res.ok) {
+                        successCount++;
+                        const item = rawPayments.find(x => x.id === p.id);
+                        if (item) item.status = "captured";
+                    } else {
+                        failCount++;
+                    }
+                } catch (e) {
+                    failCount++;
+                }
+            }
+
+            processPaymentsData();
+            window.showAlert("Bulk Capture Finished! 🎉", `Successfully captured ${successCount} payments! ${failCount > 0 ? `${failCount} payments failed.` : ''}`, "success");
+        }
+
+        const btnCaptureAll = document.getElementById("btnCaptureAll");
+        if (btnCaptureAll) btnCaptureAll.addEventListener("click", runBulkCapture);
+        const btnBulkInside = document.getElementById("btnBulkCaptureInside");
+        if (btnBulkInside) btnBulkInside.addEventListener("click", runBulkCapture);
+
+        // WhatsApp Message Preview & Edit Modal
+        let currentPreviewData = null;
+        const waPreviewModal = document.getElementById("waPreviewModal");
+
+        window.openCustomWaModal = function(paymentId, type) {
+            let p = null;
+            if (type === 'authorized') p = authorizedPayments.find(x => x.id === paymentId);
+            else if (type === 'failed') p = failedPayments.find(x => x.id === paymentId);
+            else p = successPayments.find(x => x.id === paymentId) || rawPayments.find(x => x.id === paymentId);
+
+            if (!p) return;
+
+            const studentName = getStudentDisplayName(p.email, p.contact);
+            const targetExam = getStudentTargetExam(p.email, p.contact);
+            const cleanPhone = p.contact ? p.contact.toString().replace(/[^0-9]/g, '').slice(-10) : "";
+
+            let tpl = getTplSuccess();
+            let headerText = "Payment Success Receipt & Access";
+            if (type === 'failed') {
+                tpl = getTplFailed();
+                headerText = "Failed Payment Recovery Message";
+            } else if (type === 'captured' || type === 'authorized') {
+                tpl = getTplCaptured();
+                headerText = "Payment Captured & Test Unlocked Message";
+            }
+
+            const renderedText = buildMessage(tpl, {
+                name: studentName,
+                exam: targetExam,
+                amount: p.amount,
+                id: p.id,
+                link: getSiteLink()
+            });
+
+            currentPreviewData = {
+                id: p.id,
+                phone: cleanPhone,
+                type: type,
+                name: studentName
+            };
+
+            document.getElementById("previewStudentHeader").innerText = headerText;
+            document.getElementById("previewStudentName").innerText = `${studentName} • (${targetExam})`;
+            document.getElementById("previewStudentPhone").innerText = cleanPhone ? `+91 ${cleanPhone}` : "No phone number";
+            document.getElementById("previewWaMessageText").value = renderedText;
+
+            waPreviewModal.classList.remove("hidden");
+        };
+
+        document.getElementById("btnCloseWaPreview").addEventListener("click", () => waPreviewModal.classList.add("hidden"));
+        document.getElementById("btnCancelWaPreview").addEventListener("click", () => waPreviewModal.classList.add("hidden"));
+
+        document.getElementById("btnLaunchWaPreview").addEventListener("click", () => {
+            if (!currentPreviewData || !currentPreviewData.phone) {
+                return window.showAlert("No Phone", "No mobile number available for this student.", "warning");
+            }
+            const text = document.getElementById("previewWaMessageText").value.trim();
+            const waUrl = `https://wa.me/91${currentPreviewData.phone}?text=${encodeURIComponent(text)}`;
+            window.recordWaSent(currentPreviewData.id, currentPreviewData.phone, currentPreviewData.type);
+            waPreviewModal.classList.add("hidden");
+            window.open(waUrl, "_blank");
+        });
+
+        // ==========================================
+        // WHATSAPP BOT MODAL & CLIENT CONTROLLER
+        // ==========================================
+        let waBotPollInterval = null;
+        let isWaBotConnected = false;
+        let waConnectedPhone = null;
+
+        const waBotModal = document.getElementById("waBotModal");
+        const btnOpenWaBot = document.getElementById("btnOpenWhatsAppBotModal");
+        const btnCloseWaBot = document.getElementById("btnCloseWaBotModal");
+        const waBotBtnLabel = document.getElementById("waBotBtnLabel");
+        const waBotConnectedView = document.getElementById("waBotConnectedView");
+        const waBotQrView = document.getElementById("waBotQrView");
+        const waQrImage = document.getElementById("waQrImage");
+        const waQrLoading = document.getElementById("waQrLoading");
+        const waBotPhoneDisplay = document.getElementById("waBotPhoneDisplay");
+
+        async function checkWaBotStatus() {
+            // If opened on hosted web.app domain, guide user to open localhost:5000
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                if (waQrLoading) {
+                    waQrLoading.innerHTML = `
+                        <div class="p-4 text-center">
+                            <i class="fas fa-laptop-code text-3xl text-indigo-600 mb-2"></i>
+                            <div class="font-bold text-slate-900 text-xs">WhatsApp Bot Local Server ରେ ଚାଲୁଛି!</div>
+                            <div class="text-[11px] text-slate-500 mt-1">QR Code ସ୍କାନ୍ କରିବା ପାଇଁ Local Panel ଖୋଲନ୍ତୁ:</div>
+                            <a href="http://localhost:5000/payments.html" class="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-all">
+                                <i class="fab fa-whatsapp"></i> Open http://localhost:5000
+                            </a>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/whatsapp/status").catch(() => null);
+                if (!res || !res.ok) return;
+                const data = await res.json();
+                if (data.status === 'connected') {
+                    isWaBotConnected = true;
+                    waConnectedPhone = data.phone;
+                    if (waBotBtnLabel) waBotBtnLabel.innerHTML = `🟢 WhatsApp Connected (+${data.phone})`;
+                    if (btnOpenWaBot) btnOpenWaBot.className = "inline-flex items-center gap-2 px-3.5 py-2 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-xl text-xs font-bold shadow-xs transition-colors";
+                    
+                    if (waBotQrView) waBotQrView.classList.add("hidden");
+                    if (waBotConnectedView) waBotConnectedView.classList.remove("hidden");
+                    if (waBotPhoneDisplay) waBotPhoneDisplay.innerText = `+${data.phone}`;
+                } else if (data.status === 'qr_ready' && data.qrDataUrl) {
+                    isWaBotConnected = false;
+                    if (waBotBtnLabel) waBotBtnLabel.innerHTML = `🟡 Link WhatsApp (QR Bot) 📱`;
+                    if (btnOpenWaBot) btnOpenWaBot.className = "inline-flex items-center gap-2 px-3.5 py-2 bg-amber-50 border border-amber-300 text-amber-800 rounded-xl text-xs font-bold shadow-xs transition-colors";
+
+                    if (waBotConnectedView) waBotConnectedView.classList.add("hidden");
+                    if (waBotQrView) waBotQrView.classList.remove("hidden");
+                    if (waQrImage) {
+                        waQrImage.src = data.qrDataUrl;
+                        waQrImage.classList.remove("hidden");
+                    }
+                    if (waQrLoading) waQrLoading.classList.add("hidden");
+                } else {
+                    isWaBotConnected = false;
+                    if (waBotBtnLabel) waBotBtnLabel.innerHTML = `Link WhatsApp (QR Bot) 📱`;
+                    if (waBotConnectedView) waBotConnectedView.classList.add("hidden");
+                    if (waBotQrView) waBotQrView.classList.remove("hidden");
+                    if (waQrImage) waQrImage.classList.add("hidden");
+                    if (waQrLoading) waQrLoading.classList.remove("hidden");
+                }
+            } catch (e) {}
+        }
+
+        function openWaBotModal() {
+            if (waBotModal) waBotModal.classList.remove("hidden");
+            checkWaBotStatus();
+            if (waBotPollInterval) clearInterval(waBotPollInterval);
+            waBotPollInterval = setInterval(checkWaBotStatus, 3000);
+        }
+
+        function closeWaBotModal() {
+            if (waBotModal) waBotModal.classList.add("hidden");
+            if (waBotPollInterval) clearInterval(waBotPollInterval);
+        }
+
+        if (btnOpenWaBot) btnOpenWaBot.addEventListener("click", openWaBotModal);
+        if (btnCloseWaBot) btnCloseWaBot.addEventListener("click", closeWaBotModal);
+
+        // Disconnect / Logout
+        const btnDisconnectWa = document.getElementById("btnDisconnectWa");
+        if (btnDisconnectWa) {
+            btnDisconnectWa.addEventListener("click", async () => {
+                const confirmed = await window.showConfirm("Disconnect WhatsApp?", "Are you sure you want to unlink your WhatsApp device?", "Yes, Disconnect");
+                if (!confirmed) return;
+                try {
+                    await fetch("/api/whatsapp/logout", { method: "POST" });
+                    window.showToast("WhatsApp unlinked. Refreshing QR...", "info");
+                    setTimeout(checkWaBotStatus, 1500);
+                } catch (e) {
+                    window.showAlert("Error", e.message, "error");
+                }
+            });
+        }
+
+        // Send Test Message
+        const btnSendWaTest = document.getElementById("btnSendWaTest");
+        if (btnSendWaTest) {
+            btnSendWaTest.addEventListener("click", async () => {
+                const phoneInput = document.getElementById("waTestPhone")?.value?.trim();
+                if (!phoneInput) {
+                    return window.showAlert("Phone Required", "Please enter a 10-digit mobile number.", "warning");
+                }
+                window.showToast("Sending test WhatsApp message...", "info");
+                try {
+                    const res = await fetch("/api/whatsapp/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            phone: phoneInput,
+                            message: "🙏 *ନମସ୍କାର!*\n\nଏହା *Odisha Exam Prep* WhatsApp Auto-Sender ର ଏକ ପରୀକ୍ଷାମୂଳକ (Test) ମେସେଜ୍ ଅଟେ। ଆପଣଙ୍କର WhatsApp Bot ସଫଳତାର ସହ ସଂଯୁକ୍ତ ହୋଇଛି! 🎉"
+                        })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        window.showAlert("Success! 🎉", `Test message sent to +91 ${phoneInput} successfully!`, "success");
+                    } else {
+                        window.showAlert("Send Failed", json.error || "Could not deliver message.", "error");
+                    }
+                } catch (e) {
+                    window.showAlert("Error", e.message, "error");
+                }
+            });
+        }
+
+        // Bot Send in Custom Preview Modal
+        const btnBotSendWa = document.getElementById("btnBotSendWaPreview");
+        if (btnBotSendWa) {
+            btnBotSendWa.addEventListener("click", async () => {
+                if (!currentPreviewData || !currentPreviewData.phone) {
+                    return window.showAlert("No Phone", "No phone number available for this student.", "warning");
+                }
+                const text = document.getElementById("previewWaMessageText")?.value?.trim();
+                window.showToast("Bot is sending WhatsApp message...", "info");
+                try {
+                    const res = await fetch("/api/whatsapp/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            phone: currentPreviewData.phone,
+                            message: text
+                        })
+                    });
+                    const json = await res.json();
+                    if (json.success) {
+                        window.recordWaSent(currentPreviewData.id, currentPreviewData.phone, currentPreviewData.type);
+                        waPreviewModal.classList.add("hidden");
+                        window.showAlert("Sent via Bot! 🚀", `WhatsApp message was successfully delivered to +91 ${currentPreviewData.phone}`, "success");
+                    } else {
+                        window.showAlert("Bot Error", json.error || "Bot could not send message. Please ensure WhatsApp is linked.", "warning");
+                    }
+                } catch (e) {
+                    window.showAlert("Error", "Could not connect to WhatsApp Bot service. Ensure start-server.bat is running.", "error");
+                }
+            });
+        }
+
+        // Auto poll status
+        setTimeout(checkWaBotStatus, 1000);
+        setInterval(checkWaBotStatus, 15000);
+
+        // Render Authorized Payments Table
+        function renderAuthorizedTable() {
+            const tbody = document.getElementById("authorizedTableBody");
+            if (!tbody) return;
+            if (filteredAuthorized.length === 0) {
+                const msg = searchQuery ? `No authorized payments matching "${searchQuery}"` : "🎉 Awesome! No payments pending in 'Authorized' status.";
+                tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            filteredAuthorized.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-amber-50/50 transition-colors";
+
+                const safeEmail = p.email || "No email";
+                const studentName = getStudentDisplayName(p.email, p.contact);
+                const targetExam = getStudentTargetExam(p.email, p.contact);
+                const dateStr = p.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const cleanPhone = p.contact ? p.contact.toString().replace(/[^0-9]/g, '').slice(-10) : "";
+
+                const promoMsg = buildMessage(getTplCaptured(), {
+                    name: studentName,
+                    exam: targetExam,
+                    amount: p.amount,
+                    id: p.id,
+                    link: getSiteLink()
+                });
+                const waUrl = cleanPhone ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(promoMsg)}` : "#";
+
+                tr.innerHTML = `
+                    <td class="p-3.5">
+                        <div class="font-bold text-slate-900">${studentName}</div>
+                        <div class="text-[11px] text-slate-500">${safeEmail}</div>
+                        ${targetExam !== 'Mock Test Series' ? `<span class="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${targetExam}</span>` : ''}
+                    </td>
+                    <td class="p-3.5 font-mono">
+                        ${cleanPhone ? `
+                            <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                                <i class="fas fa-phone text-emerald-600 text-[10px]"></i>
+                                <span>+91 ${cleanPhone}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200">Captured in Checkout</span>
+                        ` : `<span class="text-slate-400 italic">No phone entered</span>`}
+                    </td>
+                    <td class="p-3.5">
+                        <span class="font-black text-amber-700 text-sm">₹${p.amount}</span>
+                        <span class="block text-[9px] font-bold text-amber-600 uppercase">Authorized</span>
+                    </td>
+                    <td class="p-3.5 font-mono text-[11px] font-bold text-indigo-600">
+                        ${p.id}
+                    </td>
+                    <td class="p-3.5 text-slate-500 text-[11px]">
+                        ${dateStr}
+                    </td>
+                    <td class="p-3.5 text-center">
+                        <div class="inline-flex items-center gap-1.5">
+                            <button onclick="window.capturePayment('${p.id}', ${p.rawAmount})" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow-xs transition-colors whitespace-nowrap">
+                                <i class="fas fa-bolt text-xs"></i> ⚡ Capture
+                            </button>
+                            ${cleanPhone ? `
+                                <button onclick="window.openCustomWaModal('${p.id}', 'captured')" title="Preview / Send WhatsApp Notice" class="p-1.5 text-slate-500 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition-colors">
+                                    <i class="fab fa-whatsapp text-base text-emerald-600"></i>
+                                </button>
+                            ` : ''}
+                            <a href="https://dashboard.razorpay.com/app/payments/${p.id}" target="_blank" title="View on Razorpay Dashboard" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors">
+                                <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Failed Payments Table
+        function renderFailedTable() {
+            const tbody = document.getElementById("failedTableBody");
+            if (filteredFailed.length === 0) {
+                const msg = searchQuery ? `No failed payments matching "${searchQuery}"` : "🎉 Great news! No failed payments found in this batch.";
+                tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            filteredFailed.forEach((p) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-rose-50/40 transition-colors";
+
+                const safeEmail = p.email || "No email";
+                const studentName = getStudentDisplayName(p.email, p.contact);
+                const targetExam = getStudentTargetExam(p.email, p.contact);
+                const dateStr = p.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const cleanPhone = p.contact ? p.contact.toString().replace(/[^0-9]/g, '').slice(-10) : "";
+
+                const promoMsg = buildMessage(getTplFailed(), {
+                    name: studentName,
+                    exam: targetExam,
+                    amount: p.amount,
+                    id: p.id,
+                    link: getSiteLink()
+                });
+                const waUrl = cleanPhone ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(promoMsg)}` : "#";
+                const sentInfo = getWaSentInfo(p.id);
+
+                tr.innerHTML = `
+                    <td class="p-3.5">
+                        <div class="font-bold text-slate-900">${studentName}</div>
+                        <div class="text-[11px] text-slate-500">${safeEmail}</div>
+                        ${targetExam !== 'Mock Test Series' ? `<span class="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${targetExam}</span>` : ''}
+                    </td>
+                    <td class="p-3.5 font-mono">
+                        ${cleanPhone ? `
+                            <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                                <i class="fas fa-phone text-emerald-600 text-[10px]"></i>
+                                <span>+91 ${cleanPhone}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200">Captured in Checkout</span>
+                        ` : `<span class="text-slate-400 italic">No phone entered</span>`}
+                    </td>
+                    <td class="p-3.5 font-black text-rose-600 text-sm">
+                        ₹${p.amount}
+                    </td>
+                    <td class="p-3.5 text-slate-600 max-w-xs">
+                        <span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            ${p.errorDescription}
+                        </span>
+                    </td>
+                    <td class="p-3.5 text-slate-500 text-[11px]">
+                        ${dateStr}
+                    </td>
+                    <td class="p-3.5 text-center">
+                        ${cleanPhone ? (
+                            sentInfo ? `
+                                <div class="inline-flex items-center gap-1.5">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <i class="fas fa-check-double text-emerald-600"></i> Recover Sent
+                                    </span>
+                                    <a href="${waUrl}" target="_blank" onclick="window.recordWaSent('${p.id}', '${cleanPhone}', 'failed')" title="Resend" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-redo-alt text-xs"></i>
+                                    </a>
+                                    <button onclick="window.openCustomWaModal('${p.id}', 'failed')" title="Preview / Edit message" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="inline-flex items-center gap-1">
+                                    <a href="${waUrl}" target="_blank" onclick="window.recordWaSent('${p.id}', '${cleanPhone}', 'failed')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs shadow-xs transition-colors whitespace-nowrap">
+                                        <i class="fab fa-whatsapp text-sm"></i> Recover on WhatsApp
+                                    </a>
+                                    <button onclick="window.openCustomWaModal('${p.id}', 'failed')" title="Preview / Edit message" class="p-1.5 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                </div>
+                            `
+                        ) : (safeEmail && safeEmail.includes("@") && !safeEmail.startsWith("No email") ? `
+                            <a href="mailto:${safeEmail}?subject=Quick assistance regarding your mock test payment on Odisha Exam Prep" class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg font-bold text-xs border border-blue-200 transition-colors whitespace-nowrap">
+                                <i class="fas fa-envelope"></i> Send Email
+                            </a>
+                        ` : `<span class="text-slate-400 text-xs italic">No contact info</span>`)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Successful Payments Table
+        function renderSuccessTable() {
+            const tbody = document.getElementById("successTableBody");
+            if (filteredSuccess.length === 0) {
+                const msg = searchQuery ? `No successful payments matching "${searchQuery}"` : "No successful payments found.";
+                tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-400 font-medium">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            filteredSuccess.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+
+                const safeEmail = (p.email || "").toLowerCase().trim();
+                const studentName = getStudentDisplayName(p.email, p.contact);
+                const targetExam = getStudentTargetExam(p.email, p.contact);
+                const dateStr = p.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const cleanPhone = p.contact ? p.contact.toString().replace(/[^0-9]/g, '').slice(-10) : "";
+
+                const successMsg = buildMessage(getTplSuccess(), {
+                    name: studentName,
+                    exam: targetExam,
+                    amount: p.amount,
+                    id: p.id,
+                    link: getSiteLink()
+                });
+                const waUrl = cleanPhone ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(successMsg)}` : "#";
+                const sentInfo = getWaSentInfo(p.id);
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-mono text-[11px] font-bold text-indigo-600">
+                        ${p.id}
+                    </td>
+                    <td class="p-3.5">
+                        <div class="font-bold text-slate-900">${studentName}</div>
+                        <div class="text-[11px] text-slate-500">${safeEmail || 'No email'}</div>
+                        ${targetExam !== 'Mock Test Series' ? `<span class="inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${targetExam}</span>` : ''}
+                    </td>
+                    <td class="p-3.5 font-mono">
+                        ${cleanPhone ? `
+                            <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                                <i class="fas fa-phone text-emerald-600 text-[10px]"></i>
+                                <span>+91 ${cleanPhone}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200">Captured in Checkout</span>
+                        ` : `<span class="text-slate-400 italic">No phone entered</span>`}
+                    </td>
+                    <td class="p-3.5 font-black text-emerald-700">
+                        ₹${p.amount}
+                    </td>
+                    <td class="p-3.5 uppercase font-bold text-[10px] text-slate-600">
+                        ${p.method}
+                    </td>
+                    <td class="p-3.5 text-slate-500 text-[11px]">
+                        ${dateStr}
+                    </td>
+                    <td class="p-3.5 text-center">
+                        ${cleanPhone ? (
+                            sentInfo ? `
+                                <div class="inline-flex items-center gap-1.5">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <i class="fas fa-check-double text-emerald-600"></i> Sent
+                                    </span>
+                                    <a href="${waUrl}" target="_blank" onclick="window.recordWaSent('${p.id}', '${cleanPhone}', 'success')" title="Resend" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-redo-alt text-xs"></i>
+                                    </a>
+                                    <button onclick="window.openCustomWaModal('${p.id}', 'success')" title="Preview / Edit message" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="inline-flex items-center gap-1">
+                                    <a href="${waUrl}" target="_blank" onclick="window.recordWaSent('${p.id}', '${cleanPhone}', 'success')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-xs transition-colors whitespace-nowrap">
+                                        <i class="fab fa-whatsapp text-sm"></i> Send Receipt & Access
+                                    </a>
+                                    <button onclick="window.openCustomWaModal('${p.id}', 'success')" title="Preview / Edit message" class="p-1.5 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                </div>
+                            `
+                        ) : `
+                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                SUCCESS (No Phone)
+                            </span>
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Auto-Sync Captured Phones to Student Profiles in Firestore
+        document.getElementById("btnSyncFirestore").addEventListener("click", async () => {
+            const phoneUpdates = [];
+
+            rawPayments.forEach(p => {
+                const contact = (p.contact || "").toString().replace(/[^0-9]/g, '').slice(-10);
+                const email = (p.email || "").toLowerCase().trim();
+
+                if (contact && contact.length === 10) {
+                    const match = findMatchedStudent(email, contact);
+                    if (match && (!match.data.phoneNumber || match.data.phoneNumber.toString().replace(/[^0-9]/g, '').length < 10)) {
+                        phoneUpdates.push({
+                            col: match.col,
+                            id: match.id,
+                            email: email || match.data.email || "",
+                            phone: contact
+                        });
+                    }
+                }
+            });
+
+            if (phoneUpdates.length === 0) {
+                return window.showAlert("All Synced", "All students matched with Razorpay already have mobile numbers in Firestore!", "info");
+            }
+
+            const confirmRes = await Swal.fire({
+                title: `Sync ${phoneUpdates.length} Mobile Numbers?`,
+                html: `Found <b>${phoneUpdates.length} students</b> who entered their phone number during Razorpay checkout, but didn't have it in their profile. Sync now?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Update Profiles",
+                confirmButtonColor: "#4f46e5"
+            });
+
+            if (!confirmRes.isConfirmed) return;
+
+            try {
+                let updated = 0;
+                for (const u of phoneUpdates) {
+                    const userDocRef = doc(db, u.col, u.id);
+                    await updateDoc(userDocRef, {
+                        phoneNumber: u.phone,
+                        phone: u.phone,
+                        phoneSource: "razorpay_checkout"
+                    });
+                    updated++;
+                }
+
+                Swal.fire({
+                    title: "Sync Successful! 📱",
+                    text: `Successfully updated ${updated} student profiles with their Razorpay mobile numbers.`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
+
+                await loadFirestoreUsers();
+                applyFilter();
+
+            } catch (err) {
+                console.error("Firestore sync error:", err);
+                window.showAlert("Sync Error", err.message, "error");
+            }
+        });
+
+        document.getElementById("btnRefreshPayments").addEventListener("click", () => {
+            loadPayments(true);
+        });
+
+        // Initialize on Auth & Page Load
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await loadFirestoreUsers();
+                await loadPayments(false);
+            }
+        });
+    </script>
+</body>
+</html>

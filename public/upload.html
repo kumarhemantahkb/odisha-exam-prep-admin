@@ -3,116 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Questions | Odisha Exam Prep</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Upload Questions (Excel) - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SheetJS for XLSX Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        body { background: #0f172a; color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; font-family: 'Inter', sans-serif; }
-        .upload-card { background: #1e293b; padding: 35px; border-radius: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select { width: 100%; padding: 14px; background: #334155; border: 1px solid #475569; border-radius: 8px; color: white; outline: none; transition: 0.3s; font-size: 1rem; }
-        input:focus, select:focus { border-color: #3b82f6; background: #0f172a; }
-        
-        .file-box { border: 2px dashed #475569; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s; display: block; background: #1e293b; margin-top: 10px;}
-        .file-box:hover { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
-        
-        .image-box { border: 2px dashed #ec4899; }
-        .image-box:hover { border-color: #f472b6; background: rgba(236, 72, 153, 0.05); }
-
-        .btn-upload { width: 100%; padding: 15px; background: #3b82f6; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: none; margin-top: 20px; font-size: 1.1rem; }
-        .btn-upload:hover { background: #2563eb; }
-
-        .error-container { background: #fee2e2; color: #b91c1c; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-size: 0.85rem; max-height: 250px; overflow-y: auto; border-left: 5px solid #ef4444; }
-        .success-msg { background: #d1fae5; color: #065f46; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-weight: bold; text-align: center; border-left: 5px solid #10b981; font-size: 1rem;}
-        
-        .status-box { background: #e0f2fe; color: #0369a1; padding: 15px; border-radius: 8px; margin-top: 20px; display: none; font-weight: bold; text-align: center; border-left: 5px solid #0ea5e9; font-size: 0.95rem; }
-        
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #3b82f6; font-weight: bold; }
-        .back-btn:hover { text-decoration: underline; }
-    </style>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
 
-    <div class="upload-card">
-        <a href="dashboard.html" class="back-btn">⬅️ Back to Dashboard</a>
-        <h2 style="text-align: center; margin-bottom: 30px; color: #3b82f6;"><i class="fa-solid fa-bolt"></i> Smart Bulk Upload (with Images)</h2>
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
 
-        <div class="form-group">
-            <label>1. Existing Test ID (e.g., ossc_cgl_test_1)</label>
-            <input type="text" id="testId" placeholder="Enter the ID you created in the Header Page" required>
-        </div>
+    <!-- LEFT SIDEBAR -->
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
-        <div class="form-group">
-            <label>2. Category Type (Root Collection)</label>
-            <select id="categoryType">
-                <option value="">-- Select Type --</option>
-                <option value="exams">Exams (e.g. exams collection)</option>
-                <option value="subjects">Subjects (e.g. Root Subjects)</option>
-            </select>
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
+        </header>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
+            
+            <!-- Page Header -->
+            <div class="max-w-5xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Upload Questions</span>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Excel Question Ingestion & Image Linker</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Bulk upload exam questions with automatic WebP image compression.</p>
+                </div>
+
+                <a href="admin.html" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold transition-colors">
+                    <i class="fas fa-plus"></i>
+                    <span>Create Header First</span>
+                </a>
+            </div>
+
+            <!-- Upload Card -->
+            <div class="max-w-5xl mx-auto panel-card p-6 md:p-8 bg-white border border-slate-200">
+                
+                <!-- STEP 1: TARGET TEST PATH -->
+                <div class="pb-6 border-b border-slate-100">
+                    <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                        <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Target Test Mapping</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Existing Test ID (Document ID) <span class="text-red-500">*</span></label>
+                            <input type="text" id="testId" placeholder="e.g., ossc_cgl_test_1" required class="form-input font-mono">
+                            <p class="text-[11px] text-slate-400 mt-1">Must match the ID generated in "Create Test Header".</p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Category Type <span class="text-red-500">*</span></label>
+                            <select id="categoryType" class="form-select">
+                                <option value="">-- Select Type --</option>
+                                <option value="exams">Exams (e.g. exams collection)</option>
+                                <option value="subjects">Subjects (e.g. Root Subjects)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4" id="mainCategoryGroup" style="display: none;">
+                        <label class="form-label">Main Category (e.g. OSSSC, OSSC, TEACHER) <span class="text-red-500">*</span></label>
+                        <select id="mainCategorySelect" class="form-select">
+                            <option value="">-- Select Main Category --</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="form-label">Target Folder (Subcategory) <span class="text-red-500">*</span></label>
+                            <select id="targetDropdown" class="form-select">
+                                <option value="">-- Select Root Collection First --</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Test Type (App Section) <span class="text-red-500">*</span></label>
+                            <select id="testTypeSelect" class="form-select">
+                                <option value="Mock Test">Mock Test</option>
+                                <option value="Previous Year">Previous Year Paper</option>
+                                <option value="Main Exam">Main Exam</option>
+                                <option value="Topic Wise">Topic Wise / Subject Wise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 rounded-xl bg-purple-50/60 border border-purple-200" id="subjectGroup" style="display: none;">
+                        <label class="form-label text-purple-900 mb-1">Select Subject (For Topic Wise Badge):</label>
+                        <select id="subjectSelect" class="form-select bg-white">
+                            <option value="All">All / Mixed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STEP 2: FILE SELECTION -->
+                <div class="py-6 border-b border-slate-100">
+                    <div class="flex items-center gap-2 pb-3 mb-4 border-b border-slate-100">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center">2</span>
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Select Question Sheet & Image Folder</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Excel Dropzone -->
+                        <div>
+                            <label class="form-label">Excel Spreadsheet (.xlsx, .xls) <span class="text-red-500">*</span></label>
+                            <label for="excelInput" class="border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/30 hover:bg-emerald-50/70 p-6 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all group text-center">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    <i class="fa-regular fa-file-excel"></i>
+                                </div>
+                                <span id="fileName" class="text-xs font-bold text-slate-800">Choose .xlsx or Drag & Drop</span>
+                                <span class="text-[11px] text-slate-400 mt-1">Columns: question, optA, optB, optC, optD, ans, explanation</span>
+                                <input type="file" id="excelInput" accept=".xlsx, .xls" class="hidden">
+                            </label>
+                        </div>
+
+                        <!-- Image Folder Dropzone -->
+                        <div>
+                            <label class="form-label">Question Images Folder (Optional)</label>
+                            <label for="imageInput" class="border-2 border-dashed border-pink-300 hover:border-pink-500 bg-pink-50/30 hover:bg-pink-50/70 p-6 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all group text-center">
+                                <div class="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition-transform">
+                                    <i class="fa-regular fa-folder-open"></i>
+                                </div>
+                                <span id="imageFileName" class="text-xs font-bold text-slate-800">Select Image Folder</span>
+                                <span class="text-[11px] text-slate-400 mt-1">Matches image name column in spreadsheet</span>
+                                <input type="file" id="imageInput" webkitdirectory directory multiple class="hidden">
+                            </label>
+                            <p id="imageCountText" class="text-xs font-bold text-pink-600 mt-2 text-center hidden"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICATION BANNERS -->
+                <div id="errorBox" class="mt-6 p-4 rounded-xl bg-red-50 border-l-4 border-red-500 text-red-700 text-xs font-medium hidden max-h-60 overflow-y-auto"></div>
+                <div id="successBox" class="mt-6 p-4 rounded-xl bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 text-xs font-bold hidden text-center"></div>
+                <div id="statusBox" class="mt-6 p-4 rounded-xl bg-blue-50 border-l-4 border-blue-500 text-blue-700 text-xs font-bold hidden text-center"></div>
+
+                <!-- PRE-UPLOAD VERIFICATION TABLE -->
+                <div id="previewSection" class="mt-6 hidden">
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">3</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Pre-Upload Question Verification</h3>
+                        </div>
+                        <span class="text-xs text-slate-500">Inspect parsed questions below</span>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 uppercase tracking-wider sticky top-0">
+                                <tr>
+                                    <th class="p-3 w-12 text-center border-b border-slate-200 font-bold">#</th>
+                                    <th class="p-3 border-b border-slate-200 font-bold">Question Details</th>
+                                    <th class="p-3 w-16 text-center border-b border-slate-200 font-bold">Ans</th>
+                                    <th class="p-3 w-36 text-center border-b border-slate-200 font-bold">Image Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Injected rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- UPLOAD ACTION -->
+                <div class="mt-6 pt-4 border-t border-slate-100">
+                    <button id="uploadBtn" class="btn-primary w-full py-4 text-sm font-bold hidden bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25">
+                        <i class="fas fa-cloud-arrow-up text-base"></i>
+                        <span>Confirm & Inject Questions to Database</span>
+                    </button>
+                </div>
+
+            </div>
+
         </div>
+    </main>
 
-        <div class="form-group" id="mainCategoryGroup" style="display: none;">
-            <label>2.5. Main Category (e.g., OSSC, TEACHER)</label>
-            <select id="mainCategorySelect">
-                <option value="">-- Select Main Category --</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>3. Target Folder (Subcategory)</label>
-            <select id="targetDropdown">
-                <option value="">-- Select Root Collection First --</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>4. Select Test Type</label>
-            <select id="testTypeSelect">
-                <option value="Mock Test">Mock Test</option>
-                <option value="Previous Year">Previous Year Paper</option>
-                <option value="Topic Wise">Topic Wise / Subject Wise</option>
-            </select>
-        </div>
-
-        <div class="form-group" id="subjectGroup" style="display: none;">
-            <label>4.1. Select Subject (For Topic Wise Badge)</label>
-            <select id="subjectSelect">
-                <option value="All">All / Mixed</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label>5. Select Excel File (.xlsx)</label>
-            <label class="file-box">
-                <i class="fa-regular fa-file-excel" style="font-size: 2.5rem; margin-bottom: 15px; color:#10b981;"></i>
-                <br><span id="fileName">Click to browse .xlsx file</span>
-                <input type="file" id="excelInput" accept=".xlsx, .xls" style="display:none;">
-            </label>
-        </div>
-
-        <div class="form-group">
-            <label>6. Select Master Image Folder (Optional)</label>
-            <label class="file-box image-box">
-                <i class="fa-regular fa-folder-open" style="font-size: 2.5rem; margin-bottom: 15px; color:#ec4899;"></i>
-                <br><span id="imageFileName">Click to select your Image Folder</span>
-                <input type="file" id="imageInput" webkitdirectory directory multiple style="display:none;">
-            </label>
-            <p id="imageCountText" style="color: #ec4899; font-size: 0.85rem; margin-top: 5px; font-weight: 600; text-align: center; display: none;">0 files loaded into memory.</p>
-        </div>
-
-        <div id="errorBox" class="error-container"></div>
-        <div id="successBox" class="success-msg"></div>
-        <div id="statusBox" class="status-box"></div> 
-
-        <button id="uploadBtn" class="btn-upload">🚀 Inject Questions & Upload Images</button>
-    </div>
-
+    <!-- Logic Script -->
     <script type="module">
         import { db, storage } from './firebase.js'; 
         import { collection, getDocs, doc, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
+
+        // Initialize layout and auth
+        renderAdminLayout({
+            pageTitle: "Upload Questions",
+            pageSubtitle: "Bulk Excel parsing and automated question ingestion",
+            pageIcon: "fas fa-file-excel",
+            activeNav: "upload.html"
+        });
+        initAuthGuard();
 
         let finalQuestions = [];
         let imageMap = {}; 
@@ -260,11 +359,124 @@
             return "";
         }
 
+        // Smart answer normalizer for Excel upload
+        function normalizeAnswer(rawAns, optA, optB, optC, optD) {
+            if (!rawAns && rawAns !== 0) return "";
+            let raw = rawAns.toString().trim();
+            if (!raw) return "";
+
+            let clean = raw.replace(/^["'`\s]+|["'`\s]+$/g, '');
+            if (/^[A-D]$/i.test(clean)) return clean.toUpperCase();
+
+            let decMatch = clean.match(/^[\(\[\{]?([A-D])[\)\]\}\.\:\-\s]*$/i);
+            if (decMatch) return decMatch[1].toUpperCase();
+
+            let prefMatch = clean.match(/^(?:option|opt|ans|answer|choice|sahi\s*uttar)\s*[\:\-\.]?\s*[\(\[]?([A-D])[\)\]]?$/i);
+            if (prefMatch) return prefMatch[1].toUpperCase();
+
+            let leadLetterMatch = clean.match(/^([A-D])[\)\.\:\-\]\s]+.+$/i);
+            if (leadLetterMatch) return leadLetterMatch[1].toUpperCase();
+
+            let numMatch = clean.match(/^[\(\[]?([1-4])[\)\]\.]?$/);
+            if (numMatch) {
+                const numMap = { "1": "A", "2": "B", "3": "C", "4": "D" };
+                return numMap[numMatch[1]];
+            }
+            let numPrefMatch = clean.match(/^(?:option|opt|ans|answer|choice)\s*[\:\-\.]?\s*[\(\[]?([1-4])[\)\]]?$/i);
+            if (numPrefMatch) {
+                const numMap = { "1": "A", "2": "B", "3": "C", "4": "D" };
+                return numMap[numPrefMatch[1]];
+            }
+
+            function cleanForCompare(txt) {
+                if (!txt && txt !== 0) return "";
+                return txt.toString().trim().replace(/^[\(\[]?[A-D1-4][\)\]\.\:\-]\s*/i, '').replace(/\s+/g, ' ').trim().toLowerCase();
+            }
+
+            const targetClean = cleanForCompare(clean);
+            const targetLower = clean.toLowerCase();
+
+            const candidates = [
+                { key: "A", raw: (optA || "").toString().trim().toLowerCase(), clean: cleanForCompare(optA) },
+                { key: "B", raw: (optB || "").toString().trim().toLowerCase(), clean: cleanForCompare(optB) },
+                { key: "C", raw: (optC || "").toString().trim().toLowerCase(), clean: cleanForCompare(optC) },
+                { key: "D", raw: (optD || "").toString().trim().toLowerCase(), clean: cleanForCompare(optD) }
+            ];
+
+            for (let c of candidates) {
+                if (c.raw && (targetLower === c.raw || targetClean === c.clean || targetLower === c.clean || targetClean === c.raw)) {
+                    return c.key;
+                }
+            }
+
+            if (targetClean.length >= 3) {
+                for (let c of candidates) {
+                    if (c.clean && (c.clean === targetClean || c.clean.startsWith(targetClean) || targetClean.startsWith(c.clean))) {
+                        return c.key;
+                    }
+                }
+            }
+
+            return clean;
+        }
+
+        // Live Image Preview Table
+        function renderPreviewTable() {
+            const previewSection = document.getElementById('previewSection');
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = '';
+
+            if (finalQuestions.length === 0) {
+                previewSection.style.display = 'none';
+                return;
+            }
+
+            finalQuestions.forEach((q, index) => {
+                let imageHtml = '<span class="text-slate-400 text-[11px]">No Image</span>';
+
+                if (q.questionImage && q.questionImage.trim() !== "") {
+                    let safeImgName = q.questionImage.trim().toLowerCase();
+                    
+                    if (imageMap[safeImgName]) {
+                        const imgUrl = URL.createObjectURL(imageMap[safeImgName]);
+                        imageHtml = `
+                            <div class="flex flex-col items-center">
+                                <img src="${imgUrl}" class="h-14 w-20 rounded-lg border border-emerald-400 object-contain bg-slate-50 p-0.5">
+                                <span class="text-[10px] text-emerald-600 font-bold mt-1">Ready</span>
+                            </div>
+                        `;
+                    } else {
+                        imageHtml = `
+                            <div class="text-[10px] text-red-600 font-semibold bg-red-50 p-1.5 rounded-lg border border-red-200">
+                                ❌ Missing:<br><b>${q.questionImage}</b>
+                            </div>
+                        `;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 text-center font-bold text-slate-500">${index + 1}</td>
+                    <td class="p-3">
+                        <div class="font-semibold text-slate-900 leading-snug">${q.question || '<em class="text-slate-400">[Passage/Image Only]</em>'}</div>
+                        ${q.passage ? `<div class="text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded-lg mt-1 border border-slate-100">Passage: ${q.passage.substring(0, 60)}...</div>` : ''}
+                        <div class="text-[10px] text-slate-400 mt-1">Topic: <span class="text-indigo-600 font-medium">${q.topic}</span></div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <span class="inline-block px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 font-black border border-blue-200">${q.correctAnswer}</span>
+                    </td>
+                    <td class="p-3 text-center align-middle">${imageHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            previewSection.style.display = 'block';
+        }
+
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const files = e.target.files;
             imageMap = {};
             for(let i = 0; i < files.length; i++){
-                // ଛୋଟ ଅକ୍ଷର କରି ସେଭ୍ କରୁଛୁ 
                 imageMap[files[i].name.toLowerCase().trim()] = files[i];
             }
             let folderNameStr = "Folder selected";
@@ -272,8 +484,13 @@
                 folderNameStr = files[0].webkitRelativePath.split('/')[0] + " Folder";
             }
             document.getElementById('imageFileName').innerText = folderNameStr;
-            document.getElementById('imageCountText').style.display = 'block';
-            document.getElementById('imageCountText').innerText = `✅ ${files.length} files loaded from folder.`;
+            const countText = document.getElementById('imageCountText');
+            countText.style.display = 'block';
+            countText.innerText = `✅ ${files.length} images loaded into browser memory.`;
+            
+            if (finalQuestions.length > 0) {
+                renderPreviewTable();
+            }
         });
 
         document.getElementById('excelInput').addEventListener('change', function(e) {
@@ -294,75 +511,92 @@
             const errorBox = document.getElementById('errorBox');
             const successBox = document.getElementById('successBox');
             const uploadBtn = document.getElementById('uploadBtn');
-            errorBox.style.display = "none"; successBox.style.display = "none"; uploadBtn.style.display = "none";
+            const previewSection = document.getElementById('previewSection');
+            
+            errorBox.style.display = "none"; successBox.style.display = "none"; uploadBtn.style.display = "none"; previewSection.style.display = "none";
             finalQuestions = [];
             let errors = [];
             let totalRows = 0;
 
             workbook.SheetNames.forEach(sheetName => {
+                const isDefaultSheet = sheetName.toLowerCase().replace(/\s/g, '').startsWith("sheet");
+
                 const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {raw: false, defval: ""});
-                if (sheetData.length > 0) totalRows += sheetData.length;
+                if (sheetData.length === 0) return; 
+                
+                totalRows += sheetData.length;
 
                 sheetData.forEach((row, index) => {
                     const rowNum = index + 2; 
-                    const passageText = getVal(row, ['passage', 'paragraph', 'direction', 'comprehension']);
-                    const imgName = getVal(row, ['imagename', 'image', 'questionimage', 'photo', 'picture']);
-                    
-                    const q = getVal(row, ['question', 'questions', 'q', 'prashna']);
+
+                    const qText = getVal(row, ['question', 'questions', 'q', 'prashna']);
                     const a = getVal(row, ['optiona', 'a', 'option1', '1']);
                     const b = getVal(row, ['optionb', 'b', 'option2', '2']);
                     const c = getVal(row, ['optionc', 'c', 'option3', '3']);
                     const d = getVal(row, ['optiond', 'd', 'option4', '4']);
                     const rawAns = getVal(row, ['correctanswer', 'answer', 'ans', 'correct']);
-                    const exp = getVal(row, ['explanation', 'desc', 'solution']);
+                    const passageText = getVal(row, ['passage', 'paragraph', 'direction', 'comprehension']);
+                    const imgName = getVal(row, ['imagename', 'image', 'questionimage', 'photo', 'picture']);
+                    
+                    const topicVal = getVal(row, ['topic', 'topics', 'subject']);
+                    const exp = getVal(row, ['explanation', 'desc', 'solution', 'exp']);
 
-                    if (!q && !a && !b && !c && !d && !rawAns && !exp && !passageText && !imgName) return; 
+                    if (!qText && !a && !b && !c && !d && !rawAns && !exp && !passageText && !imgName) return; 
 
                     let rowErrors = [];
-                    if(!q) rowErrors.push("Question missing");
+                    if(!qText && !imgName && !passageText) rowErrors.push("Question/Image missing"); 
                     if(!a || !b || !c || !d) rowErrors.push("Options missing");
                     if(!rawAns) rowErrors.push("Correct Answer missing");
                     
                     let finalFormattedAns = "";
                     if(rawAns && a && b && c && d) {
-                        let cleanAns = rawAns.trim().toUpperCase();
-                        if (["A", "B", "C", "D"].includes(cleanAns)) { finalFormattedAns = cleanAns; } 
-                        else if (cleanAns === "1" || rawAns === a) { finalFormattedAns = "A"; }
-                        else if (cleanAns === "2" || rawAns === b) { finalFormattedAns = "B"; }
-                        else if (cleanAns === "3" || rawAns === c) { finalFormattedAns = "C"; }
-                        else if (cleanAns === "4" || rawAns === d) { finalFormattedAns = "D"; }
-                        else { rowErrors.push(`Answer doesn't match A/B/C/D`); }
+                        const norm = normalizeAnswer(rawAns, a, b, c, d);
+                        if (["A", "B", "C", "D"].includes(norm)) {
+                            finalFormattedAns = norm;
+                        } else {
+                            rowErrors.push(`Answer "${rawAns}" doesn't match A/B/C/D or any option`);
+                        }
                     }
 
                     if(rowErrors.length > 0) {
-                        errors.push(`<b>[${sheetName}] Row ${rowNum}:</b> <span style="color:#ef4444;">${rowErrors.join(" | ")}</span>`);
+                        errors.push(`<b>[${sheetName}] Row ${rowNum}:</b> <span class="text-red-500">${rowErrors.join(" | ")}</span>`);
                     } else {
+                        let finalTopicName = topicVal;
+                        if (!finalTopicName) {
+                            finalTopicName = isDefaultSheet ? "General" : sheetName.trim();
+                        }
+
                         finalQuestions.push({
                             serialNo: finalQuestions.length + 1,
-                            subjectName: sheetName.trim(), 
+                            topic: finalTopicName,             
+                            subjectName: finalTopicName,       
                             passage: passageText ? passageText : "", 
-                            question: q ? q : "", 
-                            optionA: a ? a : "", optionB: b ? b : "", optionC: c ? c : "", optionD: d ? d : "",
+                            question: qText, 
+                            optionA: a, 
+                            optionB: b, 
+                            optionC: c, 
+                            optionD: d,
                             correctAnswer: finalFormattedAns, 
-                            explanation: exp ? exp : "", 
-                            questionImage: imgName ? imgName : "" 
+                            questionImage: imgName ? imgName : "",
+                            explanation: exp ? exp : "" 
                         });
                     }
                 });
             });
 
             if (totalRows === 0) {
-                errorBox.innerHTML = "<h4>❌ Excel file is empty!</h4>";
+                errorBox.innerHTML = "<h4>❌ Excel file contains no readable rows!</h4>";
                 errorBox.style.display = "block"; return;
             }
 
             if(errors.length > 0) {
                 errorBox.style.display = "block";
-                errorBox.innerHTML = `<h4>❌ Format Errors (${errors.length}):</h4>${errors.slice(0, 15).join("<br>")}`;
+                errorBox.innerHTML = `<h4 class="font-bold mb-2">❌ Validation Errors (${errors.length}):</h4>${errors.slice(0, 15).join("<br>")}`;
             } else {
                 successBox.style.display = "block";
-                successBox.innerHTML = `✅ Validated! ${finalQuestions.length} Questions parsed from Excel.`;
-                uploadBtn.style.display = "block";
+                successBox.innerHTML = `✅ Validated successfully! ${finalQuestions.length} Questions ready for Upload.`;
+                uploadBtn.style.display = "flex";
+                renderPreviewTable();
             }
         }
 
@@ -408,14 +642,16 @@
             const testTypeVal = document.getElementById('testTypeSelect').value;
             const subjectVal = document.getElementById('subjectSelect').value; 
 
-            if(!testId || !targetId || !rootCollection) return alert("Please fill Test ID, Category Type, and Target Folder!");
+            if(!testId || !targetId || !rootCollection) {
+                return window.showAlert("Required Fields", "Please fill Test ID, Category Type, and Target Folder!", "warning");
+            }
 
             const btn = document.getElementById('uploadBtn');
             const statusBox = document.getElementById('statusBox');
             
             btn.disabled = true;
             statusBox.style.display = "block";
-            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> VERIFYING TEST HEADER & BOUNDARY...';
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying test header document...';
 
             let testRef;
             if (rootCollection === 'subjects') {
@@ -423,9 +659,10 @@
             } else {
                 if (testTypeVal === "Mock Test") testRef = doc(db, "exams", targetId, "mock_tests", testId);
                 else if (testTypeVal === "Previous Year") testRef = doc(db, "exams", targetId, "previous_years", testId);
+                else if (testTypeVal === "Main Exam") testRef = doc(db, "exams", targetId, "mains_tests", testId);
                 else if (testTypeVal === "Topic Wise") {
                     if (subjectVal === "All" || subjectVal.includes("Loading") || subjectVal.includes("No")) {
-                        alert("Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଅନିର୍ବାଜ୍ୟ!");
+                        window.showAlert("Subject Required", "Topic Wise ଟେଷ୍ଟ୍ ପାଇଁ ସଠିକ୍ Subject ବାଛିବା ଅନିର୍ବାଜ୍ୟ!", "warning");
                         btn.disabled = false; statusBox.style.display = "none"; return;
                     }
                     testRef = doc(db, "exams", targetId, "subject_wise", subjectVal, "tests", testId);
@@ -436,7 +673,11 @@
                 const testSnap = await getDoc(testRef);
 
                 if (!testSnap.exists()) {
-                    alert(`❌ Header Error:\nସିଲେକ୍ଟ ହୋଇଥିବା ପାଥ୍ ରେ "${testId}" ID ର କୌଣସି ହେଡର୍ ମିଳିଲା ନାହିଁ।`);
+                    window.showAlert(
+                        "Header Not Found", 
+                        `ସିଲେକ୍ଟ ହୋଇଥିବା ପାଥ୍ ରେ "${testId}" ID ର କୌଣସି ହେଡର୍ ମିଳିଲା ନାହିଁ। ଦୟାକରି Create Test ପେଜ୍ ରେ ଆଗ ହେଡର୍ ବନାନ୍ତୁ।`, 
+                        "error"
+                    );
                     btn.disabled = false; statusBox.style.display = "none"; return;
                 }
 
@@ -445,28 +686,21 @@
                 let uploadList = [...finalQuestions];
 
                 if (allowedQuestionCount && uploadList.length > allowedQuestionCount) {
-                    alert(`⚠️ BOUNDARY NOTICE: କୋଡ୍ ଅଟୋମେଟିକ୍ ପ୍ରଥମ ${allowedQuestionCount} ଟି ପ୍ରଶ୍ନ ହିଁ ଅପଲୋଡ୍ କରିବ।`);
+                    window.showToast(`Boundary notice: Limiting to first ${allowedQuestionCount} questions.`, "info");
                     uploadList = uploadList.slice(0, allowedQuestionCount);
                 }
 
-                // ====================================================
-                // 🌟 STEP 1: FIND UNIQUE IMAGES & UPLOAD ONLY ONCE 🌟
-                // ====================================================
-                statusBox.style.color = "#0369a1";
-                statusBox.style.backgroundColor = "#e0f2fe";
-                statusBox.style.borderLeftColor = "#0ea5e9";
-                statusBox.innerHTML = '<i class="fas fa-search"></i> Scanning Excel for Unique Images...';
+                statusBox.innerHTML = '<i class="fas fa-search"></i> Scanning spreadsheet for images...';
 
-                // କେବଳ ଅଲଗା ଅଲଗା ଫଟୋ ନାମ ଗୁଡିକୁ ବାହାର କରିବା
                 let uniqueImageNames = [...new Set(uploadList.map(q => q.questionImage).filter(img => img && img.trim() !== ""))];
-                let uploadedImageUrls = {}; // ଲିଙ୍କ୍ ସେଭ୍ କରିବା ପାଇଁ
+                let uploadedImageUrls = {}; 
 
                 for(let i = 0; i < uniqueImageNames.length; i++) {
                     let originalImgName = uniqueImageNames[i];
                     let safeImgName = originalImgName.trim().toLowerCase();
 
                     if (imageMap[safeImgName]) {
-                        statusBox.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Uploading Unique Image ${i + 1} of ${uniqueImageNames.length}: <b>${originalImgName}</b>...`;
+                        statusBox.innerHTML = `<i class="fas fa-cloud-arrow-up"></i> Uploading & Compressing Image ${i + 1} of ${uniqueImageNames.length}: <b>${originalImgName}</b>...`;
                         
                         const rawFile = imageMap[safeImgName];
                         const optimizedBlob = await compressImageForCostSaving(rawFile);
@@ -477,16 +711,13 @@
                         await uploadBytes(imgRef, optimizedBlob);
                         const downloadURL = await getDownloadURL(imgRef);
                         
-                        uploadedImageUrls[safeImgName] = downloadURL; // ସେଭ୍ କଲୁ
+                        uploadedImageUrls[safeImgName] = downloadURL; 
                     } else {
                         console.warn(`Warning: Image ${originalImgName} not found in folder.`);
                     }
                 }
 
-                // ====================================================
-                // 🌟 STEP 2: ASSIGN URLS TO ALL 25 QUESTIONS 🌟
-                // ====================================================
-                statusBox.innerHTML = '<i class="fas fa-link"></i> Linking images to questions...';
+                statusBox.innerHTML = '<i class="fas fa-link"></i> Linking image URLs into questions...';
                 
                 uploadList.forEach(q => {
                     if (q.questionImage && q.questionImage.trim() !== "") {
@@ -495,17 +726,9 @@
                     }
                 });
 
-
-                // ====================================================
-                // 🌟 STEP 3: INJECT INTO DATABASE 🌟
-                // ====================================================
-                statusBox.style.color = "#065f46";
-                statusBox.style.backgroundColor = "#d1fae5";
-                statusBox.style.borderLeftColor = "#10b981";
-                statusBox.innerHTML = `<i class="fas fa-database"></i> Saving ${uploadList.length} questions to Database...`;
+                statusBox.innerHTML = `<i class="fas fa-database"></i> Writing batch of ${uploadList.length} questions into Firestore...`;
                 
                 const batch = writeBatch(db);
-                
                 uploadList.forEach(q => {
                     const qRef = doc(collection(testRef, "questions"));
                     batch.set(qRef, q);
@@ -514,22 +737,27 @@
                 await batch.commit();
                 
                 statusBox.style.display = "none";
-                alert(`🎉 SUCCESS! ${uploadList.length} questions (with images) successfully injected into test path!`);
+                await Swal.fire({
+                    title: "Upload Successful! 🎉",
+                    text: `${uploadList.length} questions successfully injected into test "${testId}".`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
                 
-                // ରିସେଟ୍ କରୁଛୁ 
                 document.getElementById('testId').value = "";
                 document.getElementById('excelInput').value = "";
                 document.getElementById('imageInput').value = "";
-                document.getElementById('fileName').innerText = "Click to browse .xlsx file";
-                document.getElementById('imageFileName').innerText = "Click to select your Image Folder";
+                document.getElementById('fileName').innerText = "Choose .xlsx or Drag & Drop";
+                document.getElementById('imageFileName').innerText = "Select Image Folder";
                 document.getElementById('imageCountText').style.display = "none";
                 document.getElementById('successBox').style.display = "none";
+                document.getElementById('previewSection').style.display = "none";
                 btn.style.display = "none";
                 btn.disabled = false;
                 
             } catch (err) {
                 console.error(err);
-                alert("Upload Failed: " + err.message);
+                window.showAlert("Upload Failed", err.message, "error");
                 btn.disabled = false; 
                 statusBox.style.display = "none";
             }

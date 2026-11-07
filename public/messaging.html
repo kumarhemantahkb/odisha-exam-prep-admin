@@ -3,159 +3,1171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messaging - Odisha Exam Prep Admin</title>
+    <title>Promotions & Campaign Hub - Odisha Exam Prep Admin</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Admin Theme -->
+    <link rel="stylesheet" href="admin-theme.css">
     <style>
-        .sidebar-item:hover, .sidebar-item.active {
-            background: linear-gradient(90deg, #4F46E5 0%, #3B82F6 100%);
-            color: white; border-radius: 0.5rem;
+        .tab-btn.active {
+            color: #4f46e5;
+            border-color: #4f46e5;
+            background-color: #eef2ff;
         }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .template-card.active {
+            border-color: #4f46e5;
+            background-color: #f5f3ff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+        }
+        .email-preview-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
     </style>
 </head>
-<body class="bg-slate-50 font-sans m-0 p-0 flex h-screen overflow-hidden" id="mainBody" style="display: none;">
+<body class="bg-slate-50 text-slate-800 m-0 p-0 flex h-screen overflow-hidden opacity-0 transition-opacity duration-300" id="mainBody">
+
+    <!-- Mobile Drawer Overlay -->
+    <div id="mobileOverlay" class="fixed inset-0 bg-slate-900/60 z-30 hidden backdrop-blur-sm md:hidden"></div>
 
     <!-- LEFT SIDEBAR -->
-    <aside class="w-64 bg-[#0F172A] text-gray-300 flex flex-col h-full shadow-2xl transition-all duration-300 z-20 shrink-0">
-        <div class="p-6 flex items-center gap-3 border-b border-gray-700/50">
-            <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-white leading-tight">Odisha Exam</h2>
-                <p class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Prep Panel</p>
-            </div>
-        </div>
-        <div class="p-4">
-            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mb-6 transition-colors text-sm shadow-lg shadow-indigo-500/30">
-                ADMIN PANEL
-            </button>
-        </div>
-        <nav class="flex-1 px-4 overflow-y-auto space-y-1 custom-scrollbar">
-            <a href="dashboard.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <i class="fas fa-home w-5"></i> Dashboard
-            </a>
-            <a href="users.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <i class="fas fa-users w-5"></i> User Management
-            </a>
-            <a href="upload.html" class="sidebar-item flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium transition-all">
-                <i class="fas fa-cloud-upload-alt w-5"></i> Smart Upload
-            </a>
-            <a href="messaging.html" class="sidebar-item active flex items-center gap-3 px-4 py-3 mb-1 text-sm font-medium text-white transition-all">
-                <i class="fas fa-bell w-5"></i> Send Notice
-            </a>
-        </nav>
+    <aside id="appSidebar" class="w-64 bg-[#0F172A] text-slate-300 flex flex-col h-full shadow-2xl transition-transform duration-300 z-40 shrink-0 fixed md:static inset-y-0 left-0 -translate-x-full md:translate-x-0 border-r border-slate-800">
+        <!-- Injected via admin-nav.js -->
     </aside>
 
     <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden w-full">
+    <main class="flex-1 flex flex-col h-full overflow-hidden w-full min-w-0">
         
-        <!-- HEADER -->
-        <header class="bg-white h-20 px-8 flex items-center justify-between border-b border-gray-200 shadow-sm z-10 shrink-0">
-            <div class="flex items-center gap-4">
-                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg text-sm"><i class="fas fa-paper-plane"></i></span>
-                    Announcements & Notice
-                </h1>
-            </div>
+        <!-- TOP HEADER -->
+        <header id="appHeader" class="bg-white h-20 px-4 md:px-8 flex items-center justify-between border-b border-slate-200/80 shadow-xs z-10 shrink-0">
+            <!-- Injected via admin-nav.js -->
         </header>
 
-        <!-- DASHBOARD CONTENT -->
-        <div class="flex-1 overflow-y-auto p-8 bg-[#F8FAFC]">
+        <!-- SCROLLABLE CONTENT -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC]">
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Page Header -->
+            <div class="max-w-7xl mx-auto mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-indigo-600 mb-1">
+                        <a href="dashboard.html" class="hover:underline">Dashboard</a>
+                        <span>/</span>
+                        <span>Promotions & Broadcast Hub</span>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Promotions & Campaign Hub 🎯📢</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Send targeted marketing emails to free students, push in-app notices, and connect via WhatsApp based on their target exam.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btnOpenApiSettings" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold shadow-xs transition-colors">
+                        <i class="fas fa-gear text-slate-400"></i>
+                        <span>Email API Key</span>
+                    </button>
+                    <a href="users.html" class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-semibold transition-colors">
+                        <i class="fas fa-users"></i>
+                        <span>Student Directory</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- MAIN NAVIGATION TABS -->
+            <div class="max-w-7xl mx-auto mb-6">
+                <div class="flex items-center gap-2 border-b border-slate-200 bg-white p-1.5 rounded-2xl shadow-xs">
+                    <button id="tabEmailBtn" class="tab-btn active flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-envelope-open-text text-sm"></i>
+                        <span>1. Bulk Email Campaign (Primary)</span>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-extrabold">100% Reach</span>
+                    </button>
+                    <button id="tabNoticeBtn" class="tab-btn flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2 border border-transparent">
+                        <i class="fas fa-bullhorn text-sm"></i>
+                        <span>2. In-App Push Notice & Banner</span>
+                    </button>
+                    <button id="tabWhatsappBtn" class="tab-btn flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2 border border-transparent">
+                        <i class="fab fa-whatsapp text-sm text-emerald-500"></i>
+                        <span>3. WhatsApp Quick Connect</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: BULK EMAIL PROMOTIONS -->
+            <div id="tabEmailSection" class="max-w-7xl mx-auto space-y-6">
                 
-                <!-- COMPOSE MESSAGE FORM (LEFT - 2/3 width) -->
-                <div class="lg:col-span-2 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
-                    <h2 class="text-2xl font-black text-gray-800 mb-6 border-b pb-4">Compose New Notice 📢</h2>
-                    
-                    <div class="space-y-5">
-                        <!-- Target Audience -->
+                <!-- TOP CONTROLS & AUDIENCE METRICS -->
+                <div class="panel-card p-6 bg-white border border-slate-200">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">1</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Target Audience & Exam Filter</h3>
+                        </div>
+                        <span class="text-xs text-slate-400">Filters users from Firestore collections</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Target Exam Selection -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-600 mb-2">Target Audience</label>
-                            <select id="targetAudience" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50">
-                                <option value="All">All Users</option>
-                                <option value="Paid">Only Paid (Pro) Users</option>
-                                <option value="Free">Only Free Users</option>
+                            <label class="form-label">Target Exam / Goal <span class="text-indigo-600 font-bold">*</span></label>
+                            <select id="emailExamSelect" class="form-select bg-slate-50/50 font-semibold text-xs">
+                                <option value="All">All Exams (All Registered Students)</option>
+                                <!-- Populated dynamically from DB -->
                             </select>
                         </div>
 
-                        <!-- Notice Title -->
+                        <!-- Subscription Status -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-600 mb-2">Notice Title</label>
-                            <input type="text" id="noticeTitle" placeholder="e.g., New OSSC CGL Mock Test Uploaded!" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <label class="form-label">User Subscription Status</label>
+                            <select id="emailAudienceType" class="form-select bg-slate-50/50 font-semibold text-xs">
+                                <option value="Free" selected>Only Free Students (Convert to Paid) 🆓</option>
+                                <option value="Paid">Only Paid / Pro Students 👑</option>
+                                <option value="All">All Registered Students 👥</option>
+                            </select>
                         </div>
 
-                        <!-- Notice Body -->
+                        <!-- Exam Approaching Date -->
                         <div>
-                            <label class="block text-sm font-bold text-gray-600 mb-2">Message Description</label>
-                            <textarea id="noticeMessage" rows="4" placeholder="Write your full message or announcement here..." class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                            <label class="form-label">Upcoming Exam Date (Optional)</label>
+                            <input type="date" id="emailExamDate" class="form-input text-xs">
                         </div>
+                    </div>
 
-                        <!-- Optional Link -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-600 mb-2">Redirect Link (Optional)</label>
-                            <input type="url" id="noticeLink" placeholder="e.g., https://odishaexamprep.com/mock-test-1" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-
-                        <!-- Image Upload (Smart WebP) -->
-                        <div>
-                            <label class="block text-sm font-bold text-gray-600 mb-2">Attach Image (Optional)</label>
-                            <div class="w-full border-2 border-dashed border-pink-300 rounded-xl p-6 text-center bg-pink-50 cursor-pointer hover:bg-pink-100 transition-colors relative">
-                                <input type="file" id="noticeImage" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                <i class="fas fa-image text-3xl text-pink-400 mb-2"></i>
-                                <p id="imgText" class="text-pink-800 font-bold text-sm">Click to select an image</p>
+                    <!-- REAL-TIME AUDIENCE INSIGHT BAR -->
+                    <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-50/80 via-blue-50/60 to-purple-50/80 border border-indigo-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-md shadow-indigo-600/20">
+                                <i class="fas fa-users-viewfinder"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-indigo-950 uppercase tracking-wide">Target Audience Selected:</h4>
+                                <div class="flex items-center gap-3 mt-0.5 text-xs">
+                                    <span class="font-extrabold text-slate-900 text-sm" id="cntTotalFiltered">0 Students</span>
+                                    <span class="text-slate-400">|</span>
+                                    <span class="text-emerald-700 font-bold flex items-center gap-1"><i class="fas fa-envelope"></i> <span id="cntWithEmail">0</span> Valid Emails (100%)</span>
+                                    <span class="text-slate-400">|</span>
+                                    <span class="text-blue-700 font-semibold flex items-center gap-1"><i class="fas fa-phone"></i> <span id="cntWithPhone">0</span> With Phone</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div id="statusBox" class="hidden p-4 rounded-xl font-bold text-center"></div>
-
-                        <button id="sendBtn" class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all text-lg flex items-center justify-center gap-2">
-                            <i class="fas fa-paper-plane"></i> Publish Notice
-                        </button>
+                        <div class="flex items-center gap-2 w-full md:w-auto">
+                            <button type="button" id="btnCopyEmails" class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-indigo-300 text-indigo-700 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy Emails (Gmail Bcc)</span>
+                            </button>
+                            <button type="button" id="btnExportCsv" class="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fas fa-download"></i>
+                                <span>Download CSV</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- NOTICE HISTORY (RIGHT - 1/3 width) -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col h-full">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-3"><i class="fas fa-history text-indigo-500"></i> Recent Notices</h3>
+                <!-- CAMPAIGN CONTENT & LIVE PREVIEW (2 COLUMNS) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
-                    <div id="noticeHistory" class="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                        <div class="text-center text-gray-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl"></i><br>Loading history...</div>
+                    <!-- LEFT: COMPOSE & TEMPLATES (7 COLS) -->
+                    <div class="lg:col-span-7 panel-card p-6 bg-white border border-slate-200 space-y-5">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">2</span>
+                                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Choose Promotional Template</h3>
+                            </div>
+                            <span class="text-xs text-indigo-600 font-bold">1-Click Odia Copy</span>
+                        </div>
+
+                        <!-- TEMPLATE SELECTOR CARDS -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="template-card active p-3.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/40 cursor-pointer transition-all" data-template="urgency">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-base">⏰</span>
+                                    <h4 class="text-xs font-extrabold text-slate-900">Exam Date Approaching</h4>
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug">Urgency countdown to motivate students to practice mock tests before the exam.</p>
+                            </div>
+
+                            <div class="template-card p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 bg-white cursor-pointer transition-all" data-template="discount">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-base">🎉</span>
+                                    <h4 class="text-xs font-extrabold text-slate-900">Flat 50% Coupon Offer</h4>
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug">Special student discount with code 'ODISHA50' to convert free students immediately.</p>
+                            </div>
+
+                            <div class="template-card p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 bg-white cursor-pointer transition-all" data-template="booster">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-base">📈</span>
+                                    <h4 class="text-xs font-extrabold text-slate-900">Score Booster & Rank</h4>
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug">Highlights Odia explanations, instant rank, and syllabus-based accuracy analysis.</p>
+                            </div>
+
+                            <div class="template-card p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 bg-white cursor-pointer transition-all" data-template="custom">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-base">✍️</span>
+                                    <h4 class="text-xs font-extrabold text-slate-900">Custom Campaign</h4>
+                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug">Write your own custom promotional message, discount code, and announcement.</p>
+                            </div>
+                        </div>
+
+                        <!-- EDITABLE FIELDS -->
+                        <div class="space-y-4 pt-2">
+                            <div>
+                                <label class="form-label">Email Subject Line <span class="text-red-500">*</span></label>
+                                <input type="text" id="emailSubject" class="form-input text-xs font-bold text-slate-900" placeholder="e.g. ⚠️ OSSC CGL ପରୀକ୍ଷା ଆଉ ମାତ୍ର ୧୫ ଦିନ ବାକି! ପ୍ରସ୍ତୁତି କେମିତି ଚାଲିଛି?">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Email Headline / Banner Title</label>
+                                <input type="text" id="emailHeadline" class="form-input text-xs font-semibold" placeholder="e.g. Special Mock Test Series for OSSC CGL Aspirants">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Promotional Message Body (Odia / English)</label>
+                                <textarea id="emailBodyText" rows="6" class="form-textarea text-xs leading-relaxed" placeholder="Write full promotional text..."></textarea>
+                                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                                    <span>Variables: <code class="text-indigo-600 font-bold">{name}</code>, <code class="text-indigo-600 font-bold">{exam}</code>, <code class="text-indigo-600 font-bold">{days}</code>, <code class="text-indigo-600 font-bold">{coupon}</code></span>
+                                    <span>Auto-formatted into HTML newsletter</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Discount Coupon Code</label>
+                                    <input type="text" id="emailCouponCode" value="ODISHA50" class="form-input text-xs font-mono font-bold text-indigo-700 bg-indigo-50/50 uppercase">
+                                </div>
+                                <div>
+                                    <label class="form-label">CTA Button Text</label>
+                                    <input type="text" id="emailBtnText" value="Unlock Test Series (Flat 50% Off)" class="form-input text-xs font-bold text-slate-900">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Action / Store Link</label>
+                                <input type="url" id="emailBtnUrl" value="https://odishaexamprep.com" class="form-input text-xs" placeholder="https://odishaexamprep.com">
+                            </div>
+                        </div>
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-3">
+                            <button type="button" id="btnSendDirectApi" class="btn-primary flex-1 py-3.5 text-xs font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 hover:from-indigo-500 hover:to-blue-500 shadow-indigo-500/25">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Send Direct via Free Email API</span>
+                            </button>
+                            <button type="button" id="btnQuickCopyBcc" class="px-5 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fas fa-clipboard-check text-slate-500"></i>
+                                <span>Copy Emails for Gmail</span>
+                            </button>
+                        </div>
+                        <div id="emailSendStatus" class="hidden p-3 rounded-xl text-xs font-semibold text-center border"></div>
                     </div>
+
+                    <!-- RIGHT: LIVE HTML EMAIL PREVIEW (5 COLS) -->
+                    <div class="lg:col-span-5 flex flex-col">
+                        <div class="panel-card p-6 bg-white border border-slate-200 flex-1 flex flex-col">
+                            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-desktop text-indigo-500 text-sm"></i>
+                                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Live Email Preview</h3>
+                                </div>
+                                <span class="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                    <i class="fas fa-check-circle mr-1"></i>Mobile Responsive
+                                </span>
+                            </div>
+
+                            <!-- MOCK EMAIL CLIENT WINDOW -->
+                            <div class="border border-slate-300 rounded-2xl overflow-hidden bg-slate-100 flex-1 shadow-inner flex flex-col text-xs">
+                                <!-- Email client topbar -->
+                                <div class="bg-slate-200/80 px-4 py-2.5 border-b border-slate-300 flex items-center justify-between text-[11px] text-slate-600">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                        <span class="ml-2 font-semibold text-slate-700">Inbox Preview</span>
+                                    </div>
+                                    <span class="text-slate-400">To: student@gmail.com</span>
+                                </div>
+
+                                <!-- Actual Email Content Frame -->
+                                <div class="p-4 overflow-y-auto max-h-[580px] bg-white flex-1 custom-scrollbar">
+                                    <div class="email-preview-card border border-slate-200 rounded-2xl p-5 max-w-md mx-auto text-slate-800 font-sans">
+                                        
+                                        <!-- Header Logo -->
+                                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                                                    <i class="fas fa-graduation-cap"></i>
+                                                </div>
+                                                <span class="font-extrabold text-slate-900 tracking-tight text-sm">Odisha Exam Prep</span>
+                                            </div>
+                                            <span id="prevExamBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase tracking-wider">
+                                                OSSC CGL SPECIAL
+                                            </span>
+                                        </div>
+
+                                        <!-- Urgent Countdown Banner -->
+                                        <div id="prevUrgencyBox" class="p-3 mb-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center gap-2.5 shadow-sm">
+                                            <span class="text-xl">⏰</span>
+                                            <div>
+                                                <p class="font-black text-xs" id="prevUrgencyText">Exam Date is Approaching Fast!</p>
+                                                <p class="text-[10px] text-amber-100">Don't lose marks on the real exam pattern.</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Headline & Greeting -->
+                                        <h3 id="prevHeadline" class="font-black text-slate-900 text-base leading-snug mb-2">
+                                            Boost Your OSSC CGL Score with Real CBT Tests!
+                                        </h3>
+                                        <p class="text-slate-600 text-xs mb-3 font-medium">
+                                            ନମସ୍କାର <b class="text-slate-900" id="prevStudentName">Priya Mohanty</b>,
+                                        </p>
+
+                                        <!-- Message Body -->
+                                        <div id="prevBody" class="text-slate-600 text-xs leading-relaxed space-y-2 mb-4 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
+                                            ଆପଣଙ୍କ ପରୀକ୍ଷା ଖୁବ୍ ଶୀଘ୍ର ହେବାକୁ ଯାଉଛି। ଶେଷ ସମୟରେ ଅଧିକରୁ ଅଧିକ Mock Test ଅଭ୍ୟାସ କଲେ ହିଁ ସିଲେକ୍ସନ୍ ସମ୍ଭବ।
+                                        </div>
+
+                                        <!-- Checklist -->
+                                        <div class="p-3 mb-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-[11px] text-slate-700">
+                                            <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>100% Latest Exam Pattern &amp; Full Syllabus</span></div>
+                                            <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Detailed Step-by-Step Solutions in Odia (ଓଡ଼ିଆରେ)</span></div>
+                                            <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Instant All-Odisha Rank &amp; Weak Topic Analysis</span></div>
+                                            <div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-600"></i> <span>Unlimited Re-attempt from Mobile / Web</span></div>
+                                        </div>
+
+                                        <!-- Coupon Pill -->
+                                        <div id="prevCouponBox" class="p-3 mb-4 rounded-xl bg-purple-50 border border-dashed border-purple-300 text-center">
+                                            <span class="text-[10px] text-purple-700 uppercase font-bold tracking-wider">Use Discount Coupon:</span>
+                                            <p class="text-sm font-black font-mono text-purple-900 tracking-wider mt-0.5" id="prevCouponText">ODISHA50</p>
+                                        </div>
+
+                                        <!-- Big CTA Button -->
+                                        <div class="text-center mb-4">
+                                            <a id="prevBtnLink" href="#" class="inline-block w-full py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all uppercase tracking-wider">
+                                                <span id="prevBtnText">Unlock Test Series (Flat 50% Off)</span> &rarr;
+                                            </a>
+                                        </div>
+
+                                        <!-- Footer info -->
+                                        <div class="pt-3 border-t border-slate-100 text-center text-[10px] text-slate-400">
+                                            <p>Odisha Exam Prep &bull; Bhubaneswar, Odisha</p>
+                                            <p class="mt-0.5">You received this email because you registered for exam preparation on Odisha Exam Prep App.</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
+
+            <!-- TAB 2: IN-APP PUSH NOTICES -->
+            <div id="tabNoticeSection" class="hidden max-w-7xl mx-auto">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- COMPOSE IN-APP NOTICE -->
+                    <div class="lg:col-span-2 panel-card p-6 md:p-8 bg-white border border-slate-200">
+                        <div class="flex items-center gap-2 pb-3 mb-5 border-b border-slate-100">
+                            <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 font-bold text-xs flex items-center justify-center">📢</span>
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Compose In-App Notice &amp; Popup Banner</h3>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Target Exam Tag</label>
+                                    <select id="noticeTargetExam" class="form-select bg-slate-50/50 text-xs font-semibold">
+                                        <option value="All">All Exams (Broadcast to Everyone)</option>
+                                        <!-- Dynamically populated -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Target Audience</label>
+                                    <select id="targetAudience" class="form-select bg-slate-50/50 text-xs font-semibold">
+                                        <option value="All">All Users (Free + Pro)</option>
+                                        <option value="Paid">Only Paid (Pro) Users 👑</option>
+                                        <option value="Free">Only Free Users 🆓</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Notice Title <span class="text-red-500">*</span></label>
+                                <input type="text" id="noticeTitle" placeholder="e.g. OSSC CGL Exam Date Announced! Practice Full Mock Now" required class="form-input text-xs font-bold">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Notice Description <span class="text-red-500">*</span></label>
+                                <textarea id="noticeMessage" rows="4" placeholder="Write full description for student app notification..." required class="form-textarea text-xs leading-relaxed"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Action / Redirect Link (Optional)</label>
+                                <input type="url" id="noticeLink" placeholder="e.g. https://odishaexamprep.com/mock-tests" class="form-input text-xs">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Attach Banner Image (Optional WebP)</label>
+                                <div class="border-2 border-dashed border-pink-200 hover:border-pink-400 rounded-2xl p-5 text-center bg-pink-50/30 hover:bg-pink-50/70 transition-colors relative cursor-pointer group">
+                                    <input type="file" id="noticeImage" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <i class="fas fa-image text-2xl text-pink-500 mb-1 group-hover:scale-110 transition-transform"></i>
+                                    <p id="imgText" class="text-pink-800 font-bold text-xs">Click or drag banner image here</p>
+                                    <p class="text-[10px] text-pink-500 mt-0.5">Auto-compressed to WebP for fast mobile rendering</p>
+                                </div>
+                            </div>
+
+                            <div id="noticeStatusBox" class="hidden p-3 rounded-xl text-xs font-semibold text-center"></div>
+
+                            <div class="pt-2">
+                                <button id="sendBtn" class="btn-primary w-full py-3.5 text-xs font-bold bg-gradient-to-r from-rose-600 via-red-600 to-rose-600 hover:from-rose-500 hover:to-red-500 shadow-rose-500/25">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Publish In-App Broadcast Notice</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECENT NOTICES LIST -->
+                    <div class="panel-card p-6 bg-white border border-slate-200 flex flex-col h-full">
+                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-history text-indigo-500 text-sm"></i>
+                                <h3 class="font-bold text-slate-800 text-sm">Recent Broadcasts</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400">Last 10</span>
+                        </div>
+                        
+                        <div id="noticeHistory" class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar max-h-[550px]">
+                            <div class="text-center text-slate-400 py-10 text-xs">
+                                <i class="fas fa-circle-notch fa-spin text-lg mb-2"></i><br>
+                                Loading broadcasts...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: WHATSAPP DIRECT CONNECT -->
+            <div id="tabWhatsappSection" class="hidden max-w-7xl mx-auto space-y-6">
+                <div class="panel-card p-6 bg-white border border-slate-200">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center">💬</span>
+                                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">WhatsApp Direct Connect (Users with Phone)</h3>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">Directly chat with students who provided their mobile number during registration.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-slate-600">Filter Exam:</span>
+                            <select id="waExamSelect" class="form-select bg-slate-50 text-xs font-semibold py-1.5 px-3">
+                                <option value="All">All Exams</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- WHATSAPP USERS TABLE -->
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider">
+                                    <th class="p-3 border-b border-slate-200">Student Name</th>
+                                    <th class="p-3 border-b border-slate-200">Target Exam</th>
+                                    <th class="p-3 border-b border-slate-200">Phone Number</th>
+                                    <th class="p-3 border-b border-slate-200">Status</th>
+                                    <th class="p-3 border-b border-slate-200 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="waTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-slate-400 font-medium">Loading phone contacts...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
+    <!-- EMAIL API SETTINGS MODAL -->
+    <div id="apiSettingsModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-xs">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3 class="font-extrabold text-slate-900 text-sm">Free Email API Settings</h3>
+                </div>
+                <button type="button" id="btnCloseApiModal" class="text-slate-400 hover:text-slate-600 text-base">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] leading-relaxed">
+                    💡 <b>100% Free Bulk Email Service:</b><br>
+                    Register at <a href="https://www.brevo.com" target="_blank" class="underline font-bold text-indigo-700">Brevo.com</a> (300 free emails/day) or <a href="https://resend.com" target="_blank" class="underline font-bold text-indigo-700">Resend.com</a> (3,000 free emails/month), copy your API key and paste below.
+                </div>
+
+                <div>
+                    <label class="form-label">Email Provider</label>
+                    <select id="cfgEmailProvider" class="form-select bg-slate-50 text-xs font-semibold">
+                        <option value="brevo" selected>Brevo / Sendinblue (300 Free Emails / Day - Recommended)</option>
+                        <option value="resend">Resend (3,000 Free Emails / Month)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">API Key</label>
+                    <input type="password" id="cfgEmailApiKey" placeholder="xkeysib-..." class="form-input text-xs font-mono">
+                </div>
+
+                <div>
+                    <label class="form-label">Sender Name</label>
+                    <input type="text" id="cfgSenderName" value="Odisha Exam Prep" class="form-input text-xs font-semibold">
+                </div>
+
+                <div>
+                    <label class="form-label">Sender Email Address</label>
+                    <input type="email" id="cfgSenderEmail" placeholder="support@odishaexamprep.com (or your verified email)" class="form-input text-xs">
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" id="btnCancelApiModal" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold">Cancel</button>
+                    <button type="button" id="btnSaveApiConfig" class="btn-primary py-2 px-5 text-xs font-bold">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC SCRIPT -->
     <script type="module">
-        import { db, storage, auth } from './firebase.js';
+        import { db, storage } from './firebase.js';
         import { collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { renderAdminLayout, initAuthGuard } from './admin-nav.js';
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) { document.getElementById("mainBody").style.display = "flex"; loadHistory(); } 
-            else { window.location.replace("index.html"); }
+        // Initialize Layout
+        renderAdminLayout({
+            pageTitle: "Promotions & Broadcast Hub",
+            pageSubtitle: "Target registered students by exam with bulk email campaigns and in-app notices",
+            pageIcon: "fas fa-bullhorn",
+            activeNav: "messaging.html"
+        });
+        initAuthGuard();
+
+        // State Store
+        let allStudents = [];
+        let filteredStudents = [];
+        let allExamList = new Set();
+        let currentTemplateKey = "urgency";
+
+        // Tab Switching
+        const tabEmailBtn = document.getElementById("tabEmailBtn");
+        const tabNoticeBtn = document.getElementById("tabNoticeBtn");
+        const tabWhatsappBtn = document.getElementById("tabWhatsappBtn");
+
+        const tabEmailSection = document.getElementById("tabEmailSection");
+        const tabNoticeSection = document.getElementById("tabNoticeSection");
+        const tabWhatsappSection = document.getElementById("tabWhatsappSection");
+
+        function switchTab(activeTab) {
+            [tabEmailBtn, tabNoticeBtn, tabWhatsappBtn].forEach(b => {
+                b.className = "tab-btn flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-2 border border-transparent";
+            });
+            [tabEmailSection, tabNoticeSection, tabWhatsappSection].forEach(s => s.classList.add("hidden"));
+
+            if (activeTab === "email") {
+                tabEmailBtn.className = "tab-btn active flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2";
+                tabEmailSection.classList.remove("hidden");
+            } else if (activeTab === "notice") {
+                tabNoticeBtn.className = "tab-btn active flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2";
+                tabNoticeSection.classList.remove("hidden");
+                loadNoticeHistory();
+            } else if (activeTab === "whatsapp") {
+                tabWhatsappBtn.className = "tab-btn active flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2";
+                tabWhatsappSection.classList.remove("hidden");
+                renderWhatsappTable();
+            }
+        }
+
+        tabEmailBtn.addEventListener("click", () => switchTab("email"));
+        tabNoticeBtn.addEventListener("click", () => switchTab("notice"));
+        tabWhatsappBtn.addEventListener("click", () => switchTab("whatsapp"));
+
+        // Pre-Written Marketing Templates (Odia + English)
+        const templates = {
+            urgency: {
+                subject: "⚠️ {exam} ପରୀକ୍ଷା ଖୁବ୍ ଶୀଘ୍ର! {name}, ଆପଣଙ୍କ ପ୍ରସ୍ତୁତି କେମିତି ଚାଲିଛି?",
+                headline: "Special Mock Test Readiness for {exam} Aspirants 🎯",
+                body: "ଆପଣଙ୍କ {exam} ପରୀକ୍ଷା ଆଉ ବହୁତ କମ୍ ଦିନ ବାକି ଅଛି। ଶେଷ ସମୟରେ ଅଧିକରୁ ଅଧିକ Mock Test ଅଭ୍ୟାସ କଲେ ହିଁ Time Management ଏବଂ ସିଲେକ୍ସନ୍ ସମ୍ଭବ।\n\nସମସ୍ତ ବିଷୟର ୧୦୦% Exam Pattern ଅନୁସାରେ ପ୍ରସ୍ତୁତ Full Length Mock Tests, Previous Year Papers ଏବଂ ଓଡ଼ିଆରେ ସମ୍ପୂର୍ଣ୍ଣ ବ୍ୟାଖ୍ୟା ପାଇବା ପାଇଁ ଆଜି ହିଁ ଆରମ୍ଭ କରନ୍ତୁ!",
+                coupon: "EXAM50",
+                btnText: "Unlock {exam} Test Series (Flat 50% Off)",
+                urgencyText: "Exam Countdown Alert: Don't lose rank in the final days!"
+            },
+            discount: {
+                subject: "🎉 ସ୍ୱତନ୍ତ୍ର ଅଫର୍: {exam} Test Series ଉପରେ Flat 50% ଛାଡ଼!",
+                headline: "Flat 50% Student Discount on {exam} Mock Tests 🏷️",
+                body: "ଆପଣଙ୍କ ପରୀକ୍ଷା ସଫଳତା ପାଇଁ ଆମେ ଆଣିଛୁ ସ୍ୱତନ୍ତ୍ର ରିହାତି। କୁପନ୍ କୋଡ୍ '{coupon}' ବ୍ୟବହାର କରି ଆଜି ହିଁ ସମସ୍ତ Full Mock Tests, Topic Wise Tests ଏବଂ Detailed Odia Solutions ଅନ୍‌ଲକ୍ କରନ୍ତୁ।\n\nଏହି ସୁବିଧା କେବଳ ସୀମିତ ସମୟ ପାଇଁ ଉପଲବ୍ଧ। ଆଜି ହିଁ ନିଜ ସିଲେକ୍ସନ୍ ପକ୍କା କରନ୍ତୁ!",
+                coupon: "ODISHA50",
+                btnText: "Claim 50% Discount & Start Practicing",
+                urgencyText: "Limited Time Offer: Use Coupon 'ODISHA50' before it expires!"
+            },
+            booster: {
+                subject: "📈 {exam} ରେ ନିଜ ସ୍କୋର ୩୦+ ମାର୍କ ବଢ଼ାନ୍ତୁ!",
+                headline: "Boost Your Rank with Detailed Odia Solutions & CBT Simulation 🚀",
+                body: "କେବଳ ପଢ଼ିଲେ ହେବ ନାହିଁ, ନିଜର ଦୁର୍ବଳ ବିଷୟ ଚିହ୍ନଟ କରିବା ଜରୁରୀ। ଆମର ସ୍ୱତନ୍ତ୍ର {exam} Test Series ଦ୍ୱାରା ନିଜର Instant Rank, Accuracy Analysis ଏବଂ ପ୍ରତ୍ୟେକ ପ୍ରଶ୍ନର ଓଡ଼ିଆରେ ସମ୍ପୂର୍ଣ୍ଣ ବିଶ୍ଳେଷଣ ପାଆନ୍ତୁ।\n\nହଜାର ହଜାର ଛାତ୍ରଛାତ୍ରୀଙ୍କ ସହ ନିଜ ସ୍କୋର ତୁଳନା କରନ୍ତୁ ଏବଂ ପରୀକ୍ଷା ଭୟ ଦୂର କରନ୍ତୁ!",
+                coupon: "SCOREBOOST",
+                btnText: "Start {exam} Speed Test Now",
+                urgencyText: "Rank Booster Pack: Comprehensive Odia Solutions Included!"
+            },
+            custom: {
+                subject: "📢 Important Update for {exam} Aspirants from Odisha Exam Prep",
+                headline: "Essential Practice Tests for {exam} Aspirants",
+                body: "ନମସ୍କାର {name},\n\nଆପଣଙ୍କ ପରୀକ୍ଷା ପାଇଁ ନୂତନ Mock Test Series ଲାଇଭ୍ ହୋଇସାରିଛି। ସମସ୍ତ ପ୍ରଶ୍ନ ଓଡ଼ିଶା ସରକାରଙ୍କ ସର୍ବଶେଷ ପରୀକ୍ଷା ଢାଞ୍ଚା ଅନୁସାରେ ପ୍ରସ୍ତୁତ କରାଯାଇଛି। ଆଜି ହିଁ ଟେଷ୍ଟ୍ ଦିଅନ୍ତୁ!",
+                coupon: "WELCOME10",
+                btnText: "Take Mock Test Now",
+                urgencyText: "New High-Quality Tests Available on the App!"
+            }
+        };
+
+        // Load Users and Unique Exams from Firestore
+        async function fetchAllUserData() {
+            try {
+                const [basicSnap, premiumSnap, subcatSnap] = await Promise.all([
+                    getDocs(collection(db, "user")),
+                    getDocs(collection(db, "users")),
+                    getDocs(collection(db, "subcategories"))
+                ]);
+
+                const basicMap = {};
+                basicSnap.forEach(d => { basicMap[d.id] = d.data(); });
+
+                const premiumMap = {};
+                premiumSnap.forEach(d => { premiumMap[d.id] = d.data(); });
+
+                const allUids = new Set([...Object.keys(basicMap), ...Object.keys(premiumMap)]);
+                allStudents = [];
+                allExamList = new Set();
+
+                // Add exams from subcategories collection
+                subcatSnap.forEach(d => {
+                    const data = d.data();
+                    const examTitle = data.name || data.title || d.id;
+                    if (examTitle) allExamList.add(examTitle.trim());
+                });
+
+                allUids.forEach(uid => {
+                    const b = basicMap[uid] || {};
+                    const p = premiumMap[uid] || {};
+                    const isPaid = p.isPremium === true || p.isPremium === "true" || b.isPremium === true;
+                    const exam = (b.targetExam || p.targetExam || "").trim();
+                    if (exam && exam !== "Not Set" && exam !== "All") allExamList.add(exam);
+
+                    allStudents.push({
+                        id: uid,
+                        name: b.fullName || p.fullName || b.name || "Student",
+                        email: (b.email || p.email || "").trim(),
+                        phone: (b.phoneNumber || b.phone || p.phoneNumber || "").trim(),
+                        targetExam: exam || "General Studies",
+                        isPremium: isPaid
+                    });
+                });
+
+                populateExamDropdowns();
+                applyFilters();
+
+            } catch (err) {
+                console.error("Failed to load students:", err);
+                window.showAlert("Data Error", "Failed to fetch student data: " + err.message, "error");
+            }
+        }
+
+        function populateExamDropdowns() {
+            const emailSelect = document.getElementById("emailExamSelect");
+            const noticeSelect = document.getElementById("noticeTargetExam");
+            const waSelect = document.getElementById("waExamSelect");
+
+            const sortedExams = Array.from(allExamList).sort();
+
+            emailSelect.innerHTML = '<option value="All">All Exams (All Registered Students)</option>';
+            noticeSelect.innerHTML = '<option value="All">All Exams (Broadcast to Everyone)</option>';
+            waSelect.innerHTML = '<option value="All">All Exams</option>';
+
+            sortedExams.forEach(exam => {
+                emailSelect.add(new Option(exam, exam));
+                noticeSelect.add(new Option(exam, exam));
+                waSelect.add(new Option(exam, exam));
+            });
+        }
+
+        // Filter Students based on selected exam & audience type
+        function applyFilters() {
+            const selectedExam = document.getElementById("emailExamSelect").value;
+            const audienceType = document.getElementById("emailAudienceType").value;
+
+            filteredStudents = allStudents.filter(s => {
+                // Exam filter
+                if (selectedExam !== "All") {
+                    const sExam = s.targetExam.toLowerCase();
+                    const target = selectedExam.toLowerCase();
+                    if (!sExam.includes(target) && !target.includes(sExam)) return false;
+                }
+
+                // Subscription filter
+                if (audienceType === "Free" && s.isPremium) return false;
+                if (audienceType === "Paid" && !s.isPremium) return false;
+
+                return true;
+            });
+
+            // Update Metrics
+            const total = filteredStudents.length;
+            const withEmail = filteredStudents.filter(s => s.email && s.email.includes("@")).length;
+            const withPhone = filteredStudents.filter(s => s.phone && s.phone.length >= 10).length;
+
+            document.getElementById("cntTotalFiltered").innerText = `${total} Students`;
+            document.getElementById("cntWithEmail").innerText = `${withEmail}`;
+            document.getElementById("cntWithPhone").innerText = `${withPhone}`;
+
+            updateEmailPreview();
+        }
+
+        document.getElementById("emailExamSelect").addEventListener("change", () => {
+            loadTemplate(currentTemplateKey);
+            applyFilters();
+        });
+        document.getElementById("emailAudienceType").addEventListener("change", applyFilters);
+        document.getElementById("emailExamDate").addEventListener("change", () => {
+            loadTemplate(currentTemplateKey);
+            updateEmailPreview();
         });
 
-        // 🌟 Image Selection UI Update
-        let selectedFile = null;
-        document.getElementById('noticeImage').addEventListener('change', function(e) {
-            if(e.target.files.length > 0) {
-                selectedFile = e.target.files[0];
-                document.getElementById('imgText').innerText = `✅ Selected: ${selectedFile.name}`;
+        // Template Selection Handler
+        function loadTemplate(key) {
+            currentTemplateKey = key;
+            const exam = document.getElementById("emailExamSelect").value;
+            const examLabel = exam === "All" ? "Odisha Competitive Exams" : exam;
+            const examDateVal = document.getElementById("emailExamDate").value;
+
+            let daysText = "ଖୁବ୍ ଶୀଘ୍ର";
+            if (examDateVal) {
+                const diff = Math.ceil((new Date(examDateVal) - new Date()) / (1000 * 60 * 60 * 24));
+                if (diff > 0) daysText = `ଆଉ ମାତ୍ର ${diff} ଦିନ`;
+            }
+
+            const t = templates[key] || templates.urgency;
+
+            document.getElementById("emailSubject").value = t.subject.replace(/{exam}/g, examLabel).replace(/{name}/g, "Student").replace(/{days}/g, daysText);
+            document.getElementById("emailHeadline").value = t.headline.replace(/{exam}/g, examLabel);
+            document.getElementById("emailBodyText").value = t.body.replace(/{exam}/g, examLabel).replace(/{coupon}/g, t.coupon);
+            document.getElementById("emailCouponCode").value = t.coupon;
+            document.getElementById("emailBtnText").value = t.btnText.replace(/{exam}/g, examLabel);
+
+            updateEmailPreview();
+        }
+
+        document.querySelectorAll(".template-card").forEach(card => {
+            card.addEventListener("click", () => {
+                document.querySelectorAll(".template-card").forEach(c => {
+                    c.className = "template-card p-3.5 rounded-xl border border-slate-200 hover:border-indigo-300 bg-white cursor-pointer transition-all";
+                });
+                card.className = "template-card active p-3.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/40 cursor-pointer transition-all";
+                loadTemplate(card.getAttribute("data-template"));
+            });
+        });
+
+        // Real-Time Preview Updater
+        function updateEmailPreview() {
+            const exam = document.getElementById("emailExamSelect").value;
+            const examLabel = exam === "All" ? "Odisha Competitive Exams" : exam;
+            const headline = document.getElementById("emailHeadline").value || "Special Exam Test Series";
+            const body = document.getElementById("emailBodyText").value || "";
+            const coupon = document.getElementById("emailCouponCode").value.trim();
+            const btnText = document.getElementById("emailBtnText").value || "Unlock Test Series";
+            const btnUrl = document.getElementById("emailBtnUrl").value || "#";
+
+            document.getElementById("prevExamBadge").innerText = `${examLabel.toUpperCase()}`;
+            document.getElementById("prevHeadline").innerText = headline;
+            
+            // Format body with linebreaks
+            const formattedBody = body.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+            document.getElementById("prevBody").innerHTML = formattedBody;
+
+            const couponBox = document.getElementById("prevCouponBox");
+            if (coupon) {
+                couponBox.classList.remove("hidden");
+                document.getElementById("prevCouponText").innerText = coupon;
+            } else {
+                couponBox.classList.add("hidden");
+            }
+
+            document.getElementById("prevBtnText").innerText = btnText;
+            document.getElementById("prevBtnLink").href = btnUrl;
+        }
+
+        ["emailHeadline", "emailBodyText", "emailCouponCode", "emailBtnText", "emailBtnUrl"].forEach(id => {
+            document.getElementById(id).addEventListener("input", updateEmailPreview);
+        });
+
+        // 1-Click Copy All Emails for Gmail Bcc
+        document.getElementById("btnCopyEmails").addEventListener("click", copyEmailsToClipboard);
+        document.getElementById("btnQuickCopyBcc").addEventListener("click", copyEmailsToClipboard);
+
+        function copyEmailsToClipboard() {
+            const validEmails = filteredStudents
+                .map(s => s.email)
+                .filter(e => e && e.includes("@"));
+
+            if (validEmails.length === 0) {
+                return window.showAlert("No Emails Found", "No valid email addresses found for the current filter.", "warning");
+            }
+
+            const emailString = validEmails.join(", ");
+            navigator.clipboard.writeText(emailString).then(() => {
+                const subject = encodeURIComponent(document.getElementById("emailSubject").value);
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}`;
+
+                Swal.fire({
+                    title: `${validEmails.length} Emails Copied! 📋`,
+                    html: `
+                        <p class="text-xs text-slate-600 mb-3">All <b>${validEmails.length}</b> student email addresses have been copied to your clipboard.</p>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs mb-3 space-y-1">
+                            <p class="font-bold text-slate-800">How to send 100% Free via Gmail:</p>
+                            <p>1. Open Gmail Compose</p>
+                            <p>2. Click on <b>Bcc</b> (Blind Carbon Copy) and Paste (Ctrl+V)</p>
+                            <p>3. Paste your subject & message, and Hit Send!</p>
+                        </div>
+                        <a href="${gmailUrl}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-500/20 transition-all">
+                            <i class="fab fa-google"></i> Open Gmail Composer Directly
+                        </a>
+                    `,
+                    icon: "success",
+                    confirmButtonText: "Done",
+                    confirmButtonColor: "#4f46e5"
+                });
+            });
+        }
+
+        // Export Recipient CSV
+        document.getElementById("btnExportCsv").addEventListener("click", () => {
+            if (filteredStudents.length === 0) {
+                return window.showAlert("Empty List", "No students in the current filter to export.", "warning");
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,FullName,Email,Phone,TargetExam,SubscriptionStatus\n";
+            filteredStudents.forEach(s => {
+                const safeName = `"${(s.name || '').replace(/"/g, '""')}"`;
+                const safeExam = `"${(s.targetExam || '').replace(/"/g, '""')}"`;
+                const status = s.isPremium ? "Paid" : "Free";
+                csvContent += `${safeName},${s.email},${s.phone},${safeExam},${status}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            const examSlug = document.getElementById("emailExamSelect").value.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `students_${examSlug}_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.showToast("Student list exported to CSV!", "success");
+        });
+
+        // Direct Email API Sending (Brevo / Resend)
+        document.getElementById("btnSendDirectApi").addEventListener("click", async () => {
+            const provider = localStorage.getItem("odisha_email_provider") || "brevo";
+            const apiKey = localStorage.getItem("odisha_email_api_key") || "";
+            const senderEmail = localStorage.getItem("odisha_sender_email") || "";
+            const senderName = localStorage.getItem("odisha_sender_name") || "Odisha Exam Prep";
+
+            if (!apiKey || !senderEmail) {
+                document.getElementById("btnOpenApiSettings").click();
+                return window.showAlert("API Key Required", "Please configure your Free Brevo / Resend API Key and Sender Email first.", "info");
+            }
+
+            const recipients = filteredStudents.filter(s => s.email && s.email.includes("@"));
+            if (recipients.length === 0) {
+                return window.showAlert("No Recipients", "No students with valid email addresses found.", "warning");
+            }
+
+            const confirmRes = await Swal.fire({
+                title: `Send to ${recipients.length} Students?`,
+                html: `This will send promotional emails directly to <b>${recipients.length} students</b> targeting <b>${document.getElementById("emailExamSelect").value}</b> via ${provider.toUpperCase()}.`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: `Yes, Send ${recipients.length} Emails`,
+                confirmButtonColor: "#4f46e5"
+            });
+
+            if (!confirmRes.isConfirmed) return;
+
+            const btn = document.getElementById("btnSendDirectApi");
+            const statusBox = document.getElementById("emailSendStatus");
+            btn.disabled = true;
+            statusBox.classList.remove("hidden");
+            statusBox.className = "p-3 rounded-xl text-xs font-semibold text-center border bg-blue-50 text-blue-700 border-blue-200";
+
+            const subject = document.getElementById("emailSubject").value;
+            const htmlContent = generateCompleteEmailHtml();
+
+            let sentCount = 0;
+            let failCount = 0;
+
+            try {
+                // Batch in chunks of 50 to respect API limits
+                const chunkSize = provider === "brevo" ? 50 : 25;
+                for (let i = 0; i < recipients.length; i += chunkSize) {
+                    const chunk = recipients.slice(i, i + chunkSize);
+                    statusBox.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> Sending batch ${Math.floor(i / chunkSize) + 1} (${i + chunk.length} / ${recipients.length} emails)...`;
+
+                    if (provider === "brevo") {
+                        // Brevo v3 SMTP API
+                        const toList = chunk.map(c => ({ email: c.email, name: c.name }));
+                        const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
+                            method: "POST",
+                            headers: {
+                                "api-key": apiKey,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                sender: { name: senderName, email: senderEmail },
+                                to: toList,
+                                subject: subject,
+                                htmlContent: htmlContent
+                            })
+                        });
+
+                        if (!resp.ok) {
+                            const errData = await resp.json().catch(() => ({}));
+                            throw new Error(errData.message || `Brevo HTTP ${resp.status}`);
+                        }
+                        sentCount += chunk.length;
+                    } else {
+                        // Resend API
+                        const toEmails = chunk.map(c => c.email);
+                        const resp = await fetch("https://api.resend.com/emails", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${apiKey}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                from: `${senderName} <${senderEmail}>`,
+                                to: toEmails,
+                                subject: subject,
+                                html: htmlContent
+                            })
+                        });
+
+                        if (!resp.ok) {
+                            const errData = await resp.json().catch(() => ({}));
+                            throw new Error(errData.message || `Resend HTTP ${resp.status}`);
+                        }
+                        sentCount += chunk.length;
+                    }
+                }
+
+                // Log campaign in Firestore
+                await addDoc(collection(db, "email_campaigns"), {
+                    subject: subject,
+                    targetExam: document.getElementById("emailExamSelect").value,
+                    audienceType: document.getElementById("emailAudienceType").value,
+                    recipientCount: sentCount,
+                    provider: provider,
+                    timestamp: new Date().toISOString()
+                });
+
+                statusBox.className = "p-3 rounded-xl text-xs font-semibold text-center border bg-emerald-50 text-emerald-700 border-emerald-200";
+                statusBox.innerHTML = `✅ Successfully sent ${sentCount} promotional emails!`;
+
+                Swal.fire({
+                    title: "Campaign Sent Successfully! 🚀",
+                    text: `${sentCount} students received your promotional email.`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
+
+            } catch (err) {
+                console.error("Email send failed:", err);
+                statusBox.className = "p-3 rounded-xl text-xs font-semibold text-center border bg-red-50 text-red-700 border-red-200";
+                statusBox.innerHTML = `❌ Sending failed: ${err.message}`;
+                window.showAlert("Email Failed", err.message, "error");
+            } finally {
+                btn.disabled = false;
             }
         });
 
-        // 🌟 Smart Image Compressor
-        async function compressImageForNotice(file) {
-            const MAX_KB = 60; // ଟିକେ ବଡ କ୍ୱାଲିଟି ରଖିବା
-            if (file.size / 1024 <= MAX_KB) return file; 
+        function generateCompleteEmailHtml() {
+            const exam = document.getElementById("emailExamSelect").value;
+            const examLabel = exam === "All" ? "Odisha Competitive Exams" : exam;
+            const headline = document.getElementById("emailHeadline").value || "Special Test Series";
+            const body = document.getElementById("emailBodyText").value.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+            const coupon = document.getElementById("emailCouponCode").value.trim();
+            const btnText = document.getElementById("emailBtnText").value || "Start Practicing";
+            const btnUrl = document.getElementById("emailBtnUrl").value || "https://odishaexamprep.com";
 
+            return `
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+            <body style="margin:0;padding:20px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr><td align="center">
+                        <table width="100%" style="max-width:580px;background:#ffffff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);" cellspacing="0" cellpadding="0">
+                            <!-- Top Logo Bar -->
+                            <tr>
+                                <td style="padding:20px 24px;border-bottom:1px solid #f1f5f9;background:#ffffff;">
+                                    <table width="100%">
+                                        <tr>
+                                            <td style="font-size:16px;font-weight:800;color:#0f172a;">🎓 Odisha Exam Prep</td>
+                                            <td align="right"><span style="font-size:11px;font-weight:700;color:#4f46e5;background:#eef2ff;padding:4px 10px;border-radius:20px;text-transform:uppercase;">${examLabel}</span></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <!-- Countdown Alert -->
+                            <tr>
+                                <td style="padding:14px 24px;background:linear-gradient(90deg,#f59e0b,#ea580c);color:#ffffff;font-size:13px;font-weight:700;">
+                                    ⏰ Exam Date Alert: Complete your revision with Full Length Mock Tests!
+                                </td>
+                            </tr>
+                            <!-- Content Area -->
+                            <tr>
+                                <td style="padding:28px 24px;color:#334155;font-size:14px;line-height:1.6;">
+                                    <h2 style="margin:0 0 12px 0;font-size:18px;font-weight:800;color:#0f172a;line-height:1.4;">${headline}</h2>
+                                    <p style="margin:0 0 16px 0;font-size:14px;color:#475569;">ନମସ୍କାର,</p>
+                                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:#334155;line-height:1.6;">
+                                        ${body}
+                                    </div>
+                                    <table width="100%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px;margin-bottom:20px;font-size:12px;color:#166534;" cellspacing="0" cellpadding="6">
+                                        <tr><td>✅ 100% Latest Exam Pattern & Full Syllabus Coverage</td></tr>
+                                        <tr><td>✅ Detailed Step-by-Step Solutions in Odia (ଓଡ଼ିଆରେ)</td></tr>
+                                        <tr><td>✅ Instant All-Odisha Rank & Detailed Weakness Analysis</td></tr>
+                                    </table>
+                                    ${coupon ? `
+                                    <div style="text-align:center;background:#faf5ff;border:1px dashed #d8b4fe;border-radius:12px;padding:12px;margin-bottom:20px;">
+                                        <span style="font-size:11px;color:#7e22ce;font-weight:700;text-transform:uppercase;">Use Special Coupon Code:</span><br>
+                                        <b style="font-size:16px;color:#581c87;font-family:monospace;letter-spacing:1px;">${coupon}</b>
+                                    </div>` : ''}
+                                    <div style="text-align:center;margin-top:24px;margin-bottom:12px;">
+                                        <a href="${btnUrl}" style="display:inline-block;background:linear-gradient(90deg,#4f46e5,#2563eb);color:#ffffff;font-size:14px;font-weight:800;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:0 4px 12px rgba(79,70,229,0.3);text-transform:uppercase;letter-spacing:0.5px;">${btnText} &rarr;</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Footer -->
+                            <tr>
+                                <td style="padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8;">
+                                    Odisha Exam Prep &bull; Odisha Govt Competitive Exam App<br>
+                                    You received this notice because you are preparing for exams on Odisha Exam Prep.
+                                </td>
+                            </tr>
+                        </table>
+                    </td></tr>
+                </table>
+            </body>
+            </html>
+            `;
+        }
+
+        // WhatsApp Table Renderer
+        function renderWhatsappTable() {
+            const tbody = document.getElementById("waTableBody");
+            const filterExam = document.getElementById("waExamSelect").value;
+
+            const phoneUsers = allStudents.filter(s => {
+                if (!s.phone || s.phone.length < 10) return false;
+                if (filterExam !== "All") {
+                    return s.targetExam.toLowerCase().includes(filterExam.toLowerCase());
+                }
+                return true;
+            });
+
+            if (phoneUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400">No students with phone numbers found for the selected exam.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = "";
+            phoneUsers.forEach((u, i) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+
+                const cleanPhone = u.phone.replace(/[^0-9]/g, '').slice(-10);
+                const exam = u.targetExam || "Odisha Govt Exam";
+                const promoMsg = encodeURIComponent(`ନମସ୍କାର ${u.name}! ଆପଣଙ୍କ ${exam} ପରୀକ୍ଷା ଖୁବ୍ ଶୀଘ୍ର ହେବାକୁ ଯାଉଛି। ପରୀକ୍ଷାରେ ଭଲ ସ୍କୋର କରିବା ପାଇଁ ୧୦୦% ନୂଆ ପାଟର୍ଣ୍ଣର Mock Test Series ଉପରେ ଏବେ ହିଁ ପାଆନ୍ତୁ Flat 50% ଛାଡ଼। Join here: https://odishaexamprep.com`);
+                const waUrl = `https://wa.me/91${cleanPhone}?text=${promoMsg}`;
+
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-900">${u.name}</td>
+                    <td class="p-3 text-slate-600 font-medium">${u.targetExam}</td>
+                    <td class="p-3 font-mono font-bold text-slate-700">${u.phone}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.isPremium ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}">
+                            ${u.isPremium ? 'PRO 👑' : 'FREE 🆓'}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <a href="${waUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-bold text-xs shadow-xs transition-colors">
+                            <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("waExamSelect").addEventListener("change", renderWhatsappTable);
+
+        // API Settings Modal Handlers
+        const apiModal = document.getElementById("apiSettingsModal");
+        document.getElementById("btnOpenApiSettings").addEventListener("click", () => {
+            document.getElementById("cfgEmailProvider").value = localStorage.getItem("odisha_email_provider") || "brevo";
+            document.getElementById("cfgEmailApiKey").value = localStorage.getItem("odisha_email_api_key") || "";
+            document.getElementById("cfgSenderName").value = localStorage.getItem("odisha_sender_name") || "Odisha Exam Prep";
+            document.getElementById("cfgSenderEmail").value = localStorage.getItem("odisha_sender_email") || "";
+            apiModal.classList.remove("hidden");
+        });
+
+        document.getElementById("btnCloseApiModal").addEventListener("click", () => apiModal.classList.add("hidden"));
+        document.getElementById("btnCancelApiModal").addEventListener("click", () => apiModal.classList.add("hidden"));
+
+        document.getElementById("btnSaveApiConfig").addEventListener("click", () => {
+            const provider = document.getElementById("cfgEmailProvider").value;
+            const apiKey = document.getElementById("cfgEmailApiKey").value.trim();
+            const senderName = document.getElementById("cfgSenderName").value.trim();
+            const senderEmail = document.getElementById("cfgSenderEmail").value.trim();
+
+            if (!apiKey || !senderEmail) {
+                return window.showAlert("Required Fields", "Please enter both API Key and Sender Email Address.", "warning");
+            }
+
+            localStorage.setItem("odisha_email_provider", provider);
+            localStorage.setItem("odisha_email_api_key", apiKey);
+            localStorage.setItem("odisha_sender_name", senderName);
+            localStorage.setItem("odisha_sender_email", senderEmail);
+
+            apiModal.classList.add("hidden");
+            window.showToast("Email API settings saved securely!", "success");
+        });
+
+        // Tab 2: In-App Broadcast Notice Logic
+        let selectedNoticeFile = null;
+        document.getElementById('noticeImage').addEventListener('change', function(e) {
+            if(e.target.files.length > 0) {
+                selectedNoticeFile = e.target.files[0];
+                document.getElementById('imgText').innerText = `✅ Selected: ${selectedNoticeFile.name}`;
+            }
+        });
+
+        async function compressImageForNotice(file) {
+            const MAX_KB = 60;
+            if (file.size / 1024 <= MAX_KB) return file; 
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -166,14 +1178,11 @@
                         const canvas = document.createElement('canvas');
                         let w = img.width, h = img.height;
                         const MAX_DIM = 800;
-                        
                         if(w > h && w > MAX_DIM) { h *= MAX_DIM / w; w = MAX_DIM; }
                         else if(h > MAX_DIM) { w *= MAX_DIM / h; h = MAX_DIM; }
-                        
                         canvas.width = w; canvas.height = h;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
-
                         let quality = 0.8;
                         const attemptCompress = () => {
                             canvas.toBlob((blob) => {
@@ -187,115 +1196,108 @@
             });
         }
 
-        // 🌟 Send Notice Logic
         document.getElementById('sendBtn').addEventListener('click', async () => {
             const title = document.getElementById('noticeTitle').value.trim();
             const message = document.getElementById('noticeMessage').value.trim();
             const target = document.getElementById('targetAudience').value;
+            const targetExam = document.getElementById('noticeTargetExam').value;
             const link = document.getElementById('noticeLink').value.trim();
 
             if(!title || !message) {
-                alert("Please write both Title and Message!");
-                return;
+                return window.showAlert("Required Fields", "Please write both Title and Message!", "warning");
             }
 
             const btn = document.getElementById('sendBtn');
-            const statusBox = document.getElementById('statusBox');
-            
+            const statusBox = document.getElementById('noticeStatusBox');
             btn.disabled = true;
             statusBox.style.display = "block";
-            statusBox.className = "p-4 rounded-xl font-bold text-center bg-blue-50 text-blue-700 border border-blue-200 animate-pulse";
-            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Announcement...';
+            statusBox.className = "p-3 rounded-xl font-bold text-xs text-center bg-blue-50 text-blue-700 border border-blue-200";
+            statusBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Broadcasting notice...';
 
             try {
                 let finalImageUrl = "";
-
-                // Image Upload Process
-                if (selectedFile) {
-                    statusBox.innerHTML = '<i class="fas fa-image"></i> Compressing & Uploading Image...';
-                    const optimizedBlob = await compressImageForNotice(selectedFile);
-                    
+                if (selectedNoticeFile) {
+                    statusBox.innerHTML = '<i class="fas fa-image"></i> Compressing & uploading banner...';
+                    const optimizedBlob = await compressImageForNotice(selectedNoticeFile);
                     const fileName = `announcements/${Date.now()}_notice.webp`;
                     const imgRef = ref(storage, fileName);
-                    
                     await uploadBytes(imgRef, optimizedBlob);
                     finalImageUrl = await getDownloadURL(imgRef);
                 }
 
-                statusBox.innerHTML = '<i class="fas fa-database"></i> Saving to Database...';
-
-                // Save to 'announcements' collection
                 await addDoc(collection(db, "announcements"), {
                     title: title,
                     message: message,
                     targetAudience: target,
+                    targetExam: targetExam,
                     redirectLink: link,
                     imageUrl: finalImageUrl,
                     timestamp: new Date().toISOString()
                 });
 
-                statusBox.className = "p-4 rounded-xl font-bold text-center bg-green-50 text-green-700 border border-green-200";
-                statusBox.innerHTML = '<i class="fas fa-check-circle"></i> Notice Published Successfully!';
-                
-                // Reset Form
+                statusBox.style.display = "none";
+                btn.disabled = false;
+
+                await Swal.fire({
+                    title: "Notice Published! 📢",
+                    text: `Announcement broadcasted to ${target} students preparing for ${targetExam}.`,
+                    icon: "success",
+                    confirmButtonColor: "#4f46e5"
+                });
+
                 document.getElementById('noticeTitle').value = "";
                 document.getElementById('noticeMessage').value = "";
                 document.getElementById('noticeLink').value = "";
                 document.getElementById('noticeImage').value = "";
-                selectedFile = null;
-                document.getElementById('imgText').innerText = "Click to select an image";
-                
-                setTimeout(() => { statusBox.style.display = "none"; btn.disabled = false; }, 3000);
-                
-                loadHistory(); // ରିଫ୍ରେସ୍ ହିଷ୍ଟ୍ରି
+                selectedNoticeFile = null;
+                document.getElementById('imgText').innerText = "Click or drag banner image here";
+                loadNoticeHistory();
 
             } catch (err) {
                 console.error(err);
-                statusBox.className = "p-4 rounded-xl font-bold text-center bg-red-50 text-red-700 border border-red-200";
-                statusBox.innerHTML = `<i class="fas fa-times-circle"></i> Error: ${err.message}`;
+                statusBox.className = "p-3 rounded-xl font-bold text-xs text-center bg-red-50 text-red-700 border border-red-200";
+                statusBox.innerHTML = `❌ Error: ${err.message}`;
                 btn.disabled = false;
             }
         });
 
-        // 🌟 Load Recent History
-        async function loadHistory() {
+        async function loadNoticeHistory() {
             const historyBox = document.getElementById('noticeHistory');
             try {
                 const q = query(collection(db, "announcements"), orderBy("timestamp", "desc"), limit(10));
                 const snapshot = await getDocs(q);
-                
                 if(snapshot.empty) {
-                    historyBox.innerHTML = '<div class="text-center text-gray-500 mt-6 font-medium">No notices published yet.</div>';
+                    historyBox.innerHTML = '<div class="text-center text-slate-400 py-10 text-xs">No notices broadcasted yet.</div>';
                     return;
                 }
-
                 historyBox.innerHTML = "";
                 snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const dateObj = new Date(data.timestamp);
-                    const formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
-
-                    let targetBadge = "bg-indigo-100 text-indigo-700";
-                    if(data.targetAudience === 'Paid') targetBadge = "bg-amber-100 text-amber-700";
-                    if(data.targetAudience === 'Free') targetBadge = "bg-gray-100 text-gray-700";
-
+                    const d = doc.data();
+                    const dateObj = new Date(d.timestamp);
+                    const formatted = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' });
                     const item = document.createElement('div');
-                    item.className = "p-4 border border-gray-100 rounded-xl bg-gray-50 hover:bg-white hover:shadow-md transition-all";
+                    item.className = "p-3.5 border border-slate-200 rounded-xl bg-slate-50/60 hover:bg-white hover:shadow-xs transition-all text-xs";
                     item.innerHTML = `
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-xs font-bold px-2 py-1 rounded border ${targetBadge}">${data.targetAudience}</span>
-                            <span class="text-xs text-gray-400 font-medium">${formattedDate}</span>
+                        <div class="flex justify-between items-start mb-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded border bg-indigo-50 text-indigo-700 border-indigo-200">${d.targetAudience || 'All'}</span>
+                                ${d.targetExam && d.targetExam !== 'All' ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200">${d.targetExam}</span>` : ''}
+                            </div>
+                            <span class="text-[10px] text-slate-400">${formatted}</span>
                         </div>
-                        <h4 class="font-bold text-gray-800 text-sm mb-1">${data.title}</h4>
-                        <p class="text-xs text-gray-500 line-clamp-2">${data.message}</p>
+                        <h4 class="font-bold text-slate-900 text-xs mb-1">${d.title}</h4>
+                        <p class="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">${d.message}</p>
                     `;
                     historyBox.appendChild(item);
                 });
             } catch (err) {
-                console.error(err);
-                historyBox.innerHTML = '<div class="text-center text-red-500 mt-6 text-sm">Failed to load history.</div>';
+                historyBox.innerHTML = '<div class="text-center text-red-500 py-6 text-xs">Failed to load history.</div>';
             }
         }
+
+        // Initialize Data on Page Load
+        fetchAllUserData();
+        loadTemplate("urgency");
     </script>
 </body>
 </html>
